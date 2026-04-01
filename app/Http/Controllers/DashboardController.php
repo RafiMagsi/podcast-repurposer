@@ -23,7 +23,7 @@ class DashboardController extends Controller
                 'created_at' => $episode->created_at?->toDateTimeString(),
             ]);
 
-        return Inertia::render('dashboard', [
+        return Inertia::render('Dashboard', [
             'episodes' => $episodes,
         ]);
     }
