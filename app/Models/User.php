@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    
+    public function episodes()
+    {
+        return $this->hasMany(\App\Models\Episode::class);
+    }
 }

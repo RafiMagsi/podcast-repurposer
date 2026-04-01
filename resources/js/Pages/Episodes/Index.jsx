@@ -1,18 +1,16 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
-export default function Dashboard({ episodes = [] }) {
-    const { flash } = usePage().props;
-
+export default function EpisodesIndex({ episodes }) {
     return (
         <AppLayout>
-            <Head title="Dashboard" />
+            <Head title="Episodes" />
 
             <div className="mx-auto max-w-6xl space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-                        <p className="text-sm text-gray-500">Recent uploaded episodes</p>
+                        <h1 className="text-2xl font-semibold text-gray-900">Episodes</h1>
+                        <p className="text-sm text-gray-500">All uploaded audio files</p>
                     </div>
 
                     <Link
@@ -23,17 +21,11 @@ export default function Dashboard({ episodes = [] }) {
                     </Link>
                 </div>
 
-                {flash?.success && (
-                    <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                        {flash.success}
-                    </div>
-                )}
-
                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                    {episodes.length === 0 ? (
-                        <div className="p-6 text-sm text-gray-500">No episodes yet.</div>
+                    {episodes.data.length === 0 ? (
+                        <div className="p-6 text-sm text-gray-500">No episodes found.</div>
                     ) : (
-                        episodes.map((episode) => (
+                        episodes.data.map((episode) => (
                             <div
                                 key={episode.id}
                                 className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0"
@@ -41,7 +33,7 @@ export default function Dashboard({ episodes = [] }) {
                                 <div>
                                     <div className="font-medium text-gray-900">{episode.title}</div>
                                     <div className="text-sm text-gray-500">
-                                        {episode.status} · {episode.tone} · {episode.created_at}
+                                        {episode.status} · {episode.tone} · {episode.original_file_name}
                                     </div>
                                 </div>
 
@@ -55,6 +47,24 @@ export default function Dashboard({ episodes = [] }) {
                         ))
                     )}
                 </div>
+
+                {episodes.links && episodes.links.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                        {episodes.links.map((link, index) => (
+                            <Link
+                                key={`${link.label}-${index}`}
+                                href={link.url || '#'}
+                                preserveScroll
+                                className={`rounded border px-3 py-1 text-sm ${
+                                    link.active
+                                        ? 'border-black bg-black text-white'
+                                        : 'border-gray-300 bg-white text-gray-700'
+                                } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: link.label }}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

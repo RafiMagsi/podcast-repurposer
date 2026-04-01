@@ -1,0 +1,29 @@
+<svg width="460" height="300" viewBox="0 0 460 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="28" y="34" width="256" height="66" rx="18" fill="#111418" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="46" y="53" width="76" height="10" rx="5" fill="#D9FF66"/>
+  <rect x="46" y="70" width="180" height="8" rx="4" fill="white" fill-opacity="0.32"/>
+  <text x="238" y="75" fill="white" font-family="Arial, sans-serif" font-size="13" text-anchor="end">Blog post</text>
+
+  <rect x="74" y="117" width="256" height="66" rx="18" fill="#111418" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="92" y="136" width="82" height="10" rx="5" fill="#8BE9FD"/>
+  <rect x="92" y="153" width="180" height="8" rx="4" fill="white" fill-opacity="0.32"/>
+  <text x="284" y="158" fill="white" font-family="Arial, sans-serif" font-size="13" text-anchor="end">LinkedIn</text>
+
+  <rect x="120" y="200" width="256" height="66" rx="18" fill="#111418" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="138" y="219" width="68" height="10" rx="5" fill="#D9FF66"/>
+  <rect x="138" y="236" width="180" height="8" rx="4" fill="white" fill-opacity="0.32"/>
+  <text x="330" y="241" fill="white" font-family="Arial, sans-serif" font-size="13" text-anchor="end">X thread</text>
+
+  <path d="M332 65L410 65" stroke="url(#g)" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M378 65L410 115" stroke="url(#g)" stroke-width="2" stroke-dasharray="8 8"/>
+  <path d="M378 115L410 165" stroke="url(#g)" stroke-width="2" stroke-dasharray="8 8"/>
+  <circle cx="418" cy="165" r="16" fill="#D9FF66"/>
+  <path d="M413 165L417 169L424 161" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <defs>
+    <linearGradient id="g" x1="332" y1="65" x2="418" y2="165" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8BE9FD"/>
+      <stop offset="1" stop-color="#D9FF66"/>
+    </linearGradient>
+  </defs>
+</svg>
