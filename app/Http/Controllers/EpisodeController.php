@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\TranscribeEpisode;
 use App\Models\Episode;
+use App\Services\S3DiskFactory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
+use Throwable;
 
 class EpisodeController extends Controller
 {
@@ -22,17 +25,17 @@ class EpisodeController extends Controller
                 'status' => $episode->status,
                 'tone' => $episode->tone,
                 'original_file_name' => $episode->original_file_name,
-                'created_at' => $episode->created_at?->toDateTimeString(),
+                'created_at' => optional($episode->created_at)->toDateTimeString(),
             ]);
 
-        return Inertia::render('episodes/index', [
+        return Inertia::render('Episodes/Index', [
             'episodes' => $episodes,
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('episodes/create', [
+        return Inertia::render('Episodes/Create', [
             'tones' => [
                 ['label' => 'Professional', 'value' => 'professional'],
                 ['label' => 'Engaging', 'value' => 'engaging'],
@@ -41,31 +44,52 @@ class EpisodeController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, S3DiskFactory $s3DiskFactory): RedirectResponse
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
-            'audio' => ['required', 'file', 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a', 'max:51200'],
+            'audio' => ['required', 'file', 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a', 'max:204800'],
         ]);
 
         $file = $request->file('audio');
-        $path = $file->store('episodes', 'local');
 
-        $episode = Episode::create([
-            'user_id' => $request->user()->id,
-            'title' => $validated['title'],
-            'tone' => $validated['tone'],
-            'original_file_name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'file_size' => $file->getSize(),
-            'status' => 'uploaded',
-        ]);
+        try {
+            $disk = $s3DiskFactory->make();
 
-        return redirect()
-            ->route('episodes.show', $episode)
-            ->with('success', 'Audio uploaded successfully.');
+            $folder = 'episodes/' . now()->format('Y/m');
+            $filename = uniqid('episode_', true) . '.' . $file->getClientOriginalExtension();
+            $path = $disk->putFileAs($folder, $file, $filename);
+
+            if (! $path) {
+                return back()->withErrors([
+                    'audio' => 'Audio upload failed. Please check S3 settings and try again.',
+                ]);
+            }
+
+            $episode = Episode::create([
+                'user_id' => $request->user()->id,
+                'title' => $validated['title'],
+                'tone' => $validated['tone'],
+                'original_file_name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+                'status' => 'uploaded',
+            ]);
+
+            TranscribeEpisode::dispatch($episode->id);
+
+            return redirect()
+                ->route('episodes.show', $episode)
+                ->with('success', 'Audio uploaded successfully. Transcription has been queued.');
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->withErrors([
+                'audio' => 'Unable to upload file right now. Check storage settings and try again.',
+            ]);
+        }
     }
 
     public function show(Request $request, Episode $episode): Response
@@ -74,7 +98,7 @@ class EpisodeController extends Controller
 
         $episode->load('generatedContents');
 
-        return Inertia::render('episodes/show', [
+        return Inertia::render('Episodes/Show', [
             'episode' => [
                 'id' => $episode->id,
                 'title' => $episode->title,
@@ -85,7 +109,7 @@ class EpisodeController extends Controller
                 'transcript' => $episode->transcript,
                 'summary' => $episode->summary,
                 'error_message' => $episode->error_message,
-                'created_at' => $episode->created_at?->toDateTimeString(),
+                'created_at' => optional($episode->created_at)->toDateTimeString(),
                 'generated_contents' => $episode->generatedContents->map(fn ($content) => [
                     'id' => $content->id,
                     'content_type' => $content->content_type,
