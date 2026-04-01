@@ -1,0 +1,48 @@
+/.phpunit.cache
+/storage/pail
+.phpactor.json
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.nova
+/.zed
+
+# Dependencies - HostGator will manage these via Composer/NPM
+/node_modules
+/vendor
+
+# Environment-specific - NEVER commit these
+.env
+.env.backup
+.env.production
+*.key
+
+# Compiled assets - These are generated on build
+/public/hot
+/public/storage
+/public/build
+/storage/*.key
+
+# Caches and Logs - HostGator generates these at runtime
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*.log
+/bootstrap/cache/*.php
+
+# Testing & IDEs
+.phpunit.result.cache
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
