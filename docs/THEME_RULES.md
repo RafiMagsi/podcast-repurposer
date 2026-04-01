@@ -1,0 +1,4 @@
+- Use only app.css theme classes for surfaces, typography, buttons, and inputs.
+- All authenticated pages must use AuthenticatedLayout.
+- All public/auth pages must use GuestLayout.
+- Do not use default Breeze white/gray utility classes for new UI unless necessary.

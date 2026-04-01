@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EpisodeController;
+use App\Http\Controllers\SettingsController;
 
 
 Route::get('/', function () {
