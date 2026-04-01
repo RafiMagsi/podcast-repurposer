@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EpisodeController;
 use App\Http\Controllers\SettingsController;
+use App\Services\S3DiskFactory;
+use Illuminate\Support\Facades\Log;
 
 
 Route::get('/', function () {
@@ -34,5 +36,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/episodes', [EpisodeController::class, 'store'])->name('episodes.store');
     Route::get('/episodes/{episode}', [EpisodeController::class, 'show'])
         ->name('episodes.show');
+    Route::post('/episodes/{episode}/retry-transcription', [EpisodeController::class, 'retryTranscription'])
+        ->name('episodes.retry-transcription');
+    Route::post('/episodes/{episode}/regenerate-content', [EpisodeController::class, 'regenerateContent'])
+        ->name('episodes.regenerate-content');
 });
+
+
+Route::get('/test-s3', function (S3DiskFactory $factory) {
+    try {
+        $disk = $factory->make();
+
+        $path = 'test/hello.txt';
+
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, 'hello from podcast repurposer');
+        rewind($stream);
+
+        $result = $disk->writeStream($path, $stream);
+        fclose($stream);
+
+        return [
+            'result' => $result,
+            'path' => $path,
+        ];
+    } catch (\Throwable $e) {
+        dd([
+            'message' => $e->getMessage(),
+            'class' => get_class($e),
+        ]);
+    }
+})->middleware(['auth']);
+
 require __DIR__.'/auth.php';

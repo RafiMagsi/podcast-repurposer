@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 
 function formatContentType(value) {
     return value
@@ -13,6 +13,8 @@ function statusClass(status) {
         case 'completed':
             return 'status-badge status-completed';
         case 'transcribing':
+            return 'status-badge status-transcribing';
+        case 'transcribed':
             return 'status-badge status-transcribing';
         case 'generating':
             return 'status-badge status-generating';
@@ -28,18 +30,37 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text);
 }
 
+function formatMb(bytes) {
+    if (!bytes) return 'N/A';
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
 export default function EpisodesShow({ auth, episode }) {
+    const { flash, errors } = usePage().props;
+
+    const orderedContent = [...(episode.generated_contents || [])].sort((a, b) => {
+        const order = ['summary', 'blog_post', 'linkedin_post', 'x_thread'];
+        return order.indexOf(a.content_type) - order.indexOf(b.content_type);
+    });
+
+    const retryTranscription = () => {
+        router.post(route('episodes.retry-transcription', episode.public_id));
+    };
+
+    const regenerateContent = () => {
+        router.post(route('episodes.regenerate-content', episode.public_id));
+    };
+
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            user={auth?.user}
             header={
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                         <div className="app-badge mb-3">Episode Result</div>
                         <h1 className="app-heading">{episode.title}</h1>
                         <p className="app-subheading mt-2 max-w-2xl">
-                            Review the transcript, summary, and generated content from your uploaded
-                            audio file.
+                            Review the transcript, compression details, summary, and generated content.
                         </p>
                     </div>
 
@@ -50,6 +71,18 @@ export default function EpisodesShow({ auth, episode }) {
             }
         >
             <Head title={episode.title} />
+
+            {flash?.success && (
+                <div className="app-card border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+                    {flash.success}
+                </div>
+            )}
+
+            {errors?.episode && (
+                <div className="app-card border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+                    {errors.episode}
+                </div>
+            )}
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-1">
@@ -65,27 +98,55 @@ export default function EpisodesShow({ auth, episode }) {
                             </div>
 
                             <div>
-                                <div className="app-muted">File size</div>
+                                <div className="app-muted">Original size</div>
                                 <div className="mt-1 text-slate-200">
-                                    {(episode.file_size / 1024 / 1024).toFixed(2)} MB
+                                    {formatMb(episode.file_size)}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="app-muted">Compressed size</div>
+                                <div className="mt-1 text-slate-200">
+                                    {formatMb(episode.compressed_file_size)}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="app-muted">Compression status</div>
+                                <div className="mt-1 text-slate-200">
+                                    {episode.compression_status || 'Not started'}
                                 </div>
                             </div>
 
                             <div>
                                 <div className="app-muted">Tone</div>
-                                <div className="mt-1 text-slate-200">{episode.tone}</div>
+                                <div className="mt-1 text-slate-200">{episode.tone || 'N/A'}</div>
                             </div>
 
                             <div>
                                 <div className="app-muted">Created at</div>
-                                <div className="mt-1 text-slate-200">{episode.created_at}</div>
+                                <div className="mt-1 text-slate-200">{episode.created_at || 'N/A'}</div>
+                            </div>
+
+                            <div>
+                                <div className="app-muted">Episode ID</div>
+                                <div className="mt-1 break-all text-slate-200">
+                                    {episode.public_id || episode.id || 'N/A'}
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {episode.compression_error && (
+                        <div className="app-card border-amber-500/20 bg-amber-500/10 p-6">
+                            <h2 className="app-section-title text-amber-300">Compression Error</h2>
+                            <p className="mt-3 text-sm text-amber-200">{episode.compression_error}</p>
+                        </div>
+                    )}
+
                     {episode.error_message && (
                         <div className="app-card border-red-500/20 bg-red-500/10 p-6">
-                            <h2 className="app-section-title text-red-300">Error</h2>
+                            <h2 className="app-section-title text-red-300">Processing Error</h2>
                             <p className="mt-3 text-sm text-red-200">{episode.error_message}</p>
                         </div>
                     )}
@@ -98,6 +159,7 @@ export default function EpisodesShow({ auth, episode }) {
                                 type="button"
                                 onClick={() => copyToClipboard(episode.transcript || '')}
                                 className="btn-secondary w-full"
+                                disabled={!episode.transcript}
                             >
                                 Copy Transcript
                             </button>
@@ -106,8 +168,26 @@ export default function EpisodesShow({ auth, episode }) {
                                 type="button"
                                 onClick={() => copyToClipboard(episode.summary || '')}
                                 className="btn-secondary w-full"
+                                disabled={!episode.summary}
                             >
                                 Copy Summary
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={retryTranscription}
+                                className="btn-secondary w-full"
+                            >
+                                Retry Transcription
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={regenerateContent}
+                                className="btn-primary w-full"
+                                disabled={!episode.transcript}
+                            >
+                                Regenerate Content
                             </button>
                         </div>
                     </div>
@@ -159,7 +239,7 @@ export default function EpisodesShow({ auth, episode }) {
                             ) : null}
                         </div>
 
-                        <div className="mt-5 max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/60 p-4 text-sm leading-7 text-slate-200">
+                        <div className="mt-5 max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-2xl border border-[var(--color-border)] bg-slate-900/40 p-4 text-sm leading-7 text-slate-200">
                             {episode.transcript || 'Transcript not generated yet.'}
                         </div>
                     </div>
@@ -172,13 +252,13 @@ export default function EpisodesShow({ auth, episode }) {
                             </p>
                         </div>
 
-                        {episode.generated_contents.length === 0 ? (
+                        {orderedContent.length === 0 ? (
                             <div className="mt-5 text-sm text-slate-400">
                                 No generated content yet.
                             </div>
                         ) : (
                             <div className="mt-5 space-y-5">
-                                {episode.generated_contents.map((content) => (
+                                {orderedContent.map((content) => (
                                     <div key={content.id} className="app-card-soft p-5">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>

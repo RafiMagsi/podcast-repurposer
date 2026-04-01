@@ -99,7 +99,7 @@ export default function Dashboard({ auth, episodes = [] }) {
 
                             <div className="flex items-center gap-3">
                                 <span className={statusClass(episode.status)}>{episode.status}</span>
-                                <Link href={route('episodes.show', episode.id)} className="btn-secondary">
+                                <Link href={route('episodes.show', episode.public_id)} className="btn-secondary">
                                     Open
                                 </Link>
                             </div>

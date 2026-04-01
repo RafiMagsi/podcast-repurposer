@@ -22,8 +22,8 @@ export default function EpisodesCreate({ auth, tones = [] }) {
                         <div className="app-badge mb-3">New Episode</div>
                         <h1 className="app-heading">Upload podcast or spoken audio</h1>
                         <p className="app-subheading mt-2 max-w-2xl">
-                            Add a title, choose the output tone, and upload your audio file to start
-                            the transcription and content generation workflow.
+                            Upload a short voice note or audio clip under 1 minute. VoicePost AI will
+                            turn it into a summary, a LinkedIn post, and an X post.
                         </p>
                     </div>
                 </div>
@@ -73,7 +73,7 @@ export default function EpisodesCreate({ auth, tones = [] }) {
                             />
 
                             <div className="mt-3 text-sm text-slate-400">
-                                Supported formats: MP3, WAV, M4A · Maximum size: 50 MB
+                                Supported formats: MP3, WAV, M4A · Maximum size: 5 MB · Keep recordings under 1 minute
                             </div>
                         </div>
 

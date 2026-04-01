@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
+use App\Jobs\GenerateEpisodeContent;
 
 class EpisodeController extends Controller
 {
@@ -21,6 +22,7 @@ class EpisodeController extends Controller
             ->paginate(10)
             ->through(fn ($episode) => [
                 'id' => $episode->id,
+                'public_id' => $episode->public_id,
                 'title' => $episode->title,
                 'status' => $episode->status,
                 'tone' => $episode->tone,
@@ -49,7 +51,7 @@ class EpisodeController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
-            'audio' => ['required', 'file', 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a', 'max:204800'],
+            'audio' => ['required', 'file', 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a', 'max:5120'],
         ]);
 
         $file = $request->file('audio');
@@ -101,11 +103,15 @@ class EpisodeController extends Controller
         return Inertia::render('Episodes/Show', [
             'episode' => [
                 'id' => $episode->id,
+                'public_id' => $episode->public_id,
                 'title' => $episode->title,
                 'status' => $episode->status,
                 'tone' => $episode->tone,
                 'original_file_name' => $episode->original_file_name,
                 'file_size' => $episode->file_size,
+                'compressed_file_size' => $episode->compressed_file_size,
+                'compression_status' => $episode->compression_status,
+                'compression_error' => $episode->compression_error,
                 'transcript' => $episode->transcript,
                 'summary' => $episode->summary,
                 'error_message' => $episode->error_message,
@@ -119,5 +125,45 @@ class EpisodeController extends Controller
                 ])->values(),
             ],
         ]);
+    }
+    public function retryTranscription(Request $request, Episode $episode): RedirectResponse
+    {
+        abort_unless($episode->user_id === $request->user()->id, 403);
+
+        $episode->update([
+            'status' => 'uploaded',
+            'error_message' => null,
+            'transcript' => null,
+            'summary' => null,
+        ]);
+
+        $episode->generatedContents()->delete();
+
+        TranscribeEpisode::dispatch($episode->id);
+
+        return back()->with('success', 'Transcription retry started.');
+    }
+
+    public function regenerateContent(Request $request, Episode $episode): RedirectResponse
+    {
+        abort_unless($episode->user_id === $request->user()->id, 403);
+
+        if (! $episode->transcript) {
+            return back()->withErrors([
+                'episode' => 'Transcript is missing. Retry transcription first.',
+            ]);
+        }
+
+        $episode->update([
+            'status' => 'transcribed',
+            'error_message' => null,
+            'summary' => null,
+        ]);
+
+        $episode->generatedContents()->delete();
+
+        GenerateEpisodeContent::dispatch($episode->id);
+
+        return back()->with('success', 'Content regeneration started.');
     }
 }

@@ -17,10 +17,12 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($episode) => [
                 'id' => $episode->id,
+                'public_id' => $episode->public_id,
                 'title' => $episode->title,
                 'status' => $episode->status,
                 'tone' => $episode->tone,
-                'created_at' => $episode->created_at?->toDateTimeString(),
+                'original_file_name' => $episode->original_file_name,
+                'created_at' => optional($episode->created_at)->toDateTimeString(),
             ]);
 
         return Inertia::render('Dashboard', [
