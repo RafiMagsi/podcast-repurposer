@@ -143,9 +143,10 @@ class WhisperService
             $text = data_get($response->json(), 'output.0.content.0.text')
             ?? data_get($response->json(), 'output_text');
 
-            dd([
-                'full_response' => $response->json(),
+            Log::info('OpenAI response debug', [
+                'status' => $response->status(),
                 'text' => $text,
+                'full_response' => $response->json(),
             ]);
 
             Log::info('OpenAI transcription text extracted successfully', [

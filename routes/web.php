@@ -40,6 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('episodes.retry-transcription');
     Route::post('/episodes/{episode}/regenerate-content', [EpisodeController::class, 'regenerateContent'])
         ->name('episodes.regenerate-content');
+    Route::delete('/episodes/{episode}', [EpisodeController::class, 'destroy'])
+        ->name('episodes.destroy');
 });
 
 

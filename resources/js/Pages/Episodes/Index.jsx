@@ -1,5 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 
 function statusClass(status) {
     switch (status) {
@@ -23,6 +25,43 @@ export default function EpisodesIndex({ auth, episodes }) {
     const activeCount = items.filter((episode) =>
         ['uploaded', 'transcribing', 'transcribed', 'generating'].includes(episode.status),
     ).length;
+    const { flash, errors } = usePage().props;
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [selectedEpisode, setSelectedEpisode] = useState(null);
+
+    const openDeleteModal = (episode) => {
+        setSelectedEpisode(episode);
+        setShowDeleteModal(true);
+    };
+
+    const closeDeleteModal = () => {
+        if (deleting) return;
+
+        setShowDeleteModal(false);
+        setSelectedEpisode(null);
+    };
+
+    const deleteEpisode = () => {
+        if (!selectedEpisode) return;
+
+        setDeleting(true);
+
+        router.delete(route('episodes.destroy', selectedEpisode.public_id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setDeleting(false);
+                closeDeleteModal();
+            },
+            onError: () => {
+                setDeleting(false);
+            },
+            onFinish: () => {
+                setDeleting(false);
+            },
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -66,6 +105,18 @@ export default function EpisodesIndex({ auth, episodes }) {
             }
         >
             <Head title="Episodes" />
+
+            {flash?.success && (
+                <div className="app-card border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-700">
+                    {flash.success}
+                </div>
+            )}
+
+            {errors?.episode && (
+                <div className="app-card border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700">
+                    {errors.episode}
+                </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="stat-card">
@@ -135,11 +186,20 @@ export default function EpisodesIndex({ auth, episodes }) {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-3">
                                     <span className={statusClass(episode.status)}>{episode.status}</span>
-                                    <Link href={route('episodes.show', episode.public_id)} className="btn-outline">
+
+                                    <Link href={route('episodes.show', episode.public_id)} className="btn-secondary">
                                         Open workspace
                                     </Link>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => openDeleteModal(episode)}
+                                        className="btn-ghost text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -164,6 +224,18 @@ export default function EpisodesIndex({ auth, episodes }) {
                     ))}
                 </div>
             )}
+            <DeleteConfirmationModal
+                show={showDeleteModal}
+                onClose={closeDeleteModal}
+                onConfirm={deleteEpisode}
+                processing={deleting}
+                title="Delete episode?"
+                message={
+                    selectedEpisode
+                        ? `This will permanently remove the audio file, transcript, summary, and generated content for "${selectedEpisode.title}".`
+                        : 'This will permanently remove this episode.'
+                }
+            />
         </AuthenticatedLayout>
     );
 }

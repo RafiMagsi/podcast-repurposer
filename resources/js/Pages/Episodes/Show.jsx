@@ -1,5 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 
 function formatContentType(value) {
     return value
@@ -59,6 +61,26 @@ export default function EpisodesShow({ auth, episode }) {
         ['Created at', episode.created_at || 'N/A'],
         ['Episode ID', episode.public_id || episode.id || 'N/A'],
     ];
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    const deleteEpisode = () => {
+        setDeleting(true);
+
+        router.delete(route('episodes.destroy', episode.public_id), {
+            onSuccess: () => {
+                setDeleting(false);
+                setShowDeleteModal(false);
+            },
+            onError: () => {
+                setDeleting(false);
+            },
+            onFinish: () => {
+                setDeleting(false);
+            },
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -201,6 +223,13 @@ export default function EpisodesShow({ auth, episode }) {
                             >
                                 Regenerate content
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowDeleteModal(true)}
+                                className="btn-danger w-full"
+                            >
+                                Delete Episode
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -297,6 +326,14 @@ export default function EpisodesShow({ auth, episode }) {
                     </div>
                 </div>
             </div>
+            <DeleteConfirmationModal
+                show={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={deleteEpisode}
+                processing={deleting}
+                title="Delete episode?"
+                message={`This will permanently remove the audio file, transcript, summary, and generated content for "${episode.title}".`}
+            />
         </AuthenticatedLayout>
     );
 }

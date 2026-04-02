@@ -11,6 +11,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
 use App\Jobs\GenerateEpisodeContent;
+use Illuminate\Support\Facades\Log;
+
 
 class EpisodeController extends Controller
 {
@@ -165,5 +167,54 @@ class EpisodeController extends Controller
         GenerateEpisodeContent::dispatch($episode->id);
 
         return back()->with('success', 'Content regeneration started.');
+    }
+    public function destroy(Request $request, Episode $episode): RedirectResponse
+    {
+        abort_unless($episode->user_id === $request->user()->id, 403);
+        
+
+        try {
+            Log::info('Deleting episode', [
+                'episode_id' => $episode->id,
+                'public_id' => $episode->public_id,
+                'user_id' => $request->user()->id,
+            ]);
+
+            // delete generated contents first
+            $episode->generatedContents()->delete();
+
+            // optional: delete audio file from S3
+            try {
+                if ($episode->file_path) {
+                    $disk = app(\App\Services\S3DiskFactory::class)->make();
+                    $disk->delete($episode->file_path);
+
+                    Log::info('Episode file deleted from storage', [
+                        'episode_id' => $episode->id,
+                        'file_path' => $episode->file_path,
+                    ]);
+                }
+            } catch (Throwable $storageException) {
+                report($storageException);
+
+                Log::warning('Episode file delete failed, continuing DB delete', [
+                    'episode_id' => $episode->id,
+                    'file_path' => $episode->file_path,
+                    'message' => $storageException->getMessage(),
+                ]);
+            }
+
+            $episode->delete();
+
+            return redirect()
+                ->route('episodes.index')
+                ->with('success', 'Episode deleted successfully.');
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->withErrors([
+                'episode' => 'Unable to delete episode right now.',
+            ]);
+        }
     }
 }
