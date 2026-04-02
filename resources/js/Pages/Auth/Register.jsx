@@ -27,7 +27,7 @@ export default function Register() {
                     <div className="app-badge mb-4">Get started</div>
                     <h1 className="text-3xl font-semibold text-[rgb(var(--color-text-strong))]">Create your account</h1>
                     <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                        Start turning your audio into summaries, LinkedIn posts, and X threads with VoicePost AI.
+                        Start turning 1-minute voice notes into summaries, posts, and drafts with VoicePost AI.
                     </p>
                 </div>
 

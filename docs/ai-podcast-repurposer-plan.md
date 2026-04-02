@@ -411,3 +411,5 @@ Recommended order from here:
 2. Finish Task 10: align outputs with the intended product scope
 3. Finish Task 16: add delete support for episodes
 4. Finish Task 17: test with real files and add automated coverage
+5. Give 3 suggestions based on entered source in popup modal, user selects it and then generates the content
+6. Make a prompt for generating ideas, 3 ideas will be given, "Idea hint"

@@ -37,11 +37,25 @@ function formatMb(bytes) {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
+function sourceLabel(sourceType) {
+    switch (sourceType) {
+        case 'video':
+            return 'Video';
+        case 'text':
+            return 'Text note';
+        case 'audio':
+            return 'Audio';
+        default:
+            return 'Recording';
+    }
+}
+
 export default function EpisodesShow({ auth, episode }) {
     const { flash, errors } = usePage().props;
+    const canRetryTranscription = episode.source_type !== 'text';
 
     const orderedContent = [...(episode.generated_contents || [])].sort((a, b) => {
-        const order = ['summary', 'blog_post', 'linkedin_post', 'x_thread'];
+        const order = ['summary', 'blog_post', 'linkedin_post', 'x_post', 'x_thread'];
         return order.indexOf(a.content_type) - order.indexOf(b.content_type);
     });
 
@@ -73,13 +87,14 @@ export default function EpisodesShow({ auth, episode }) {
 
 
     const details = [
-        ['Original file', episode.original_file_name || 'N/A'],
+        ['Source type', sourceLabel(episode.source_type)],
+        ['Original file', episode.original_file_name || 'Inline text note'],
         ['Original size', formatMb(episode.file_size)],
         ['Compressed size', formatMb(episode.compressed_file_size)],
         ['Compression status', episode.compression_status || 'Not started'],
         ['Tone', episode.tone || 'N/A'],
         ['Created at', episode.created_at || 'N/A'],
-        ['Episode ID', episode.public_id || episode.id || 'N/A'],
+        ['Recording ID', episode.public_id || episode.id || 'N/A'],
     ];
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -114,7 +129,7 @@ export default function EpisodesShow({ auth, episode }) {
             header={
                 <div className="grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
                     <div>
-                        <div className="app-badge mb-4">Episode workspace</div>
+                        <div className="app-badge mb-4">Recording workspace</div>
                         <h1 className="app-heading">{episode.title}</h1>
                         <p className="app-subheading mt-5 max-w-2xl">
                             Inspired by the screenshots, this page now leans into a clearer recording
@@ -122,13 +137,15 @@ export default function EpisodesShow({ auth, episode }) {
                         </p>
                         <div className="mt-6 flex flex-wrap items-center gap-3">
                             <span className={statusClass(episode.status)}>{episode.status}</span>
-                            <button
-                                type="button"
-                                onClick={() => setShowRetryModal(true)}
-                                className="btn-secondary"
-                            >
-                                Retry Transcription
-                            </button>
+                            {canRetryTranscription ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRetryModal(true)}
+                                    className="btn-secondary"
+                                >
+                                    Retry Transcription
+                                </button>
+                            ) : null}
 
                             <button
                                 type="button"
@@ -192,7 +209,7 @@ export default function EpisodesShow({ auth, episode }) {
             <div className="grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
                 <div className="space-y-6">
                     <div className="app-card p-6">
-                        <h2 className="app-section-title">Episode details</h2>
+                        <h2 className="app-section-title">Recording details</h2>
                         <div className="mt-5 space-y-3">
                             {details.map(([label, value]) => (
                                 <div
@@ -243,11 +260,15 @@ export default function EpisodesShow({ auth, episode }) {
                             >
                                 Copy summary
                             </button>
-                            <button type="button" 
-                                onClick={() => setShowRetryModal(true)}
-                                className="btn-secondary w-full">
-                                Retry transcription
-                            </button>
+                            {canRetryTranscription ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRetryModal(true)}
+                                    className="btn-secondary w-full"
+                                >
+                                    Retry transcription
+                                </button>
+                            ) : null}
                             <button
                                 type="button"
                                 onClick={() => setShowRegenerateModal(true)}
@@ -261,7 +282,7 @@ export default function EpisodesShow({ auth, episode }) {
                                 onClick={() => setShowDeleteModal(true)}
                                 className="btn-danger w-full"
                             >
-                                Delete Episode
+                                Delete Recording
                             </button>
                         </div>
                     </div>
@@ -318,7 +339,7 @@ export default function EpisodesShow({ auth, episode }) {
                         <div>
                             <h2 className="app-section-title">Generated content</h2>
                             <p className="app-muted mt-2">
-                                AI-generated assets created from the transcript and episode tone.
+                                AI-generated assets created from the transcript and recording tone.
                             </p>
                         </div>
 
@@ -364,8 +385,8 @@ export default function EpisodesShow({ auth, episode }) {
                 onClose={() => setShowDeleteModal(false)}
                 onConfirm={deleteEpisode}
                 processing={deleting}
-                title="Delete episode?"
-                message={`This will permanently remove the audio file, transcript, summary, and generated content for "${episode.title}".`}
+                title="Delete recording?"
+                message={`This will permanently remove the source file, transcript, summary, and generated content for "${episode.title}".`}
             />
             <ActionConfirmationModal
                 show={showRetryModal}
@@ -374,7 +395,7 @@ export default function EpisodesShow({ auth, episode }) {
                 processing={retrying}
                 variant="warning"
                 title="Retry transcription?"
-                message="This will clear the current transcript, summary, and generated content, then run transcription again from the original audio file."
+                message="This will clear the current transcript, summary, and generated content, then run transcription again from the original uploaded file."
                 confirmText="Retry Transcription"
             />
 

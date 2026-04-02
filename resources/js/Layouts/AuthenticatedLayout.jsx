@@ -51,7 +51,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             Workspace
                         </div>
                         <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                            My Content Agency
+                            VoicePost AI
                         </div>
                         <div className="mt-2 flex items-center gap-3">
                             <div className="flex-1">
@@ -116,7 +116,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 Upload one recording and let VoicePost AI draft the rest.
                             </div>
                             <Link href={route('episodes.create')} className="btn-primary mt-4 w-full">
-                                New upload
+                                New recording
                             </Link>
                         </div>
                     </div>
@@ -149,7 +149,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                     Settings
                                 </Link>
                                 <Link href={route('episodes.create')} className="btn-primary-rect">
-                                    New upload
+                                    New recording
                                 </Link>
                                 <Link href={route('logout')} method="post" as="button" className="btn-outline">
                                     Logout

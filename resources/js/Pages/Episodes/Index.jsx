@@ -19,6 +19,19 @@ function statusClass(status) {
     }
 }
 
+function sourceLabel(sourceType) {
+    switch (sourceType) {
+        case 'video':
+            return 'Video';
+        case 'text':
+            return 'Text note';
+        case 'audio':
+            return 'Audio';
+        default:
+            return 'Recording';
+    }
+}
+
 export default function EpisodesIndex({ auth, episodes }) {
     const items = episodes.data || [];
     const completedCount = items.filter((episode) => episode.status === 'completed').length;
@@ -73,7 +86,7 @@ export default function EpisodesIndex({ auth, episodes }) {
                         <h1 className="app-heading">Browse every upload in a cleaner recording catalog.</h1>
                         <p className="app-subheading mt-5 max-w-2xl">
                             The reference images use a white canvas, dark type, and clearer grouping.
-                            This library now follows that same structure so episodes feel easier to scan.
+                            This library now follows that same structure so recordings feel easier to scan.
                         </p>
                     </div>
 
@@ -104,7 +117,7 @@ export default function EpisodesIndex({ auth, episodes }) {
                 </div>
             }
         >
-            <Head title="Episodes" />
+            <Head title="Recordings" />
 
             {flash?.success && (
                 <div className="app-card border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-700">
@@ -138,7 +151,7 @@ export default function EpisodesIndex({ auth, episodes }) {
                         Library / Workspace
                     </div>
                     <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                        Open any episode to inspect transcript and outputs.
+                        Open any recording to inspect transcript and outputs.
                     </div>
                 </div>
                 <div className="stat-card flex items-center justify-between gap-4">
@@ -160,10 +173,10 @@ export default function EpisodesIndex({ auth, episodes }) {
                 <div className="flex flex-col gap-4 border-b border-[rgb(var(--color-border))] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="app-section-title">All recordings</h2>
-                        <p className="app-muted">Your uploaded audio, current status, and entry to each workspace.</p>
+                        <p className="app-muted">Your uploaded sources, current status, and entry to each workspace.</p>
                     </div>
                     <Link href={route('episodes.create')} className="btn-secondary">
-                        Add upload
+                        Add source
                     </Link>
                 </div>
 
@@ -177,11 +190,14 @@ export default function EpisodesIndex({ auth, episodes }) {
                                 className="flex flex-col gap-4 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
                             >
                                 <div className="min-w-0">
-                                    <div className="truncate text-lg font-semibold text-[rgb(var(--color-text-strong))]">
-                                        {episode.title}
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <div className="truncate text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                                            {episode.title}
+                                        </div>
+                                        <span className="app-badge-neutral">{sourceLabel(episode.source_type)}</span>
                                     </div>
                                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                        <span>{episode.original_file_name || 'Audio file'}</span>
+                                        <span>{episode.original_file_name || 'Inline text note'}</span>
                                         <span>{episode.created_at}</span>
                                     </div>
                                 </div>
@@ -229,11 +245,11 @@ export default function EpisodesIndex({ auth, episodes }) {
                 onClose={closeDeleteModal}
                 onConfirm={deleteEpisode}
                 processing={deleting}
-                title="Delete episode?"
+                title="Delete recording?"
                 message={
                     selectedEpisode
-                        ? `This will permanently remove the audio file, transcript, summary, and generated content for "${selectedEpisode.title}".`
-                        : 'This will permanently remove this episode.'
+                        ? `This will permanently remove the source file, transcript, summary, and generated content for "${selectedEpisode.title}".`
+                        : 'This will permanently remove this recording.'
                 }
             />
         </AuthenticatedLayout>

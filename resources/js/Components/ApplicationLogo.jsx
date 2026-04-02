@@ -15,7 +15,7 @@ export default function ApplicationLogo({
             {withText ? (
                 <div className="leading-tight">
                     <div className={textClassName}>VoicePost AI</div>
-                    <div className={subtitleClassName}>Audio → Transcript → Content</div>
+                    <div className={subtitleClassName}>Voice Notes → Transcript → Content</div>
                 </div>
             ) : null}
         </div>

@@ -7,6 +7,7 @@ use App\Models\Episode;
 use App\Services\S3DiskFactory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -29,6 +30,8 @@ class EpisodeController extends Controller
                 'status' => $episode->status,
                 'tone' => $episode->tone,
                 'original_file_name' => $episode->original_file_name,
+                'mime_type' => $episode->mime_type,
+                'source_type' => $this->detectSourceType($episode->mime_type, $episode->file_path),
                 'created_at' => optional($episode->created_at)->toDateTimeString(),
             ]);
 
@@ -53,12 +56,53 @@ class EpisodeController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
-            'audio' => ['required', 'file', 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a', 'max:5120'],
+            'source_type' => ['nullable', 'in:video,audio,recording,text'],
+            'source_text' => [
+                'nullable',
+                'string',
+                'max:200',
+                Rule::requiredIf(fn () => $request->input('source_type') === 'text' && ! $request->hasFile('source_file') && ! $request->hasFile('audio')),
+            ],
+            'source_file' => [
+                'nullable',
+                'file',
+                'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,video/mp4,video/quicktime,video/webm',
+                'max:5120',
+                Rule::requiredIf(fn () => $request->input('source_type') !== 'text' && ! filled($request->input('source_text')) && ! $request->hasFile('audio')),
+            ],
+            'audio' => [
+                'nullable',
+                'file',
+                'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a',
+                'max:5120',
+            ],
         ]);
 
-        $file = $request->file('audio');
+        $file = $request->file('source_file') ?? $request->file('audio');
+        $sourceText = trim((string) ($validated['source_text'] ?? ''));
+        $isTextSource = $request->input('source_type') === 'text' || ($sourceText !== '' && ! $file);
 
         try {
+            if ($isTextSource) {
+                $episode = Episode::create([
+                    'user_id' => $request->user()->id,
+                    'title' => $validated['title'],
+                    'tone' => $validated['tone'],
+                    'original_file_name' => null,
+                    'file_path' => '',
+                    'mime_type' => 'text/plain',
+                    'file_size' => mb_strlen($sourceText),
+                    'status' => 'transcribed',
+                    'transcript' => $sourceText,
+                ]);
+
+                GenerateEpisodeContent::dispatch($episode->id);
+
+                return redirect()
+                    ->route('episodes.show', $episode)
+                    ->with('success', 'Text note saved successfully. Content generation has been queued.');
+            }
+
             $disk = $s3DiskFactory->make();
 
             $folder = 'episodes/' . now()->format('Y/m');
@@ -67,7 +111,7 @@ class EpisodeController extends Controller
 
             if (! $path) {
                 return back()->withErrors([
-                    'audio' => 'Audio upload failed. Please check S3 settings and try again.',
+                    'source_file' => 'Source upload failed. Please check storage settings and try again.',
                 ]);
             }
 
@@ -86,12 +130,12 @@ class EpisodeController extends Controller
 
             return redirect()
                 ->route('episodes.show', $episode)
-                ->with('success', 'Audio uploaded successfully. Transcription has been queued.');
+                ->with('success', 'Source uploaded successfully. Transcription has been queued.');
         } catch (Throwable $e) {
             report($e);
 
             return back()->withErrors([
-                'audio' => 'Unable to upload file right now. Check storage settings and try again.',
+                'source_file' => 'Unable to upload this source right now. Check storage settings and try again.',
             ]);
         }
     }
@@ -110,6 +154,8 @@ class EpisodeController extends Controller
                 'status' => $episode->status,
                 'tone' => $episode->tone,
                 'original_file_name' => $episode->original_file_name,
+                'mime_type' => $episode->mime_type,
+                'source_type' => $this->detectSourceType($episode->mime_type, $episode->file_path),
                 'file_size' => $episode->file_size,
                 'compressed_file_size' => $episode->compressed_file_size,
                 'compression_status' => $episode->compression_status,
@@ -131,6 +177,12 @@ class EpisodeController extends Controller
     public function retryTranscription(Request $request, Episode $episode): RedirectResponse
     {
         abort_unless($episode->user_id === $request->user()->id, 403);
+
+        if (! $episode->file_path) {
+            return back()->withErrors([
+                'episode' => 'This item was created from text, so transcription cannot be retried.',
+            ]);
+        }
 
         $episode->update([
             'status' => 'uploaded',
@@ -208,13 +260,30 @@ class EpisodeController extends Controller
 
             return redirect()
                 ->route('episodes.index')
-                ->with('success', 'Episode deleted successfully.');
+                ->with('success', 'Recording deleted successfully.');
         } catch (Throwable $e) {
             report($e);
 
             return back()->withErrors([
-                'episode' => 'Unable to delete episode right now.',
+                'episode' => 'Unable to delete this recording right now.',
             ]);
         }
+    }
+
+    private function detectSourceType(?string $mimeType, ?string $filePath): string
+    {
+        if ($mimeType === 'text/plain' || ! $filePath) {
+            return 'text';
+        }
+
+        if ($mimeType && str_starts_with($mimeType, 'video/')) {
+            return 'video';
+        }
+
+        if ($mimeType && str_starts_with($mimeType, 'audio/')) {
+            return 'audio';
+        }
+
+        return 'recording';
     }
 }

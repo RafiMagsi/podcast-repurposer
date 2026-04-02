@@ -22,11 +22,30 @@ class DashboardController extends Controller
                 'status' => $episode->status,
                 'tone' => $episode->tone,
                 'original_file_name' => $episode->original_file_name,
+                'mime_type' => $episode->mime_type,
+                'source_type' => $this->detectSourceType($episode->mime_type, $episode->file_path),
                 'created_at' => optional($episode->created_at)->toDateTimeString(),
             ]);
 
         return Inertia::render('Dashboard', [
             'episodes' => $episodes,
         ]);
+    }
+
+    private function detectSourceType(?string $mimeType, ?string $filePath): string
+    {
+        if ($mimeType === 'text/plain' || ! $filePath) {
+            return 'text';
+        }
+
+        if ($mimeType && str_starts_with($mimeType, 'video/')) {
+            return 'video';
+        }
+
+        if ($mimeType && str_starts_with($mimeType, 'audio/')) {
+            return 'audio';
+        }
+
+        return 'recording';
     }
 }
