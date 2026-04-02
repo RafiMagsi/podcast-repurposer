@@ -24,6 +24,20 @@ class WhisperService
             's3_path' => $episode->file_path,
         ]);
 
+        $shouldBypass = filter_var(
+            (string) $this->settings->get('bypass_openai_for_testing', 'false'),
+            FILTER_VALIDATE_BOOL
+        );
+
+        if ($shouldBypass) {
+            Log::info('WhisperService bypassed OpenAI transcription for testing', [
+                'episode_id' => $episode->id ?? null,
+                'public_id' => $episode->public_id ?? null,
+            ]);
+
+            return 'This is a mock transcript generated in testing mode. VoicePost AI bypassed the OpenAI transcription call and returned a local transcript placeholder so you can test the workflow without API usage.';
+        }
+
         $apiKey = $this->settings->get('openai_api_key');
 
         if (! $apiKey) {
@@ -110,7 +124,6 @@ class WhisperService
                 'compressed_path' => $compressedPath,
                 'filename' => basename($compressedPath),
             ]);
-
             $response = Http::withToken($apiKey)
                 ->timeout(120)
                 ->connectTimeout(15)

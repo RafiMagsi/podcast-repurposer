@@ -14,6 +14,7 @@ export default function SettingsIndex({ auth, settings }) {
         aws_url: settings.aws_url || '',
         aws_endpoint: settings.aws_endpoint || '',
         aws_use_path_style_endpoint: settings.aws_use_path_style_endpoint || 'false',
+        bypass_openai_for_testing: settings.bypass_openai_for_testing || 'false',
     });
 
     const submit = (e) => {
@@ -93,6 +94,39 @@ export default function SettingsIndex({ auth, settings }) {
                                 className="input-theme"
                             />
                             {errors.openai_api_key && <p className="form-error">{errors.openai_api_key}</p>}
+                        </div>
+                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <label className="label-theme mb-0">Bypass OpenAI calls for testing</label>
+                                    <p className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                        When enabled, transcription and content generation will use mock test
+                                        responses instead of calling the OpenAI APIs.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setData(
+                                            'bypass_openai_for_testing',
+                                            data.bypass_openai_for_testing === 'true' ? 'false' : 'true'
+                                        )
+                                    }
+                                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition ${
+                                        data.bypass_openai_for_testing === 'true'
+                                            ? 'bg-[rgb(var(--color-primary))]'
+                                            : 'bg-[rgb(var(--color-border-strong))]'
+                                    }`}
+                                    aria-pressed={data.bypass_openai_for_testing === 'true'}
+                                >
+                                    <span
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                            data.bypass_openai_for_testing === 'true' ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
                         </div>
 
                         <div>

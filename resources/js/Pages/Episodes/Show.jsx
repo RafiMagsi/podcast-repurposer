@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
+import ProcessingStatusCard from '@/Components/ProcessingStatusCard';
 
 function formatContentType(value) {
     return value
@@ -254,64 +255,13 @@ export default function EpisodesShow({ auth, episode }) {
                 </div>
             )}
 
-            <div
-                className={`app-card p-5 ${
-                    isProcessing
-                        ? 'border-blue-200 bg-blue-50'
-                        : episode.status === 'completed'
-                        ? 'border-emerald-200 bg-emerald-50'
-                        : episode.status === 'failed'
-                        ? 'border-red-200 bg-red-50'
-                        : ''
-                }`}
-            >
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <div className="text-sm font-semibold text-[rgb(var(--color-text))]">
-                            Live processing status
-                        </div>
-                        <p className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                            {liveStatusLabel}
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <span className={statusClass(episode.status)}>{episode.status}</span>
-                        {isProcessing ? (
-                            <div className="dot-pulse flex items-center gap-1.5" aria-hidden="true">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                        ) : null}
-                    </div>
-                </div>
-
-                {isProcessing ? (
-                    <div className="mt-4">
-                        <div className="progress-track">
-                            <div
-                                className="progress-fill"
-                                style={{
-                                    width:
-                                        episode.status === 'uploaded'
-                                            ? '20%'
-                                            : episode.status === 'transcribing'
-                                            ? '45%'
-                                            : episode.status === 'transcribed'
-                                            ? '70%'
-                                            : episode.status === 'generating'
-                                            ? '90%'
-                                            : '100%',
-                                }}
-                            />
-                        </div>
-                        <p className="mt-2 text-xs text-[rgb(var(--color-text-faint))]">
-                            This page refreshes automatically while processing is in progress.
-                        </p>
-                    </div>
-                ) : null}
-            </div>
+            
+            <ProcessingStatusCard
+                episode={episode}
+                isProcessing={isProcessing}
+                liveStatusLabel={liveStatusLabel}
+            />
+            
             {errors?.episode && (
                 <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-sm text-[rgb(var(--color-danger-text))]">
                     {errors.episode}

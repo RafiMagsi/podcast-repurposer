@@ -23,6 +23,7 @@ class SettingsController extends Controller
                 'aws_url' => $settings->get('aws_url', ''),
                 'aws_endpoint' => $settings->get('aws_endpoint', ''),
                 'aws_use_path_style_endpoint' => $settings->get('aws_use_path_style_endpoint', 'false'),
+                'bypass_openai_for_testing' => $settings->get('bypass_openai_for_testing', 'false'),
             ],
         ]);
     }
@@ -39,6 +40,7 @@ class SettingsController extends Controller
             'aws_url' => ['nullable', 'string'],
             'aws_endpoint' => ['nullable', 'string'],
             'aws_use_path_style_endpoint' => ['nullable', 'in:true,false,1,0'],
+            'bypass_openai_for_testing' => ['nullable', 'in:true,false,1,0'],
         ]);
 
         foreach ($validated as $key => $value) {

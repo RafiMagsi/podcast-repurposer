@@ -15,6 +15,30 @@ class OpenAIContentService
 
     public function generate(string $transcript, string $tone = 'professional'): array
     {
+        $shouldBypass = filter_var(
+            (string) $this->settings->get('bypass_openai_for_testing', 'false'),
+            FILTER_VALIDATE_BOOL
+        );
+
+        if ($shouldBypass) {
+            Log::info('OpenAIContentService bypassed OpenAI content generation for testing', [
+                'tone' => $tone,
+                'transcript_length' => strlen($transcript),
+            ]);
+
+            $base = trim($transcript) !== ''
+                ? trim($transcript)
+                : 'This is a mock source used in testing mode.';
+
+            $summary = 'Test mode summary: ' . mb_substr($base, 0, 140);
+
+            return [
+                'summary' => $summary,
+                'linkedin_post' => "Test mode LinkedIn post:\n\n" . mb_substr($base, 0, 220) . "\n\n#AI #Testing #VoicePostAI",
+                'x_post' => 'Test mode X post: ' . mb_substr($base, 0, 180),
+            ];
+        }
+
         $apiKey = $this->settings->get('openai_api_key');
 
         if (! $apiKey) {
