@@ -45,6 +45,15 @@ const outputCards = [
         title: 'X Post',
         description: 'A concise publish-ready version for fast short-form posting.',
     },
+    {
+        title: 'Instagram caption',
+        description: 'A social-ready caption with a hook, short body, and hashtags.',
+    },
+    {
+        title: 'Newsletter',
+        description: 'A subject line and email-ready body for a quick newsletter draft.',
+    },
+
 ];
 
 function statusClass(status) {
@@ -350,7 +359,7 @@ export default function Dashboard({ auth, episodes = [] }) {
                                                     <div className="mt-3 space-y-3 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
                                                         <p>Video, audio, or recording: 1 minute</p>
                                                         <p>Text note: 200 characters</p>
-                                                        <p>Outputs: summary, LinkedIn post, X post</p>
+                                                        <p>Outputs: summary, LinkedIn post, X post, Instagram caption, and newsletter from one idea.</p>
                                                     </div>
                                                 </div>
                                             </div>

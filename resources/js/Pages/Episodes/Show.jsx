@@ -56,7 +56,7 @@ export default function EpisodesShow({ auth, episode }) {
     const canRetryTranscription = episode.source_type !== 'text';
 
     const orderedContent = [...(episode.generated_contents || [])].sort((a, b) => {
-        const order = ['summary', 'blog_post', 'linkedin_post', 'x_post', 'x_thread'];
+        const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
         return order.indexOf(a.content_type) - order.indexOf(b.content_type);
     });
 
@@ -450,6 +450,7 @@ export default function EpisodesShow({ auth, episode }) {
                 title="Delete recording?"
                 message={`This will permanently remove the source file, transcript, summary, and generated content for "${episode.title}".`}
             />
+
             <ActionConfirmationModal
                 show={showRetryModal}
                 onClose={() => !retrying && setShowRetryModal(false)}

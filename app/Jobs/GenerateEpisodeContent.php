@@ -63,7 +63,9 @@ class GenerateEpisodeContent implements ShouldQueue
                 'summary_length' => strlen($outputs['summary'] ?? ''),
                 'linkedin_post_length' => strlen($outputs['linkedin_post'] ?? ''),
                 'x_post_length' => strlen($outputs['x_post'] ?? ''),
-            ]);
+                'instagram_caption_length' => strlen($outputs['instagram_caption'] ?? ''),
+                'newsletter_length' => strlen($outputs['newsletter'] ?? ''),
+            ]);;
 
             GeneratedContent::updateOrCreate(
                 ['episode_id' => $episode->id, 'content_type' => 'summary'],
@@ -80,6 +82,16 @@ class GenerateEpisodeContent implements ShouldQueue
                 ['title' => 'X Post', 'body' => $outputs['x_post'], 'meta' => null]
             );
 
+            GeneratedContent::updateOrCreate(
+                ['episode_id' => $episode->id, 'content_type' => 'instagram_caption'],
+                ['title' => 'Instagram Caption', 'body' => $outputs['instagram_caption'], 'meta' => null]
+            );
+
+            GeneratedContent::updateOrCreate(
+                ['episode_id' => $episode->id, 'content_type' => 'newsletter'],
+                ['title' => 'Newsletter', 'body' => $outputs['newsletter'], 'meta' => null]
+            );
+            
             $episode->update([
                 'summary' => $outputs['summary'],
                 'status' => 'completed',

@@ -36,6 +36,8 @@ class OpenAIContentService
                 'summary' => $summary,
                 'linkedin_post' => "Test mode LinkedIn post:\n\n" . mb_substr($base, 0, 220) . "\n\n#AI #Testing #VoicePostAI",
                 'x_post' => 'Test mode X post: ' . mb_substr($base, 0, 180),
+                'instagram_caption' => "Test mode Instagram caption:\n\n" . mb_substr($base, 0, 160) . "\n\n#VoicePostAI #Content #AI #Marketing #Testing",
+                'newsletter' => "Subject: Test mode newsletter idea\n\n" . mb_substr($base, 0, 320),
             ];
         }
 
@@ -132,13 +134,17 @@ Create exactly these outputs:
 - summary
 - linkedin_post
 - x_post
+- instagram_caption
+- newsletter
 
 Tone: {$tone}
 
 Output limits:
-- summary: 60 to 100 words
-- linkedin_post: 100 to 180 words
-- x_post: under 280 characters
+- summary: 2 to 3 sentences capturing the core idea
+- linkedin_post: professional, value-driven, around 150 words
+- x_post: under 280 characters, punchy and ready to tweet
+- instagram_caption: hook + body + exactly 5 relevant hashtags
+- newsletter: subject line + full email-ready body
 
 Rules:
 - Stay faithful to the source
@@ -151,9 +157,10 @@ Return exactly this JSON structure:
 
 {
   "summary": "string",
-  "blog_post": "string",
   "linkedin_post": "string",
-  "x_thread": "string"
+  "x_post": "string",
+  "instagram_caption": "string",
+  "newsletter": "string"
 }
 
 Source material:
@@ -204,6 +211,8 @@ PROMPT;
             'summary' => trim((string) ($decoded['summary'] ?? '')),
             'linkedin_post' => trim((string) ($decoded['linkedin_post'] ?? '')),
             'x_post' => trim((string) ($decoded['x_post'] ?? '')),
+            'instagram_caption' => trim((string) ($decoded['instagram_caption'] ?? '')),
+            'newsletter' => trim((string) ($decoded['newsletter'] ?? '')),
         ];
     }
 
