@@ -7,14 +7,14 @@ export default function ApplicationLogo({
     return (
         <div className="flex items-center gap-3">
             <img
-                src="/assets/logo/podcast-repurposer-mark.svg"
-                alt="Podcast Repurposer"
+                src="/assets/logo/voicepost-ai-mark.svg"
+                alt="VoicePost AI"
                 className={className}
             />
 
             {withText ? (
                 <div className="leading-tight">
-                    <div className={textClassName}>Podcast Repurposer</div>
+                    <div className={textClassName}>VoicePost AI</div>
                     <div className={subtitleClassName}>Audio → Transcript → Content</div>
                 </div>
             ) : null}

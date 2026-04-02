@@ -25,7 +25,7 @@ export default function Login({ status, canResetPassword }) {
                         <div className="app-badge mb-4">Welcome back</div>
                         <h1 className="text-3xl font-semibold text-white">Sign in</h1>
                         <p className="mt-2 text-sm text-slate-400">
-                            Access your AI podcast repurposing workspace.
+                            Access your VoicePost AI workspace.
                         </p>
                     </div>
 

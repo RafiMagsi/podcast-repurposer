@@ -25,7 +25,7 @@ export default function Dashboard({ auth, episodes = [] }) {
             header={
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <div className="app-badge mb-3">AI Workflow Dashboard</div>
+                        <div className="app-badge mb-3">VoicePost AI Dashboard</div>
                         <h1 className="app-heading">Turn audio into reusable content</h1>
                         <p className="app-subheading mt-2 max-w-2xl">
                             Upload a podcast or spoken recording, generate a transcript,

@@ -1,4 +1,4 @@
-# AI Podcast-to-Content Repurposer — Lean General-Use Product Plan
+# VoicePost AI — Lean General-Use Product Plan
 
 ## Product Goal
 
@@ -20,7 +20,7 @@ This version is for:
 
 ## Core Product Positioning
 
-A simple AI tool that turns podcast or spoken audio into ready-to-use written content.
+VoicePost AI is a simple AI tool that turns podcast or spoken audio into ready-to-use written content.
 
 ### Core user flow
 Upload audio → transcribe audio → generate content → review output → copy/export text
@@ -243,7 +243,7 @@ If anything breaks:
 ## Suggested Folder Structure
 
 ```text
-podcast-repurposer/
+voicepost-ai/
 ├── app/
 │   ├── Http/
 │   │   └── Controllers/
@@ -643,4 +643,3 @@ The biggest mistake now would be adding too many outputs, too many roles, too ma
 
 ### Goal
 Ship a simple, strong, working AI product.
-

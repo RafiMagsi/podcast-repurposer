@@ -86,7 +86,7 @@ function FeatureCard({ title, description }) {
 export default function Welcome({ auth }) {
     return (
         <>
-            <Head title="Podcast Repurposer" />
+            <Head title="VoicePost AI" />
 
             <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-lime-300 selection:text-black">
                 <div className="relative isolate overflow-hidden">
@@ -106,16 +106,16 @@ export default function Welcome({ auth }) {
                                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/10">
                                     <img
                                         src="/assets/welcome/brand-mark.svg"
-                                        alt="Podcast Repurposer"
+                                        alt="VoicePost AI"
                                         className="h-6 w-6"
                                     />
                                 </div>
                                 <div>
                                     <div className="text-sm font-semibold tracking-wide text-white">
-                                        Podcast Repurposer
+                                        VoicePost AI
                                     </div>
                                     <div className="text-xs text-white/45">
-                                        AI podcast-to-content workflow
+                                        AI audio-to-content workflow
                                     </div>
                                 </div>
                             </div>

@@ -50,7 +50,7 @@ Route::get('/test-s3', function (S3DiskFactory $factory) {
         $path = 'test/hello.txt';
 
         $stream = fopen('php://temp', 'r+');
-        fwrite($stream, 'hello from podcast repurposer');
+        fwrite($stream, 'hello from VoicePost AI');
         rewind($stream);
 
         $result = $disk->writeStream($path, $stream);
