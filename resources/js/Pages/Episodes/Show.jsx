@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
+import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 
 function formatContentType(value) {
     return value
@@ -45,12 +46,31 @@ export default function EpisodesShow({ auth, episode }) {
     });
 
     const retryTranscription = () => {
-        router.post(route('episodes.retry-transcription', episode.public_id));
+        setRetrying(true);
+
+        router.post(route('episodes.retry-transcription', episode.public_id), {}, {
+            onSuccess: () => {
+                setShowRetryModal(false);
+            },
+            onFinish: () => {
+                setRetrying(false);
+            },
+        });
     };
 
     const regenerateContent = () => {
-        router.post(route('episodes.regenerate-content', episode.public_id));
+        setRegenerating(true);
+
+        router.post(route('episodes.regenerate-content', episode.public_id), {}, {
+            onSuccess: () => {
+                setShowRegenerateModal(false);
+            },
+            onFinish: () => {
+                setRegenerating(false);
+            },
+        });
     };
+
 
     const details = [
         ['Original file', episode.original_file_name || 'N/A'],
@@ -82,6 +102,12 @@ export default function EpisodesShow({ auth, episode }) {
         });
     };
 
+    const [showRetryModal, setShowRetryModal] = useState(false);
+    const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+    const [retrying, setRetrying] = useState(false);
+    const [regenerating, setRegenerating] = useState(false);
+
+
     return (
         <AuthenticatedLayout
             user={auth?.user}
@@ -98,14 +124,19 @@ export default function EpisodesShow({ auth, episode }) {
                             <span className={statusClass(episode.status)}>{episode.status}</span>
                             <button
                                 type="button"
-                                onClick={regenerateContent}
+                                onClick={() => setShowRetryModal(true)}
+                                className="btn-secondary"
+                            >
+                                Retry Transcription
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowRegenerateModal(true)}
                                 className="btn-primary"
                                 disabled={!episode.transcript}
                             >
-                                Regenerate content
-                            </button>
-                            <button type="button" onClick={retryTranscription} className="btn-secondary">
-                                Retry transcription
+                                Regenerate Content
                             </button>
                         </div>
                     </div>
@@ -212,12 +243,14 @@ export default function EpisodesShow({ auth, episode }) {
                             >
                                 Copy summary
                             </button>
-                            <button type="button" onClick={retryTranscription} className="btn-secondary w-full">
+                            <button type="button" 
+                                onClick={() => setShowRetryModal(true)}
+                                className="btn-secondary w-full">
                                 Retry transcription
                             </button>
                             <button
                                 type="button"
-                                onClick={regenerateContent}
+                                onClick={() => setShowRegenerateModal(true)}
                                 className="btn-primary w-full"
                                 disabled={!episode.transcript}
                             >
@@ -333,6 +366,27 @@ export default function EpisodesShow({ auth, episode }) {
                 processing={deleting}
                 title="Delete episode?"
                 message={`This will permanently remove the audio file, transcript, summary, and generated content for "${episode.title}".`}
+            />
+            <ActionConfirmationModal
+                show={showRetryModal}
+                onClose={() => !retrying && setShowRetryModal(false)}
+                onConfirm={retryTranscription}
+                processing={retrying}
+                variant="warning"
+                title="Retry transcription?"
+                message="This will clear the current transcript, summary, and generated content, then run transcription again from the original audio file."
+                confirmText="Retry Transcription"
+            />
+
+            <ActionConfirmationModal
+                show={showRegenerateModal}
+                onClose={() => !regenerating && setShowRegenerateModal(false)}
+                onConfirm={regenerateContent}
+                processing={regenerating}
+                variant="warning"
+                title="Regenerate content?"
+                message="This will keep the transcript, remove the current generated content, and create fresh outputs again."
+                confirmText="Regenerate Content"
             />
         </AuthenticatedLayout>
     );
