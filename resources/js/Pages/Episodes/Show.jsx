@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 import ProcessingStatusCard from '@/Components/ProcessingStatusCard';
+import GeneratedContentCard from '@/Components/generated-content/GeneratedContentCard';
 
 function formatContentType(value) {
     return value
@@ -37,6 +38,7 @@ function formatMb(bytes) {
     if (!bytes) return 'N/A';
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
+
 
 function sourceLabel(sourceType) {
     switch (sourceType) {
@@ -225,20 +227,16 @@ export default function EpisodesShow({ auth, episode }) {
                                 ['Summary', episode.summary ? 'Ready' : 'Pending'],
                                 ['Transcript', episode.transcript ? 'Ready' : 'Pending'],
                                 ['Assets', `${orderedContent.length} generated`],
-                            ].map(([label, value], index) => (
-                                <div key={label} className="profile-card">
-                                    <div
-                                        className={`profile-icon ${
-                                            ['profile-icon-purple', 'profile-icon-blue', 'profile-icon-green'][index]
-                                        } text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
-                                    >
-                                        •
+                            ].map(([label, value]) => (
+                                <div
+                                    key={label}
+                                    className="rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-4"
+                                >
+                                    <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
+                                        {label}
                                     </div>
-                                    <div>
-                                        <div className="text-sm text-[rgb(var(--color-text-muted))]">{label}</div>
-                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                                            {value}
-                                        </div>
+                                    <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                        {value}
                                     </div>
                                 </div>
                             ))}
@@ -412,30 +410,11 @@ export default function EpisodesShow({ auth, episode }) {
                         ) : (
                             <div className="mt-5 space-y-5">
                                 {orderedContent.map((content) => (
-                                    <div key={content.id} className="output-section">
-                                        <div className="output-section-header justify-between">
-                                            <div>
-                                                <h3 className="text-base font-semibold text-[rgb(var(--color-text-strong))]">
-                                                    {formatContentType(content.content_type)}
-                                                </h3>
-                                                {content.title ? (
-                                                    <p className="mt-1 text-sm font-normal text-[rgb(var(--color-text-muted))]">
-                                                        {content.title}
-                                                    </p>
-                                                ) : null}
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => copyToClipboard(content.body)}
-                                                className="btn-copy"
-                                            >
-                                                Copy content
-                                            </button>
-                                        </div>
-                                        <div className="output-section-body whitespace-pre-wrap text-[rgb(var(--color-text))]">
-                                            {content.body}
-                                        </div>
-                                    </div>
+                                    <GeneratedContentCard
+                                        key={content.id}
+                                        content={content}
+                                        onCopy={copyToClipboard}
+                                    />
                                 ))}
                             </div>
                         )}
