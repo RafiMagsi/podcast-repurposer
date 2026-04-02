@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 
@@ -122,6 +122,57 @@ export default function EpisodesShow({ auth, episode }) {
     const [retrying, setRetrying] = useState(false);
     const [regenerating, setRegenerating] = useState(false);
 
+    const processingStatuses = ['uploaded', 'transcribing', 'transcribed', 'generating'];
+
+    const isProcessing = useMemo(() => {
+        return processingStatuses.includes(episode.status);
+    }, [episode.status]);
+
+    const liveStatusLabel = useMemo(() => {
+        switch (episode.status) {
+            case 'uploaded':
+                return 'Upload received. Waiting to start processing.';
+            case 'transcribing':
+                return 'Transcribing source into text...';
+            case 'transcribed':
+                return 'Transcript ready. Generating content...';
+            case 'generating':
+                return 'Building summary and social content...';
+            case 'completed':
+                return 'Content is ready.';
+            case 'failed':
+                return 'Processing failed. Review the error and retry if needed.';
+            default:
+                return 'Status updated.';
+        }
+    }, [episode.status]);
+
+    useEffect(() => {
+        if (!isProcessing) return;
+
+        const interval = window.setInterval(() => {
+            router.reload({
+                only: ['episode', 'flash', 'errors'],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        }, 2500);
+
+        const onFocus = () => {
+            router.reload({
+                only: ['episode', 'flash', 'errors'],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        };
+
+        window.addEventListener('focus', onFocus);
+
+        return () => {
+            window.clearInterval(interval);
+            window.removeEventListener('focus', onFocus);
+        };
+    }, [isProcessing]);
 
     return (
         <AuthenticatedLayout
@@ -137,6 +188,9 @@ export default function EpisodesShow({ auth, episode }) {
                         </p>
                         <div className="mt-6 flex flex-wrap items-center gap-3">
                             <span className={statusClass(episode.status)}>{episode.status}</span>
+                            {isProcessing ? (
+                                <span className="app-badge-neutral">Auto updating</span>
+                            ) : null}
                             {canRetryTranscription ? (
                                 <button
                                     type="button"
@@ -200,6 +254,64 @@ export default function EpisodesShow({ auth, episode }) {
                 </div>
             )}
 
+            <div
+                className={`app-card p-5 ${
+                    isProcessing
+                        ? 'border-blue-200 bg-blue-50'
+                        : episode.status === 'completed'
+                        ? 'border-emerald-200 bg-emerald-50'
+                        : episode.status === 'failed'
+                        ? 'border-red-200 bg-red-50'
+                        : ''
+                }`}
+            >
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div className="text-sm font-semibold text-[rgb(var(--color-text))]">
+                            Live processing status
+                        </div>
+                        <p className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            {liveStatusLabel}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <span className={statusClass(episode.status)}>{episode.status}</span>
+                        {isProcessing ? (
+                            <div className="dot-pulse flex items-center gap-1.5" aria-hidden="true">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+
+                {isProcessing ? (
+                    <div className="mt-4">
+                        <div className="progress-track">
+                            <div
+                                className="progress-fill"
+                                style={{
+                                    width:
+                                        episode.status === 'uploaded'
+                                            ? '20%'
+                                            : episode.status === 'transcribing'
+                                            ? '45%'
+                                            : episode.status === 'transcribed'
+                                            ? '70%'
+                                            : episode.status === 'generating'
+                                            ? '90%'
+                                            : '100%',
+                                }}
+                            />
+                        </div>
+                        <p className="mt-2 text-xs text-[rgb(var(--color-text-faint))]">
+                            This page refreshes automatically while processing is in progress.
+                        </p>
+                    </div>
+                ) : null}
+            </div>
             {errors?.episode && (
                 <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-sm text-[rgb(var(--color-danger-text))]">
                     {errors.episode}
@@ -308,7 +420,7 @@ export default function EpisodesShow({ auth, episode }) {
                             ) : null}
                         </div>
                         <div className="mt-5 rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {episode.summary || 'Summary not generated yet.'}
+                            {episode.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
                         </div>
                     </div>
 
@@ -331,7 +443,7 @@ export default function EpisodesShow({ auth, episode }) {
                             ) : null}
                         </div>
                         <div className="mt-5 max-h-[500px] overflow-y-auto rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {episode.transcript || 'Transcript not generated yet.'}
+                            {episode.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
                         </div>
                     </div>
 
@@ -344,8 +456,8 @@ export default function EpisodesShow({ auth, episode }) {
                         </div>
 
                         {orderedContent.length === 0 ? (
-                            <div className="mt-5 text-sm text-[rgb(var(--color-text-muted))]">
-                                No generated content yet.
+                            <div className="mt-5 text-sm text-slate-400">
+                                {isProcessing ? 'Generated content will appear here automatically once ready.' : 'No generated content yet.'}
                             </div>
                         ) : (
                             <div className="mt-5 space-y-5">

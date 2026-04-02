@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { useEffect, useMemo, useState } from 'react';
 
 const sourceOptions = [
     {
@@ -107,32 +107,32 @@ export default function EpisodesCreate({ auth, tones = [] }) {
             <div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
                 <div className="app-card p-6 sm:p-8">
                     <div className="grid gap-3 lg:grid-cols-1">
-                                        {sourceOptions.map((option) => (
-                                            <button
-                                                key={option.value}
-                                                type="button"
-                                                onClick={() => setData('source_type', option.value)}
-                                                className={`profile-card min-h-[unset] px-5 py-5 text-left ${data.source_type === option.value ? 'profile-card-active' : ''}`}
-                                            >
-                                                <div className="flex items-start gap-4">
-                                                    <div
-                                                        className={`profile-icon ${option.iconClass} mt-0.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
-                                                    >
-                                                        {option.icon}
-                                                    </div>
-
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="text-[18px] font-semibold leading-8 text-[rgb(var(--color-text-strong))]">
-                                                            {option.title}
-                                                        </div>
-                                                        <div className="mt-1 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                                            {option.description}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))}
+                        {sourceOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setData('source_type', option.value)}
+                                className={`profile-card min-h-[unset] px-5 py-5 text-left ${data.source_type === option.value ? 'profile-card-active' : ''}`}
+                            >
+                                <div className="flex items-start gap-4">
+                                    <div
+                                        className={`profile-icon ${option.iconClass} mt-0.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
+                                    >
+                                        {option.icon}
                                     </div>
+
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-[18px] font-semibold leading-8 text-[rgb(var(--color-text-strong))]">
+                                            {option.title}
+                                        </div>
+                                        <div className="mt-1 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                                            {option.description}
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
 
                     <form onSubmit={submit} className="mt-7 space-y-7">
                         <div>
