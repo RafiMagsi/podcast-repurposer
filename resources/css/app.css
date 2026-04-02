@@ -1,46 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
     :root {
-        --color-bg: 10 15 28;
-        --color-bg-2: 15 23 42;
-        --color-surface: 17 24 39;
-        --color-surface-2: 23 32 51;
-        --color-surface-3: 29 41 64;
-        --color-border: 37 50 74;
-        --color-border-strong: 51 65 85;
-        --color-text: 248 250 252;
-        --color-text-muted: 148 163 184;
-        --color-primary: 124 58 237;
-        --color-primary-2: 6 182 212;
-        --color-success: 16 185 129;
-        --color-danger: 239 68 68;
-        --color-warning: 245 158 11;
+        --color-app-bg: 245 242 246;
+        --color-page-bg: 255 255 255;
+        --color-surface: 255 255 255;
+        --color-surface-soft: 248 249 252;
+        --color-surface-muted: 243 245 249;
+        --color-surface-blue: 232 238 255;
+        --color-surface-pink: 245 228 224;
+        --color-surface-lavender: 238 233 251;
+        --color-surface-yellow: 255 244 199;
+        --color-border: 229 232 238;
+        --color-border-strong: 211 217 228;
+        --color-text: 17 18 22;
+        --color-text-strong: 10 10 12;
+        --color-text-muted: 108 114 128;
+        --color-text-faint: 148 154 168;
+        --color-primary: 14 14 18;
+        --color-primary-hover: 30 31 37;
+        --color-primary-text: 255 255 255;
+        --color-secondary-bg: 228 236 251;
+        --color-secondary-text: 53 64 104;
+        --color-accent-bg: 238 233 251;
+        --color-accent-text: 111 76 223;
+        --color-success-bg: 235 250 239;
+        --color-success-text: 28 123 72;
+        --color-danger-bg: 254 239 239;
+        --color-danger-text: 191 61 61;
+        --color-warning-bg: 255 249 230;
+        --color-warning-text: 164 106 18;
+        --shadow-card: 0 1px 2px rgba(17, 24, 39, 0.04), 0 18px 40px rgba(17, 24, 39, 0.06);
+        --shadow-soft: 0 1px 1px rgba(17, 24, 39, 0.03), 0 10px 26px rgba(17, 24, 39, 0.05);
     }
 
     html {
-        color-scheme: dark;
+        color-scheme: light;
     }
 
     body {
         @apply min-h-screen antialiased;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background:
+            radial-gradient(circle at top left, rgba(245, 228, 224, 0.9), transparent 22%),
+            radial-gradient(circle at top right, rgba(232, 238, 255, 0.9), transparent 24%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
+            rgb(var(--color-app-bg));
         color: rgb(var(--color-text));
-        background-color: rgb(var(--color-bg));
-        background-image:
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 28%),
-            radial-gradient(circle at top right, rgba(6, 182, 212, 0.10), transparent 24%);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
     ::selection {
-        background: rgba(124, 58, 237, 0.35);
-        color: white;
+        background: rgba(111, 76, 223, 0.15);
+        color: rgb(var(--color-text-strong));
     }
 
     a {
         color: inherit;
         text-decoration: none;
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgb(var(--color-border-strong)) transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: rgba(var(--color-border-strong), 0.9);
+        border-radius: 9999px;
     }
 }
 
@@ -48,65 +89,108 @@
     .app-shell {
         @apply min-h-screen;
         color: rgb(var(--color-text));
-        background: transparent;
     }
 
     .app-page {
-        @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
     }
 
     .app-page-narrow {
-        @apply mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8;
+        @apply mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .workspace-shell {
+        @apply mx-auto flex min-h-screen w-full max-w-[1600px] flex-col lg:flex-row;
+    }
+
+    .workspace-main {
+        @apply min-w-0 flex-1;
+    }
+
+    .workspace-content {
+        @apply px-4 pb-8 pt-5 sm:px-6 lg:px-8;
     }
 
     .app-card {
-        @apply rounded-2xl border shadow-[0_10px_30px_rgba(0,0,0,0.25)];
+        @apply rounded-[24px] border bg-white;
         border-color: rgb(var(--color-border));
-        background-color: rgba(17, 24, 39, 0.95);
-        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow-card);
     }
 
     .app-card-soft {
-        @apply rounded-2xl border;
+        @apply rounded-[20px] border;
         border-color: rgb(var(--color-border));
-        background-color: rgba(23, 32, 51, 0.80);
+        background: rgb(var(--color-surface-soft));
+        box-shadow: var(--shadow-soft);
     }
 
     .app-panel {
-        @apply rounded-3xl border shadow-[0_20px_50px_rgba(0,0,0,0.35)];
+        @apply rounded-[30px] border bg-white;
         border-color: rgb(var(--color-border));
-        background: linear-gradient(
-            180deg,
-            rgba(17, 24, 39, 0.96),
-            rgba(15, 23, 42, 0.96)
-        );
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05), 0 24px 60px rgba(17, 24, 39, 0.08);
     }
 
     .app-heading {
-        @apply text-2xl font-semibold tracking-tight sm:text-3xl;
-        color: rgb(var(--color-text));
+        @apply text-3xl sm:text-4xl lg:text-5xl;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1.03;
+        color: rgb(var(--color-text-strong));
+    }
+
+    .app-heading-md {
+        @apply text-xl sm:text-2xl;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: rgb(var(--color-text-strong));
     }
 
     .app-subheading {
-        @apply text-sm leading-6 sm:text-base;
+        @apply text-sm leading-7 sm:text-base;
         color: rgb(var(--color-text-muted));
     }
 
     .app-section-title {
         @apply text-lg font-semibold;
-        color: rgb(var(--color-text));
+        letter-spacing: -0.02em;
+        color: rgb(var(--color-text-strong));
     }
 
     .app-muted {
-        @apply text-sm;
+        @apply text-sm leading-6;
         color: rgb(var(--color-text-muted));
     }
 
     .app-badge {
-        @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium;
-        border-color: rgb(var(--color-border-strong));
-        background-color: rgba(255, 255, 255, 0.05);
-        color: rgb(226 232 240);
+        @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em];
+        background: rgb(var(--color-accent-bg));
+        color: rgb(var(--color-accent-text));
+    }
+
+    .app-badge-new {
+        @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
+        background: rgb(var(--color-accent-bg));
+        color: rgb(var(--color-accent-text));
+    }
+
+    .app-badge-beta {
+        @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em];
+        border-color: rgba(111, 76, 223, 0.18);
+        background: rgb(var(--color-accent-bg));
+        color: rgb(var(--color-accent-text));
+    }
+
+    .app-badge-neutral {
+        @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium;
+        background: rgb(var(--color-surface-muted));
+        color: rgb(var(--color-text-muted));
+    }
+
+    .app-badge-saved {
+        @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium;
+        background: rgb(var(--color-surface-soft));
+        border-color: rgb(var(--color-border));
+        color: rgb(var(--color-text-faint));
     }
 
     .app-divider {
@@ -115,148 +199,454 @@
     }
 
     .btn-primary {
-        @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition;
-        background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-primary-2)));
-        box-shadow: 0 10px 24px rgba(124, 58, 237, 0.25);
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-150;
+        background: rgb(var(--color-primary));
+        color: rgb(var(--color-primary-text));
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.08);
     }
 
     .btn-primary:hover {
-        opacity: 0.95;
+        background: rgb(var(--color-primary-hover));
+        transform: translateY(-1px);
+    }
+
+    .btn-primary-rect {
+        @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all duration-150;
+        background: rgb(var(--color-primary));
+        color: rgb(var(--color-primary-text));
+    }
+
+    .btn-primary-rect:hover {
+        background: rgb(var(--color-primary-hover));
     }
 
     .btn-secondary {
-        @apply inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold text-white transition;
-        border-color: rgb(var(--color-border));
-        background-color: rgba(255, 255, 255, 0.05);
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-150;
+        background: rgb(var(--color-secondary-bg));
+        color: rgb(var(--color-secondary-text));
     }
 
     .btn-secondary:hover {
-        background-color: rgba(255, 255, 255, 0.10);
+        filter: brightness(0.985);
+        box-shadow: 0 0 0 1px rgba(53, 64, 104, 0.08);
+    }
+
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 rounded-2xl border bg-white px-4 py-2.5 text-sm font-medium transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        color: rgb(var(--color-text-muted));
+    }
+
+    .btn-outline:hover {
+        border-color: rgb(var(--color-border-strong));
+        background: rgb(var(--color-surface-soft));
+        color: rgb(var(--color-text));
     }
 
     .btn-ghost {
-        @apply inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-medium transition;
+        @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150;
         color: rgb(var(--color-text-muted));
     }
 
     .btn-ghost:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background: rgb(var(--color-surface-muted));
         color: rgb(var(--color-text));
     }
 
-    .input-theme {
-        @apply w-full rounded-xl border px-4 py-3 text-sm outline-none transition;
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-150;
+        border-color: rgba(191, 61, 61, 0.18);
+        background: rgb(var(--color-danger-bg));
+        color: rgb(var(--color-danger-text));
+    }
+
+    .input-theme,
+    .select-theme,
+    .textarea-theme {
+        @apply w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition-all duration-150;
         border-color: rgb(var(--color-border));
-        background-color: rgb(var(--color-surface-2));
         color: rgb(var(--color-text));
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
     }
 
-    .input-theme::placeholder {
-        color: rgb(var(--color-text-muted));
+    .textarea-theme {
+        @apply resize-none;
+        min-height: 120px;
     }
 
-    .input-theme:focus {
-        border-color: rgba(34, 211, 238, 0.5);
-        box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+    .input-theme::placeholder,
+    .textarea-theme::placeholder {
+        color: rgb(var(--color-text-faint));
     }
 
-    .select-theme {
-        @apply w-full rounded-xl border px-4 py-3 text-sm outline-none transition;
-        border-color: rgb(var(--color-border));
-        background-color: rgb(var(--color-surface-2));
+    .input-theme:focus,
+    .select-theme:focus,
+    .textarea-theme:focus {
+        border-color: rgb(173 189 233);
+        box-shadow: 0 0 0 3px rgba(173, 189, 233, 0.28);
+    }
+
+    .input-hero {
+        @apply w-full rounded-full border bg-white px-6 py-4 text-base outline-none transition-all duration-150;
+        border-color: rgb(181 196 237);
         color: rgb(var(--color-text));
+        box-shadow: 0 0 0 4px rgba(181, 196, 237, 0.18), 0 10px 24px rgba(17, 24, 39, 0.08);
     }
 
-    .select-theme:focus {
-        border-color: rgba(34, 211, 238, 0.5);
-        box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+    .input-hero::placeholder {
+        color: rgb(var(--color-text-faint));
     }
 
     .label-theme {
         @apply mb-2 block text-sm font-medium;
-        color: rgb(226 232 240);
+        color: rgb(var(--color-text));
     }
 
     .form-error {
-        @apply mt-1 text-sm;
-        color: rgb(248 113 113);
+        @apply mt-1.5 text-sm;
+        color: rgb(var(--color-danger-text));
     }
 
     .topbar {
-        @apply sticky top-0 z-40 border-b;
+        @apply sticky top-0 z-30 border-b bg-white/90 backdrop-blur;
         border-color: rgb(var(--color-border));
-        background-color: rgba(10, 15, 28, 0.75);
-        backdrop-filter: blur(16px);
     }
 
     .nav-link {
-        @apply rounded-lg px-3 py-2 text-sm font-medium transition;
+        @apply rounded-full px-3 py-2 text-sm font-medium transition-all duration-150;
         color: rgb(var(--color-text-muted));
     }
 
     .nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background: rgb(var(--color-surface-muted));
         color: rgb(var(--color-text));
     }
 
     .nav-link-active {
-        background-color: rgba(255, 255, 255, 0.10);
+        background: rgb(var(--color-surface-muted));
+        color: rgb(var(--color-text-strong));
+        font-weight: 600;
+    }
+
+    .breadcrumb {
+        @apply flex items-center gap-2 text-sm;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .breadcrumb-sep {
+        color: rgb(var(--color-text-faint));
+    }
+
+    .breadcrumb-current {
+        color: rgb(var(--color-text-strong));
+        font-weight: 600;
+    }
+
+    .topbar-action {
+        @apply inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        background: white;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .topbar-action:hover {
+        background: rgb(var(--color-surface-soft));
         color: rgb(var(--color-text));
     }
 
-    .stat-card {
-        @apply rounded-2xl border p-4;
+    .sidebar {
+        @apply border-b bg-[rgba(255,255,255,0.84)] px-4 py-4 backdrop-blur lg:min-h-screen lg:w-[250px] lg:border-b-0 lg:border-r lg:px-5 lg:py-6;
         border-color: rgb(var(--color-border));
-        background-color: rgba(23, 32, 51, 0.80);
+    }
+
+    .sidebar-link {
+        @apply flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-150;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .sidebar-link:hover {
+        background: rgb(var(--color-surface-muted));
+        color: rgb(var(--color-text));
+    }
+
+    .sidebar-link-active {
+        background: rgb(var(--color-surface-muted));
+        color: rgb(var(--color-text-strong));
+        font-weight: 600;
+    }
+
+    .sidebar-icon {
+        @apply flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold;
+        border-color: rgb(var(--color-border));
+        background: white;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .sidebar-link-active .sidebar-icon {
+        border-color: rgb(var(--color-primary));
+        background: rgb(var(--color-primary));
+        color: white;
+    }
+
+    .sidebar-section-label {
+        @apply px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.18em];
+        color: rgb(var(--color-text-faint));
+    }
+
+    .sidebar-sublink {
+        @apply flex w-full items-center gap-2 rounded-xl px-3 py-1.5 pl-12 text-sm transition-all duration-150;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .sidebar-sublink:hover {
+        background: rgb(var(--color-surface-muted));
+        color: rgb(var(--color-text));
+    }
+
+    .sidebar-link-amber {
+        color: rgb(194 120 34);
+        font-weight: 500;
+    }
+
+    .tab-group {
+        @apply inline-flex items-center gap-1 rounded-full border p-1;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+    }
+
+    .tab-item {
+        @apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-150;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .tab-item:hover {
+        color: rgb(var(--color-text));
+    }
+
+    .tab-item-active {
+        background: rgb(var(--color-primary));
+        color: white;
+    }
+
+    .tab-underline {
+        @apply inline-flex items-center gap-1.5 border-b-2 border-transparent pb-2 text-sm font-medium transition-all duration-150;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .tab-underline-active {
+        border-color: rgb(var(--color-text-strong));
+        color: rgb(var(--color-text-strong));
+    }
+
+    .profile-card {
+        @apply flex cursor-pointer items-center gap-3 rounded-2xl border bg-white p-4 transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+    }
+
+    .profile-card:hover {
+        border-color: rgb(var(--color-border-strong));
+        box-shadow: var(--shadow-soft);
+    }
+
+    .profile-card-active {
+        border-width: 2px;
+        border-color: rgb(154 164 196);
+    }
+
+    .profile-icon {
+        @apply flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-lg;
+    }
+
+    .profile-icon-purple { background: rgb(var(--color-surface-lavender)); }
+    .profile-icon-red { background: rgb(252 229 229); }
+    .profile-icon-green { background: rgb(223 245 232); }
+    .profile-icon-blue { background: rgb(225 236 255); }
+    .profile-icon-yellow { background: rgb(var(--color-surface-yellow)); }
+    .profile-icon-orange { background: rgb(var(--color-surface-pink)); }
+
+    .output-section {
+        @apply rounded-2xl border bg-white transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+    }
+
+    .output-section-header {
+        @apply flex w-full items-center gap-3 px-4 py-3.5 text-sm font-semibold;
+        color: rgb(var(--color-text));
+    }
+
+    .output-section-body {
+        @apply border-t px-4 pb-4 pt-3 text-sm leading-7;
+        border-color: rgb(var(--color-border));
+        color: rgb(var(--color-text-muted));
+    }
+
+    .stat-card {
+        @apply rounded-[22px] border bg-white p-5;
+        border-color: rgb(var(--color-border));
+        box-shadow: var(--shadow-soft);
     }
 
     .status-badge {
-        @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
     }
 
     .status-uploaded {
-        background-color: rgba(51, 65, 85, 0.5);
-        color: rgb(226 232 240);
+        background: rgb(var(--color-surface-muted));
+        color: rgb(var(--color-text-muted));
     }
 
     .status-transcribing {
-        background-color: rgba(6, 182, 212, 0.15);
-        color: rgb(103 232 249);
+        background: rgb(236 244 255);
+        color: rgb(66 104 180);
     }
 
     .status-generating {
-        background-color: rgba(124, 58, 237, 0.15);
-        color: rgb(196 181 253);
+        background: rgb(var(--color-accent-bg));
+        color: rgb(var(--color-accent-text));
     }
 
     .status-completed {
-        background-color: rgba(16, 185, 129, 0.15);
-        color: rgb(110 231 183);
+        background: rgb(var(--color-success-bg));
+        color: rgb(var(--color-success-text));
     }
 
     .status-failed {
-        background-color: rgba(239, 68, 68, 0.15);
-        color: rgb(252 165 165);
+        background: rgb(var(--color-danger-bg));
+        color: rgb(var(--color-danger-text));
     }
 
     .auth-shell {
-        @apply flex items-center justify-center px-4 py-8;
+        @apply flex min-h-screen items-center justify-center px-4 py-12;
     }
 
     .auth-card {
-        @apply w-full max-w-md rounded-3xl border p-8 shadow-[0_20px_60px_rgba(0,0,0,0.4)];
+        @apply w-full max-w-md rounded-[28px] border bg-white p-8;
         border-color: rgb(var(--color-border));
-        background: linear-gradient(
-            180deg,
-            rgba(17, 24, 39, 0.96),
-            rgba(15, 23, 42, 0.96)
-        );
+        box-shadow: 0 18px 42px rgba(17, 24, 39, 0.08);
     }
 
-    .brand-gradient {
-        background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-primary-2)));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .upload-zone {
+        @apply flex cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed px-8 py-12 text-center transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+        border-color: rgb(var(--color-border-strong));
+        background: rgb(var(--color-surface-muted));
+    }
+
+    .transcript-row {
+        @apply py-4;
+        border-bottom: 1px solid rgb(var(--color-border));
+    }
+
+    .transcript-row:last-child {
+        border-bottom: none;
+    }
+
+    .transcript-speaker {
+        @apply text-sm font-semibold;
+        color: rgb(var(--color-text-strong));
+    }
+
+    .transcript-timestamp {
+        @apply text-xs;
+        color: rgb(var(--color-text-faint));
+    }
+
+    .transcript-body {
+        @apply mt-1.5 text-sm leading-7;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .speaker-avatar {
+        @apply flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white;
+    }
+
+    .progress-track {
+        @apply h-2 w-full overflow-hidden rounded-full;
+        background: rgb(var(--color-surface-muted));
+    }
+
+    .progress-fill {
+        @apply h-full rounded-full transition-all duration-500;
+        background: rgb(var(--color-primary));
+    }
+
+    .filter-pill {
+        @apply inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        background: white;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .filter-pill:hover {
+        background: rgb(var(--color-surface-soft));
+        color: rgb(var(--color-text));
+    }
+
+    .filter-pill-active {
+        background: rgb(var(--color-primary));
+        border-color: rgb(var(--color-primary));
+        color: white;
+    }
+
+    .btn-copy {
+        @apply inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        color: rgb(var(--color-text-muted));
+    }
+
+    .btn-copy:hover {
+        background: rgb(var(--color-surface-soft));
+        color: rgb(var(--color-text));
+    }
+
+    .plan-card {
+        @apply relative rounded-[24px] border bg-white p-6 transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        box-shadow: var(--shadow-soft);
+    }
+
+    .note-row {
+        @apply flex items-center gap-4 rounded-[20px] border bg-white px-4 py-3.5 transition-all duration-150;
+        border-color: rgb(var(--color-border));
+    }
+
+    .note-row:hover {
+        border-color: rgb(var(--color-border-strong));
+        background: rgb(var(--color-surface-soft));
+    }
+
+    .usage-bar-track {
+        @apply h-1.5 w-full overflow-hidden rounded-full;
+        background: rgb(var(--color-surface-muted));
+    }
+
+    .usage-bar-fill {
+        @apply h-full rounded-full transition-all duration-500;
+        background: rgb(var(--color-primary));
+    }
+
+    .tooltip {
+        @apply pointer-events-none absolute z-50 rounded-xl border bg-white px-2.5 py-1.5 text-xs font-medium shadow-md;
+        border-color: rgb(var(--color-border));
+        color: rgb(var(--color-text));
+    }
+
+    .divider-label {
+        @apply flex items-center gap-3 text-xs uppercase tracking-[0.18em];
+        color: rgb(var(--color-text-faint));
+    }
+
+    .divider-label::before,
+    .divider-label::after {
+        content: '';
+        @apply h-px flex-1;
+        background: rgb(var(--color-border));
     }
 }

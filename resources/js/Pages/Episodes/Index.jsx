@@ -6,6 +6,7 @@ function statusClass(status) {
         case 'completed':
             return 'status-badge status-completed';
         case 'transcribing':
+        case 'transcribed':
             return 'status-badge status-transcribing';
         case 'generating':
             return 'status-badge status-generating';
@@ -17,61 +18,132 @@ function statusClass(status) {
 }
 
 export default function EpisodesIndex({ auth, episodes }) {
+    const items = episodes.data || [];
+    const completedCount = items.filter((episode) => episode.status === 'completed').length;
+    const activeCount = items.filter((episode) =>
+        ['uploaded', 'transcribing', 'transcribed', 'generating'].includes(episode.status),
+    ).length;
+
     return (
         <AuthenticatedLayout
             user={auth?.user}
             header={
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
                     <div>
-                        <div className="app-badge mb-3">Episode Library</div>
-                        <h1 className="app-heading">Manage uploaded episodes</h1>
-                        <p className="app-subheading mt-2 max-w-2xl">
-                            View uploaded audio files, monitor processing status, and open generated results.
+                        <div className="app-badge mb-4">Recordings library</div>
+                        <h1 className="app-heading">Browse every upload in a cleaner recording catalog.</h1>
+                        <p className="app-subheading mt-5 max-w-2xl">
+                            The reference images use a white canvas, dark type, and clearer grouping.
+                            This library now follows that same structure so episodes feel easier to scan.
                         </p>
                     </div>
 
-                    <Link href={route('episodes.create')} className="btn-primary">
-                        Upload Audio
-                    </Link>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="stat-card">
+                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                On this page
+                            </div>
+                            <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
+                                {items.length}
+                            </div>
+                            <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                Recordings currently visible in the library.
+                            </div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                Completed
+                            </div>
+                            <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
+                                {completedCount}
+                            </div>
+                            <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                Ready to open and export.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             }
         >
             <Head title="Episodes" />
 
-            <div className="app-card overflow-hidden">
-                <div className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-                    <div>
-                        <h2 className="app-section-title">All episodes</h2>
-                        <p className="app-muted">Your uploaded audio files and processing state.</p>
+            <div className="grid gap-4 md:grid-cols-3">
+                <div className="stat-card">
+                    <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                        Active processing
+                    </div>
+                    <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
+                        {activeCount}
+                    </div>
+                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                        Uploads moving through transcription or generation.
                     </div>
                 </div>
-
-                {episodes.data.length === 0 ? (
-                    <div className="p-6 text-sm text-slate-400">No episodes found.</div>
-                ) : (
-                    episodes.data.map((episode) => (
-                        <div
-                            key={episode.id}
-                            className="flex flex-col gap-3 border-b border-[var(--color-border)] px-6 py-5 last:border-b-0 md:flex-row md:items-center md:justify-between"
-                        >
-                            <div className="min-w-0">
-                                <div className="truncate text-base font-semibold text-white">
-                                    {episode.title}
-                                </div>
-                                <div className="mt-1 text-sm text-slate-400">
-                                    {episode.original_file_name || 'Audio file'} · {episode.created_at}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <span className={statusClass(episode.status)}>{episode.status}</span>
-
-                                <Link href={route('episodes.show', episode.public_id)} className="btn-secondary">
-                                    Open
-                                </Link>
-                            </div>
+                <div className="stat-card">
+                    <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                        View style
+                    </div>
+                    <div className="mt-3 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                        Library / Workspace
+                    </div>
+                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                        Open any episode to inspect transcript and outputs.
+                    </div>
+                </div>
+                <div className="stat-card flex items-center justify-between gap-4">
+                    <div>
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            New source
                         </div>
-                    ))
+                        <div className="mt-3 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                            Start another run
+                        </div>
+                    </div>
+                    <Link href={route('episodes.create')} className="btn-primary">
+                        Upload
+                    </Link>
+                </div>
+            </div>
+
+            <div className="app-card overflow-hidden">
+                <div className="flex flex-col gap-4 border-b border-[rgb(var(--color-border))] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 className="app-section-title">All recordings</h2>
+                        <p className="app-muted">Your uploaded audio, current status, and entry to each workspace.</p>
+                    </div>
+                    <Link href={route('episodes.create')} className="btn-secondary">
+                        Add upload
+                    </Link>
+                </div>
+
+                {items.length === 0 ? (
+                    <div className="p-6 text-sm text-[rgb(var(--color-text-muted))]">No recordings found.</div>
+                ) : (
+                    <div className="divide-y divide-[rgb(var(--color-border))]">
+                        {items.map((episode) => (
+                            <div
+                                key={episode.id}
+                                className="flex flex-col gap-4 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
+                            >
+                                <div className="min-w-0">
+                                    <div className="truncate text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                                        {episode.title}
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                        <span>{episode.original_file_name || 'Audio file'}</span>
+                                        <span>{episode.created_at}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className={statusClass(episode.status)}>{episode.status}</span>
+                                    <Link href={route('episodes.show', episode.public_id)} className="btn-outline">
+                                        Open workspace
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
 
@@ -82,10 +154,10 @@ export default function EpisodesIndex({ auth, episodes }) {
                             key={`${link.label}-${index}`}
                             href={link.url || '#'}
                             preserveScroll
-                            className={`rounded-xl border px-3 py-2 text-sm transition ${
+                            className={`rounded-full border px-4 py-2 text-sm transition ${
                                 link.active
-                                    ? 'border-transparent bg-white/10 text-white'
-                                    : 'border-[var(--color-border)] text-slate-300 hover:bg-white/5'
+                                    ? 'border-[rgb(var(--color-primary))] bg-[rgb(var(--color-primary))] text-white'
+                                    : 'border-[rgb(var(--color-border))] bg-white text-[rgb(var(--color-text-muted))] hover:bg-[rgb(var(--color-surface-soft))]'
                             } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
                             dangerouslySetInnerHTML={{ __html: link.label }}
                         />

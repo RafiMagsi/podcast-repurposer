@@ -1,8 +1,8 @@
 export default function ApplicationLogo({
     className = 'h-10 w-10',
     withText = false,
-    textClassName = 'text-sm font-semibold text-white',
-    subtitleClassName = 'text-[11px] text-slate-400',
+    textClassName = 'text-sm font-semibold text-[rgb(var(--color-text-strong))]',
+    subtitleClassName = 'text-[11px] text-[rgb(var(--color-text-muted))]',
 }) {
     return (
         <div className="flex items-center gap-3">

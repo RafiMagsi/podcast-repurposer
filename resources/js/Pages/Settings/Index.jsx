@@ -25,33 +25,67 @@ export default function SettingsIndex({ auth, settings }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div>
-                    <div className="app-badge mb-3">Provider Configuration</div>
-                    <h1 className="app-heading">Manage credentials</h1>
-                    <p className="app-subheading mt-2 max-w-2xl">
-                        Save API and storage credentials securely in the database.
-                    </p>
+                <div className="grid gap-8 xl:grid-cols-[1.05fr_.95fr] xl:items-center">
+                    <div>
+                        <div className="app-badge mb-4">Provider configuration</div>
+                        <h1 className="app-heading">Keep the engine room clean, readable, and dependable.</h1>
+                        <p className="app-subheading mt-5 max-w-2xl">
+                            The screenshots use light surfaces and straightforward forms. This settings
+                            view now matches that direction so sensitive credentials sit in calmer UI.
+                        </p>
+                    </div>
+
+                    <div className="app-card-soft p-6">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Connected systems
+                        </div>
+                        <div className="mt-4 space-y-3">
+                            {[
+                                ['Transcription', 'OpenAI / Whisper'],
+                                ['Generation', 'Claude content prompts'],
+                                ['Storage', 'Amazon S3 or compatible bucket'],
+                            ].map(([label, value], index) => (
+                                <div key={label} className="profile-card">
+                                    <div
+                                        className={`profile-icon ${
+                                            ['profile-icon-blue', 'profile-icon-purple', 'profile-icon-green'][index]
+                                        } text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
+                                    >
+                                        •
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-sm text-[rgb(var(--color-text-muted))]">{label}</div>
+                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                            {value}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             }
         >
             <Head title="Settings" />
 
             {flash?.success && (
-                <div className="app-card border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+                <div className="app-card bg-[rgb(var(--color-success-bg))] p-4 text-sm text-[rgb(var(--color-success-text))]">
                     {flash.success}
                 </div>
             )}
 
-            <div className="app-card p-6">
-                <form onSubmit={submit} className="space-y-8">
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="app-section-title">AI Providers</h2>
-                            <p className="app-muted mt-1">Keys for transcription and content generation.</p>
-                        </div>
+            <form onSubmit={submit} className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+                <div className="app-card p-6 sm:p-8">
+                    <div>
+                        <h2 className="app-section-title">AI providers</h2>
+                        <p className="app-muted mt-2">
+                            Keys used for transcription and content generation.
+                        </p>
+                    </div>
 
+                    <div className="mt-6 space-y-6">
                         <div>
-                            <label className="label-theme">OpenAI API Key</label>
+                            <label className="label-theme">OpenAI API key</label>
                             <input
                                 type="password"
                                 value={data.openai_api_key}
@@ -62,7 +96,7 @@ export default function SettingsIndex({ auth, settings }) {
                         </div>
 
                         <div>
-                            <label className="label-theme">Claude API Key</label>
+                            <label className="label-theme">Claude API key</label>
                             <input
                                 type="password"
                                 value={data.claude_api_key}
@@ -72,15 +106,19 @@ export default function SettingsIndex({ auth, settings }) {
                             {errors.claude_api_key && <p className="form-error">{errors.claude_api_key}</p>}
                         </div>
                     </div>
+                </div>
 
-                    <div className="app-divider pt-8 space-y-6">
-                        <div>
-                            <h2 className="app-section-title">Amazon S3</h2>
-                            <p className="app-muted mt-1">Storage config for uploaded audio files.</p>
-                        </div>
+                <div className="app-card p-6 sm:p-8">
+                    <div>
+                        <h2 className="app-section-title">Storage</h2>
+                        <p className="app-muted mt-2">
+                            Bucket and endpoint settings for uploaded source files.
+                        </p>
+                    </div>
 
+                    <div className="mt-6 space-y-6">
                         <div>
-                            <label className="label-theme">AWS Access Key ID</label>
+                            <label className="label-theme">AWS access key ID</label>
                             <input
                                 type="password"
                                 value={data.aws_access_key_id}
@@ -91,7 +129,7 @@ export default function SettingsIndex({ auth, settings }) {
                         </div>
 
                         <div>
-                            <label className="label-theme">AWS Secret Access Key</label>
+                            <label className="label-theme">AWS secret access key</label>
                             <input
                                 type="password"
                                 value={data.aws_secret_access_key}
@@ -101,31 +139,33 @@ export default function SettingsIndex({ auth, settings }) {
                             {errors.aws_secret_access_key && <p className="form-error">{errors.aws_secret_access_key}</p>}
                         </div>
 
-                        <div>
-                            <label className="label-theme">AWS Region</label>
-                            <input
-                                type="text"
-                                value={data.aws_default_region}
-                                onChange={(e) => setData('aws_default_region', e.target.value)}
-                                className="input-theme"
-                                placeholder="eu-central-1"
-                            />
-                            {errors.aws_default_region && <p className="form-error">{errors.aws_default_region}</p>}
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <label className="label-theme">AWS region</label>
+                                <input
+                                    type="text"
+                                    value={data.aws_default_region}
+                                    onChange={(e) => setData('aws_default_region', e.target.value)}
+                                    className="input-theme"
+                                    placeholder="eu-central-1"
+                                />
+                                {errors.aws_default_region && <p className="form-error">{errors.aws_default_region}</p>}
+                            </div>
+
+                            <div>
+                                <label className="label-theme">Bucket</label>
+                                <input
+                                    type="text"
+                                    value={data.aws_bucket}
+                                    onChange={(e) => setData('aws_bucket', e.target.value)}
+                                    className="input-theme"
+                                />
+                                {errors.aws_bucket && <p className="form-error">{errors.aws_bucket}</p>}
+                            </div>
                         </div>
 
                         <div>
-                            <label className="label-theme">Bucket</label>
-                            <input
-                                type="text"
-                                value={data.aws_bucket}
-                                onChange={(e) => setData('aws_bucket', e.target.value)}
-                                className="input-theme"
-                            />
-                            {errors.aws_bucket && <p className="form-error">{errors.aws_bucket}</p>}
-                        </div>
-
-                        <div>
-                            <label className="label-theme">Custom URL (optional)</label>
+                            <label className="label-theme">Custom URL</label>
                             <input
                                 type="text"
                                 value={data.aws_url}
@@ -136,7 +176,7 @@ export default function SettingsIndex({ auth, settings }) {
                         </div>
 
                         <div>
-                            <label className="label-theme">Endpoint (optional)</label>
+                            <label className="label-theme">Endpoint</label>
                             <input
                                 type="text"
                                 value={data.aws_endpoint}
@@ -147,7 +187,7 @@ export default function SettingsIndex({ auth, settings }) {
                         </div>
 
                         <div>
-                            <label className="label-theme">Use Path Style Endpoint</label>
+                            <label className="label-theme">Use path style endpoint</label>
                             <select
                                 value={data.aws_use_path_style_endpoint}
                                 onChange={(e) => setData('aws_use_path_style_endpoint', e.target.value)}
@@ -158,14 +198,16 @@ export default function SettingsIndex({ auth, settings }) {
                             </select>
                         </div>
                     </div>
+                </div>
 
+                <div className="xl:col-span-2">
                     <div className="flex justify-end">
                         <button type="submit" disabled={processing} className="btn-primary">
-                            {processing ? 'Saving...' : 'Save Settings'}
+                            {processing ? 'Saving...' : 'Save settings'}
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </AuthenticatedLayout>
     );
 }
