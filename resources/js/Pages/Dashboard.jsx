@@ -58,6 +58,9 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                         <Link href={route('content-requests.create')} className="btn-primary-rect">
                             New recording
                         </Link>
+                        <Link href={route('content-requests.index')} className="btn-outline">
+                            Open library
+                        </Link>
                     </div>
                 </div>
             }
@@ -73,7 +76,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
 
                 {usageLimits ? (
                     <div className="app-card p-5">
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                             <div>
                                 <div className="app-badge-neutral">Usage</div>
                                 <div className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
@@ -84,7 +87,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                                 </div>
                             </div>
 
-                            <div className="min-w-[220px] flex-1 lg:max-w-[320px]">
+                            <div className="min-w-[220px] flex-1 lg:max-w-[340px]">
                                 <div className="usage-bar-track">
                                     <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
                                 </div>
@@ -104,7 +107,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                     usageLimits={usageLimits}
                 />
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,.9fr)]">
                     <div className="space-y-6">
                         <RecordingInfoCard />
 
@@ -126,7 +129,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                                 ].map((item) => (
                                     <div
                                         key={item}
-                                        className="rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]"
+                                        className="dashboard-note text-sm leading-6 text-[rgb(var(--color-text-muted))]"
                                     >
                                         {item}
                                     </div>

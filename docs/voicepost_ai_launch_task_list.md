@@ -60,7 +60,7 @@ Track usage patterns such as source type usage, completion rate, failure rate, r
 ### 13. Add per-output regeneration - done
 Allow users to regenerate only one output type, such as LinkedIn post or newsletter, instead of regenerating everything.
 
-### 14. Improve dashboard and workspace polish
+### 14. Improve dashboard and workspace polish - done
 Refine layout consistency, output presentation, and workflow guidance so the app feels more premium and easier to trust.
 
 ### 15. Prepare launch messaging
@@ -227,7 +227,7 @@ Before going live, verify:
 - Preserve other outputs when one output is regenerated.
 - Show loading state for per-output regeneration.
 
-### 14. Improve dashboard and workspace polish
+### 14. Improve dashboard and workspace polish - done
 - Improve spacing and alignment across cards.
 - Improve source/output card consistency.
 - Improve mobile and tablet layout behavior.

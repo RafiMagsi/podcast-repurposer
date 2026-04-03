@@ -3,7 +3,7 @@ export default function CurrentFocusCard({ activeContentRequest }) {
         <div className="app-card p-6">
             <div className="app-badge-neutral">Current Focus</div>
 
-            <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+            <h2 className="mt-4 text-[28px] font-semibold tracking-[-0.035em] text-[rgb(var(--color-text-strong))]">
                 {activeContentRequest ? activeContentRequest.title : 'Build your first content run'}
             </h2>
 
@@ -14,16 +14,16 @@ export default function CurrentFocusCard({ activeContentRequest }) {
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                <div className="rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3">
+                <div className="dashboard-note">
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Source types
                     </div>
                     <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                        Video, audio, recording, text
+                        Video, audio, text
                     </div>
                 </div>
 
-                <div className="rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3">
+                <div className="dashboard-note">
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Limits
                     </div>
@@ -32,7 +32,7 @@ export default function CurrentFocusCard({ activeContentRequest }) {
                     </div>
                 </div>
 
-                <div className="rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3">
+                <div className="dashboard-note">
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Outputs
                     </div>
@@ -42,7 +42,7 @@ export default function CurrentFocusCard({ activeContentRequest }) {
                 </div>
             </div>
 
-            <div className="mt-5 flex flex-col gap-3">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row xl:flex-col">
                 {activeContentRequest ? (
                     <a href={route('content-requests.show', activeContentRequest.public_id)} className="btn-primary w-full">
                         Open latest workspace

@@ -18,22 +18,22 @@ export default function RecentRecordingsCard({ contentRequests }) {
                 return 'Video';
             case 'text':
                 return 'Text note';
-        case 'audio':
-            return 'Audio';
-        default:
-            return 'Audio';
-    }
+            case 'audio':
+                return 'Audio';
+            default:
+                return 'Audio';
+        }
     }
 
     function statusClass(status) {
         switch (status) {
             case 'completed':
                 return 'status-badge status-completed';
-        case 'cancelled':
-            return 'status-badge status-cancelled';
-        case 'partial':
-            return 'status-badge status-partial';
-        case 'transcribing':
+            case 'cancelled':
+                return 'status-badge status-cancelled';
+            case 'partial':
+                return 'status-badge status-partial';
+            case 'transcribing':
             case 'transcribed':
                 return 'status-badge status-transcribing';
             case 'generating':
@@ -87,11 +87,11 @@ export default function RecentRecordingsCard({ contentRequests }) {
                     {contentRequests.map((contentRequest) => (
                         <div
                             key={contentRequest.public_id || contentRequest.id}
-                            className="flex flex-col gap-4 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
+                            className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between"
                         >
-                            <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <div className="truncate text-base font-semibold text-[rgb(var(--color-text-strong))]">
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2.5">
+                                    <div className="truncate text-base font-semibold leading-7 text-[rgb(var(--color-text-strong))]">
                                         {contentRequest.title}
                                     </div>
                                     <span className={sourcePillClass(contentRequest.source_type)}>
@@ -99,13 +99,13 @@ export default function RecentRecordingsCard({ contentRequests }) {
                                     </span>
                                     <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
                                 </div>
-                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                    <span>{contentRequest.original_file_name || 'Inline text note'}</span>
+                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    <span className="truncate">{contentRequest.original_file_name || 'Inline text note'}</span>
                                     <span>{formatRelative(contentRequest.created_at)}</span>
                                 </div>
                             </div>
 
-                            <a href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary">
+                            <a href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary w-full justify-center lg:w-auto">
                                 Open workspace
                             </a>
                         </div>

@@ -66,8 +66,8 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
 
     return (
         <div className="app-card p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
                     <div className="app-badge-neutral">{sourceLabel(contentRequest.input_type)}</div>
                     <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
                         Source Preview
@@ -78,7 +78,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                 </div>
 
                 {contentRequest.original_file_name || contentRequest.media_thumbnail_url ? (
-                    <div className="rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="dashboard-note w-full text-sm text-[rgb(var(--color-text-muted))] lg:w-auto lg:max-w-[280px]">
                         {contentRequest.original_file_name || 'Thumbnail available'}
                     </div>
                 ) : null}
@@ -99,7 +99,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Audio preview
                         </div>
-                        <div className="mt-4 flex h-[120px] items-center rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-4">
+                        <div className="mt-4 flex min-h-[112px] items-center rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-4">
                             <audio
                                 ref={mediaElementRef}
                                 controls
@@ -117,7 +117,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                             Video preview
                         </div>
                         <div className="mt-4 overflow-hidden rounded-[18px] border border-[rgb(var(--color-border))] bg-black">
-                            <div className="relative flex h-[420px] items-center justify-center bg-black sm:h-[460px] lg:h-[500px]">
+                            <div className="relative flex min-h-[280px] items-center justify-center bg-black sm:min-h-[360px] lg:min-h-[440px]">
                                 {mediaUrl ? (
                                     <video
                                         ref={mediaElementRef}

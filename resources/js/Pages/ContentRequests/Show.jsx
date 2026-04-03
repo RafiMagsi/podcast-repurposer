@@ -96,9 +96,9 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             },
         }))
         .sort((a, b) => {
-        const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
-        return order.indexOf(a.content_type) - order.indexOf(b.content_type);
-    });
+            const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
+            return order.indexOf(a.content_type) - order.indexOf(b.content_type);
+        });
     const expectedOutputTypes = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
     const missingOutputTypes = expectedOutputTypes.filter(
         (contentType) => !orderedContentResponses.some((response) => response.content_type === contentType),
@@ -329,13 +329,12 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         <AuthenticatedLayout
             user={auth?.user}
             header={
-                <div className="grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,.88fr)] xl:items-start">
                     <div>
                         <div className="app-badge mb-4">Recording workspace</div>
                         <h1 className="app-heading">{liveContentRequest.title}</h1>
                         <p className="app-subheading mt-5 max-w-2xl">
-                            Inspired by the screenshots, this page now leans into a clearer recording
-                            workspace: dark text, lighter panels, and more structured transcript and output review.
+                            Review the source, transcript, and generated outputs from one workspace without losing track of the run state.
                         </p>
                         <div className="mt-6 flex flex-wrap items-center gap-3">
                             <span className={statusClass(liveContentRequest.status)}>{liveContentRequest.status}</span>
@@ -373,7 +372,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         </div>
                     </div>
 
-                    <div className="app-card-soft p-6">
+                    <div className="app-card-soft p-5 sm:p-6">
                         <div className="tab-group">
                             <div className="tab-item tab-item-active">Transcript</div>
                             <div className="tab-item">AI Content</div>
@@ -423,15 +422,15 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 </div>
             )}
 
-            <div className="grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
+            <div className="grid gap-6 2xl:grid-cols-[minmax(300px,.8fr)_minmax(0,1.2fr)]">
                 <div className="space-y-6">
                     <div className="app-card p-6">
                         <h2 className="app-section-title">Recording details</h2>
-                        <div className="mt-5 space-y-3">
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                             {details.map(([label, value]) => (
                                 <div
                                     key={label}
-                                    className="rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3"
+                                    className="dashboard-note"
                                 >
                                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                         {label}
@@ -489,7 +488,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
 
                     <div className="app-card p-6">
                         <h2 className="app-section-title">Quick actions</h2>
-                        <div className="mt-5 flex flex-col gap-3">
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                             <button
                                 type="button"
                                 onClick={() => copyToClipboard(liveContentRequest.transcript || '')}
@@ -536,7 +535,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                             <button
                                 type="button"
                                 onClick={() => setShowDeleteModal(true)}
-                                className="btn-danger w-full"
+                                className="btn-danger w-full sm:col-span-2 xl:col-span-1"
                             >
                                 Delete Recording
                             </button>
@@ -545,7 +544,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 </div>
 
                 <div className="space-y-6">
-                    <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel}/>
+                    <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel} />
                     
                     <div className="app-card p-6">
                         <div className="flex items-start justify-between gap-4">
@@ -606,7 +605,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                 {isProcessing ? 'Content responses will appear here automatically once ready.' : 'No content responses yet.'}
                             </div>
                         ) : (
-                            <div className="mt-5 space-y-5">
+                            <div className="mt-5 grid gap-5">
                                 {orderedContentResponses.map((contentResponse) => (
                                     <ContentResponseCard
                                         key={contentResponse.id}

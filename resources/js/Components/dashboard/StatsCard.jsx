@@ -9,7 +9,7 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                     {contentRequests.length}
                 </div>
                 <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                    Video, audio, recordings, and text notes in one library.
+                    Video, audio, and text note requests in one library.
                 </div>
             </div>
 

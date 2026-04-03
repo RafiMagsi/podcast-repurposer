@@ -161,6 +161,12 @@
         color: rgb(var(--color-text-muted));
     }
 
+    .dashboard-note {
+        @apply rounded-[18px] border px-4 py-3;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+    }
+
     .app-badge {
         @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em];
         background: rgb(var(--color-accent-bg));
@@ -229,6 +235,17 @@
     .btn-secondary:hover {
         filter: brightness(0.985);
         box-shadow: 0 0 0 1px rgba(53, 64, 104, 0.08);
+    }
+
+    .btn-primary:disabled,
+    .btn-secondary:disabled,
+    .btn-outline:disabled,
+    .btn-copy:disabled,
+    .btn-danger:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        transform: none;
+        box-shadow: none;
     }
 
     .btn-outline {
