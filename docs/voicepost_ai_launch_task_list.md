@@ -133,7 +133,7 @@ Before going live, verify:
 - Let user select one suggestion to continue.
 - Store or pass the selected suggestion into generation.
 
-### 7. Show AI writing-style progress states
+### 7. Show AI writing-style progress states - done
 - Add progressive processing messages per stage.
 - Show AI-style writing/status animation in workspace.
 - Map each backend status to a clear UI message.

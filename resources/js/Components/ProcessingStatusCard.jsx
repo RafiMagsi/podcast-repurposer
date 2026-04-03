@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 function statusClass(status) {
     switch (status) {
@@ -18,21 +18,130 @@ function statusClass(status) {
     }
 }
 
-export default function ProcessingStatusCard({ contentRequest, isProcessing, liveStatusLabel }) {
-    const isCompressionActive =
+function buildStageMeta(contentRequest) {
+    const isMediaPrep =
         contentRequest.status === 'transcribing' && contentRequest.compression_status === 'started';
 
-    const progressWidth = isCompressionActive
-        ? '42%'
-        : contentRequest.status === 'uploaded'
-        ? '15%'
-        : contentRequest.status === 'transcribing'
-        ? '55%'
-        : contentRequest.status === 'transcribed'
-        ? '72%'
-        : contentRequest.status === 'generating'
-        ? '90%'
-        : '100%';
+    if (contentRequest.status === 'uploaded') {
+        return {
+            progressWidth: '14%',
+            currentStep: 0,
+            stageLabel: 'Source queued',
+            aiLines: [
+                'Upload accepted',
+                'Preparing the pipeline order',
+                'Waiting for processing to begin',
+            ],
+        };
+    }
+
+    if (isMediaPrep) {
+        return {
+            progressWidth: '38%',
+            currentStep: 1,
+            stageLabel: 'Media prep active',
+            aiLines:
+                contentRequest.media_kind === 'audio'
+                    ? [
+                          'Preparing the audio source',
+                          'Cleaning and compressing the recording',
+                          'Getting the file ready for transcription',
+                      ]
+                    : [
+                          'Preparing preview and source media',
+                          'Extracting a clean audio track',
+                          'Getting the file ready for transcription',
+                      ],
+        };
+    }
+
+    if (contentRequest.status === 'transcribing') {
+        return {
+            progressWidth: '58%',
+            currentStep: 2,
+            stageLabel: 'Transcription running',
+            aiLines: [
+                'Listening to the source',
+                'Converting speech into transcript',
+                'Structuring the raw text for generation',
+            ],
+        };
+    }
+
+    if (contentRequest.status === 'transcribed') {
+        return {
+            progressWidth: '76%',
+            currentStep: 3,
+            stageLabel: 'Writing prep',
+            aiLines: [
+                'Transcript is ready',
+                'Selecting the strongest angle',
+                'Preparing the writing pass',
+            ],
+        };
+    }
+
+    if (contentRequest.status === 'generating') {
+        return {
+            progressWidth: '91%',
+            currentStep: 3,
+            stageLabel: 'AI writing',
+            aiLines: [
+                'Drafting the summary',
+                'Writing the LinkedIn post',
+                'Shaping the X, Instagram, and newsletter outputs',
+            ],
+        };
+    }
+
+    return {
+        progressWidth: '100%',
+        currentStep: 3,
+        stageLabel: 'Finished',
+        aiLines: [],
+    };
+}
+
+const stepLabels = [
+    'Source received',
+    'Media prep',
+    'Transcript analysis',
+    'Content generation',
+];
+
+export default function ProcessingStatusCard({ contentRequest, isProcessing, liveStatusLabel }) {
+    const stageMeta = useMemo(() => buildStageMeta(contentRequest), [contentRequest]);
+    const [activeAiLineIndex, setActiveAiLineIndex] = useState(0);
+    const [dotCount, setDotCount] = useState(1);
+
+    useEffect(() => {
+        if (!isProcessing || stageMeta.aiLines.length <= 1) {
+            setActiveAiLineIndex(0);
+            return undefined;
+        }
+
+        const interval = window.setInterval(() => {
+            setActiveAiLineIndex((current) => (current + 1) % stageMeta.aiLines.length);
+        }, 1700);
+
+        return () => window.clearInterval(interval);
+    }, [isProcessing, stageMeta.aiLines]);
+
+    useEffect(() => {
+        if (!isProcessing) {
+            setDotCount(1);
+            return undefined;
+        }
+
+        const interval = window.setInterval(() => {
+            setDotCount((current) => (current % 3) + 1);
+        }, 420);
+
+        return () => window.clearInterval(interval);
+    }, [isProcessing]);
+
+    const animatedLine = stageMeta.aiLines[activeAiLineIndex] || '';
+    const thinkingDots = '.'.repeat(dotCount);
 
     return (
         <div
@@ -66,8 +175,8 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                 ) : null}
             </div>
 
-            <div className="relative flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
+            <div className="relative flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-3xl">
                     <div className="flex items-center gap-2">
                         <div className="text-sm font-semibold text-[rgb(var(--color-text))]">
                             Live processing status
@@ -85,6 +194,18 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                     <p className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                         {liveStatusLabel}
                     </p>
+
+                    {isProcessing ? (
+                        <div className="mt-4 rounded-[18px] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700">
+                                {stageMeta.stageLabel}
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-[rgb(var(--color-text-strong))]">
+                                {animatedLine}
+                                <span className="text-blue-500">{thinkingDots}</span>
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -109,28 +230,33 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
             {isProcessing ? (
                 <div className="relative mt-4">
                     <div className="progress-track">
-                        <div
-                            className="progress-fill"
-                            style={{ width: progressWidth }}
-                        />
+                        <div className="progress-fill" style={{ width: stageMeta.progressWidth }} />
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[rgb(var(--color-text-faint))]">
-                        <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
-                            Source received
-                        </span>
-                        <span className="text-blue-300">→</span>
-                        <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
-                            Media preparation
-                        </span>
-                        <span className="text-blue-300">→</span>
-                        <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
-                            Transcript analysis
-                        </span>
-                        <span className="text-blue-300">→</span>
-                        <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
-                            Content generation
-                        </span>
+                        {stepLabels.map((label, index) => {
+                            const isActive = index === stageMeta.currentStep;
+                            const isComplete = index < stageMeta.currentStep;
+
+                            return (
+                                <div key={label} className="contents">
+                                    <span
+                                        className={`rounded-full border px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm ${
+                                            isActive
+                                                ? 'border-blue-200 bg-blue-100/80 text-blue-700'
+                                                : isComplete
+                                                ? 'border-emerald-200 bg-emerald-50/85 text-emerald-700'
+                                                : 'border-white/70 bg-white/75'
+                                        }`}
+                                    >
+                                        {label}
+                                    </span>
+                                    {index < stepLabels.length - 1 ? (
+                                        <span className={isComplete ? 'text-emerald-300' : 'text-blue-300'}>→</span>
+                                    ) : null}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <p className="mt-2 text-xs leading-6 text-[rgb(var(--color-text-faint))]">

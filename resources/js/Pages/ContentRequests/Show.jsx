@@ -170,39 +170,39 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         switch (liveContentRequest.status) {
             case 'uploaded':
                 if (liveContentRequest.media_kind === 'video') {
-                    return 'Upload received. Video preview preparation is queued and will start shortly.';
+                    return 'Upload received. The video is in queue and will move into media preparation shortly.';
                 }
 
                 if (liveContentRequest.media_kind === 'audio') {
-                    return 'Upload received. Audio processing will start shortly.';
+                    return 'Upload received. The audio is in queue and will move into transcription shortly.';
                 }
 
-                return 'Upload received. Waiting to start processing.';
+                return 'Upload received. The request is queued to start processing.';
             case 'transcribing':
                 if (liveContentRequest.compression_status === 'started') {
                     if (
                         liveContentRequest.media_kind === 'video' &&
                         (!liveContentRequest.preview_path || !liveContentRequest.media_thumbnail_url)
                     ) {
-                        return 'Preparing video preview, extracting a thumbnail, and getting the source ready for transcription...';
+                        return 'Media prep is running: preparing the video preview, thumbnail, and transcription-ready source.';
                     }
 
                     if (liveContentRequest.media_kind === 'audio') {
-                        return 'Preparing audio and compressing it for transcription...';
+                        return 'Media prep is running: preparing and compressing the audio for transcription.';
                     }
 
-                    return 'Preparing media, extracting audio, and compressing for transcription...';
+                    return 'Media prep is running: preparing the source for transcription.';
                 }
 
                 if (liveContentRequest.compression_status === 'completed') {
-                    return 'Media prep is complete. Transcribing source into text...';
+                    return 'Media prep is complete. The source is now being transcribed into text.';
                 }
 
-                return 'Transcribing source into text...';
+                return 'Transcription is in progress.';
             case 'transcribed':
-                return 'Transcript ready. Generating content...';
+                return 'Transcript is ready. VoicePost AI is preparing the writing pass.';
             case 'generating':
-                return 'Building summary and social content...';
+                return 'VoicePost AI is writing the summary and final content outputs.';
             case 'completed':
                 return 'Content is ready.';
             case 'cancelled':
