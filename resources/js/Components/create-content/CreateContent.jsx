@@ -88,6 +88,10 @@ export default function CreateContent({
     const [suggestionError, setSuggestionError] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [pendingSuggestion, setPendingSuggestion] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorModalTitle, setErrorModalTitle] = useState('Something needs attention');
+    const [errorMessages, setErrorMessages] = useState([]);
+    const [isRedirectingToWorkspace, setIsRedirectingToWorkspace] = useState(false);
 
     const isTextSource = data.source_type === 'text';
     const usageLimitReached = Boolean(usageLimits?.reached);
@@ -123,6 +127,20 @@ export default function CreateContent({
         return true;
     };
 
+    const openErrorModal = (messages, title = 'Something needs attention') => {
+        const nextMessages = (Array.isArray(messages) ? messages : [messages])
+            .map((message) => String(message || '').trim())
+            .filter(Boolean);
+
+        if (nextMessages.length === 0) {
+            return;
+        }
+
+        setErrorModalTitle(title);
+        setErrorMessages([...new Set(nextMessages)]);
+        setShowErrorModal(true);
+    };
+
     const handleFileChange = (event) => {
         const nextFile = event.target.files[0] || null;
         setData('source_file', nextFile);
@@ -147,6 +165,14 @@ export default function CreateContent({
     }, [progress?.percentage]);
 
     useEffect(() => {
+        const nextErrors = Object.values(errors ?? {}).filter(Boolean);
+
+        if (nextErrors.length > 0) {
+            openErrorModal(nextErrors, 'Please fix this before continuing');
+        }
+    }, [errors]);
+
+    useEffect(() => {
         return () => {
             if (uploadFinishTimeoutRef.current) {
                 window.clearTimeout(uploadFinishTimeoutRef.current);
@@ -163,6 +189,7 @@ export default function CreateContent({
         setUploadProgress(null);
         setIsIndeterminateUpload(false);
         setIsWaitingForServer(false);
+        setIsRedirectingToWorkspace(false);
     };
 
     const resetSuggestionState = () => {
@@ -182,6 +209,7 @@ export default function CreateContent({
             forceFormData: true,
             preserveScroll: true,
             onStart: () => {
+                setIsRedirectingToWorkspace(false);
                 if (!isTextSource) {
                     setShowUploadProgress(true);
                     setUploadProgress((current) => current ?? 1);
@@ -201,6 +229,20 @@ export default function CreateContent({
             },
             onSuccess: () => {
                 setIsWaitingForServer(false);
+                setIsRedirectingToWorkspace(true);
+            },
+            onError: (nextErrors) => {
+                setIsWaitingForServer(false);
+                setIsRedirectingToWorkspace(false);
+                setShowUploadProgress(false);
+                setUploadProgress(null);
+                setIsIndeterminateUpload(false);
+
+                const messages = Object.values(nextErrors ?? {}).filter(Boolean);
+
+                if (messages.length > 0) {
+                    openErrorModal(messages, 'Unable to start this run');
+                }
             },
             onFinish: () => {
                 transform((current) => current);
@@ -209,6 +251,7 @@ export default function CreateContent({
                     setShowUploadProgress(false);
                     setUploadProgress(null);
                     setIsWaitingForServer(false);
+                    setIsRedirectingToWorkspace(false);
                     return;
                 }
 
@@ -217,6 +260,7 @@ export default function CreateContent({
                     setUploadProgress(null);
                     setIsIndeterminateUpload(false);
                     setIsWaitingForServer(false);
+                    setIsRedirectingToWorkspace(false);
                 }, 250);
             },
         });
@@ -253,11 +297,13 @@ export default function CreateContent({
 
         if (!data.title.trim()) {
             setError('title', 'A recording title is required.');
+            openErrorModal('A recording title is required.', 'Missing title');
             return;
         }
 
         if (isTextSource && !data.source_text.trim()) {
             setError('source_text', 'A short source is required.');
+            openErrorModal('A short source is required.', 'Missing text source');
             return;
         }
 
@@ -269,7 +315,9 @@ export default function CreateContent({
             setSuggestions(nextSuggestions);
             setPendingSuggestion(nextSuggestions[0] ?? '');
         } catch (error) {
-            setSuggestionError(error.message || 'Unable to generate suggestions right now.');
+            const message = error.message || 'Unable to generate suggestions right now.';
+            setSuggestionError(message);
+            openErrorModal(message, 'Suggestions are unavailable');
         } finally {
             setIsLoadingSuggestions(false);
         }
@@ -277,12 +325,35 @@ export default function CreateContent({
 
     const uploadStatusMessage =
         uploadProgress != null && uploadProgress >= 100 && processing
-            ? isWaitingForServer
-                ? 'Upload sent. Finalizing request and redirecting...'
+            ? isWaitingForServer || isRedirectingToWorkspace
+                ? 'Upload sent. Finalizing request and opening the workspace...'
                 : 'Upload complete.'
             : uploadProgress != null
             ? `Uploading ${Math.round(uploadProgress)}%`
             : 'Preparing upload...';
+
+    const sourceTypeMeta = {
+        video: {
+            eyebrow: 'Video source',
+            title: 'Upload or record one focused video clip.',
+            detail: `Keep it under 1 minute and ${resolvedUploadLimits.video.label}. VoicePost AI extracts the audio first, then generates the final outputs.`,
+        },
+        audio: {
+            eyebrow: 'Audio source',
+            title: 'Use a short audio clip with clear spoken voice.',
+            detail: `Keep it under 1 minute and ${resolvedUploadLimits.audio.label}. MP3, WAV, M4A, and WebM audio are supported.`,
+        },
+        recording: {
+            eyebrow: 'Voice recording',
+            title: 'Capture a quick spoken note and turn it into content.',
+            detail: `Recorded voice notes follow the same 1-minute and ${resolvedUploadLimits.audio.label} audio limits.`,
+        },
+        text: {
+            eyebrow: 'Text source',
+            title: 'Paste one short idea and generate from that angle.',
+            detail: 'Keep it under 200 characters. Text sources skip transcription and go straight into content generation.',
+        },
+    }[data.source_type];
 
     const handleSourceTypeChange = (type) => {
         setData((prev) => ({
@@ -341,7 +412,11 @@ export default function CreateContent({
 
             <div className="grid gap-8 p-6 2xl:grid-cols-[minmax(0,1.22fr)_360px]">
                 <div>
-                    <div className="grid gap-3 lg:grid-cols-1">
+                    <div>
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Choose your source type
+                        </div>
+                        <div className="mt-3 grid gap-3 lg:grid-cols-2">
                         {sourceOptions.map((option) => (
                             <button
                                 key={option.value}
@@ -367,6 +442,7 @@ export default function CreateContent({
                                 </div>
                             </button>
                         ))}
+                        </div>
                     </div>
 
                     <SourceModeSelector
@@ -380,6 +456,18 @@ export default function CreateContent({
                     />
 
                     <form onSubmit={submit} className="mt-6 space-y-5">
+                        <div className="rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
+                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                {sourceTypeMeta.eyebrow}
+                            </div>
+                            <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                                {sourceTypeMeta.title}
+                            </div>
+                            <div className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                                {sourceTypeMeta.detail}
+                            </div>
+                        </div>
+
                         {usageLimits ? (
                             <div className={`rounded-[20px] border px-5 py-4 ${
                                 usageLimitReached
@@ -428,13 +516,15 @@ export default function CreateContent({
                                 className="input-theme"
                                 placeholder={titlePlaceholder}
                             />
-                            {errors.title && <p className="form-error">{errors.title}</p>}
                         </div>
 
                         <div className="grid gap-5">
                             {data.source_type === 'text' ? (
                             <div className="mt-5">
                                 <label className="label-theme">Text Prompt</label>
+                                <div className="mb-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    Keep the note short and direct. One sentence or one tight thought works best.
+                                </div>
                                 <textarea
                                     value={data.source_text}
                                     onChange={(e) => {
@@ -446,9 +536,10 @@ export default function CreateContent({
                                     className="input-theme min-h-[140px]"
                                     placeholder="Enter a short idea, note, or spoken-style prompt..."
                                 />
-                                {errors.source_text ? (
-                                    <div className="mt-2 text-sm text-red-600">{errors.source_text}</div>
-                                ) : null}
+                                <div className="mt-2 flex items-center justify-between gap-4 text-sm text-[rgb(var(--color-text-muted))]">
+                                    <span>VoicePost AI uses this exact source to generate suggestions and outputs.</span>
+                                    <span>{textLength}/200</span>
+                                </div>
                             </div>
                         ) : (
                             <>
@@ -456,18 +547,25 @@ export default function CreateContent({
                                     <UploadSourcePanel
                                         sourceType={data.source_type}
                                         selectedFile={data.source_file}
-                                        error={errors.source_file}
                                         onFileChange={handleUploadFile}
                                         onClear={clearSelectedFile}
                                     />
                                 ) : null}
 
                                 {data.source_mode === 'record' && data.source_type === 'audio' ? (
-                                    <AudioRecorder onRecorded={handleRecordedFile} maxSeconds={60} />
+                                    <AudioRecorder
+                                        onRecorded={handleRecordedFile}
+                                        onError={(message) => openErrorModal(message, 'Recording access issue')}
+                                        maxSeconds={60}
+                                    />
                                 ) : null}
 
                                 {data.source_mode === 'record' && data.source_type === 'video' ? (
-                                    <VideoRecorder onRecorded={handleRecordedFile} maxSeconds={60} />
+                                    <VideoRecorder
+                                        onRecorded={handleRecordedFile}
+                                        onError={(message) => openErrorModal(message, 'Recording access issue')}
+                                        maxSeconds={60}
+                                    />
                                 ) : null}
 
                                 {data.source_mode !== 'record' ? (
@@ -552,7 +650,13 @@ export default function CreateContent({
                                     disabled={processing || usageLimitReached}
                                     className="btn-primary min-w-[172px] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {usageLimitReached ? 'Usage limit reached' : processing ? 'Processing...' : submitLabel}
+                                    {usageLimitReached
+                                        ? 'Usage limit reached'
+                                        : processing
+                                        ? isRedirectingToWorkspace
+                                            ? 'Opening workspace...'
+                                            : 'Processing...'
+                                        : submitLabel}
                                 </button>
                             </div>
                         </div>
@@ -640,17 +744,6 @@ export default function CreateContent({
                         </div>
                     ) : null}
 
-                    {!isLoadingSuggestions && suggestionError ? (
-                        <div className="rounded-[20px] border border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)] px-5 py-4">
-                            <div className="text-sm font-medium text-[rgb(var(--color-text-strong))]">
-                                Suggestions are unavailable right now.
-                            </div>
-                            <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                {suggestionError}
-                            </div>
-                        </div>
-                    ) : null}
-
                     {!isLoadingSuggestions && suggestions.length > 0 ? (
                         <div className="space-y-3">
                             {suggestions.map((suggestion, index) => (
@@ -721,6 +814,32 @@ export default function CreateContent({
                         disabled={isLoadingSuggestions || !pendingSuggestion}
                     >
                         Generate from selection
+                    </button>
+                </div>
+            </Modal>
+
+            <Modal show={showErrorModal} maxWidth="lg" onClose={() => setShowErrorModal(false)}>
+                <div className="border-b border-[rgb(var(--color-border))] px-6 py-5">
+                    <div className="app-badge-neutral">Create workflow</div>
+                    <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                        {errorModalTitle}
+                    </h3>
+                </div>
+
+                <div className="space-y-3 px-6 py-6">
+                    {errorMessages.map((message, index) => (
+                        <div
+                            key={`${index}-${message}`}
+                            className="rounded-[18px] border border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)] px-4 py-4 text-sm leading-6 text-[rgb(var(--color-text-strong))]"
+                        >
+                            {message}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex justify-end border-t border-[rgb(var(--color-border))] px-6 py-5">
+                    <button type="button" className="btn-primary min-w-[140px]" onClick={() => setShowErrorModal(false)}>
+                        Continue editing
                     </button>
                 </div>
             </Modal>

@@ -1,7 +1,6 @@
 export default function UploadSourcePanel({
     sourceType,
     selectedFile,
-    error,
     onFileChange,
     onClear,
 }) {
@@ -52,9 +51,6 @@ export default function UploadSourcePanel({
                 </div>
             ) : null}
 
-            {error ? (
-                <div className="mt-3 text-sm text-red-600">{error}</div>
-            ) : null}
         </div>
     );
 }

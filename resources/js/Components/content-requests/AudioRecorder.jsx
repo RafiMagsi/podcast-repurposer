@@ -11,8 +11,7 @@ function pickAudioMimeType() {
     return candidates.find((mimeType) => window.MediaRecorder?.isTypeSupported?.(mimeType)) ?? '';
 }
 
-export default function AudioRecorder({ onRecorded, maxSeconds = 60 }) {
-    const [permissionError, setPermissionError] = useState('');
+export default function AudioRecorder({ onRecorded, onError, maxSeconds = 60 }) {
     const [isRecording, setIsRecording] = useState(false);
     const [elapsed, setElapsed] = useState(0);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -46,7 +45,6 @@ export default function AudioRecorder({ onRecorded, maxSeconds = 60 }) {
 
     const startRecording = async () => {
         try {
-            setPermissionError('');
             if (previewUrl) {
                 URL.revokeObjectURL(previewUrl);
                 setPreviewUrl(null);
@@ -111,7 +109,7 @@ export default function AudioRecorder({ onRecorded, maxSeconds = 60 }) {
                 });
             }, 1000);
         } catch (error) {
-            setPermissionError('Microphone access was denied or is not available.');
+            onError?.('Microphone access was denied or is not available.');
         }
     };
 
@@ -160,11 +158,6 @@ export default function AudioRecorder({ onRecorded, maxSeconds = 60 }) {
                     {elapsed}s / {maxSeconds}s
                 </div>
             </div>
-
-            {permissionError ? (
-                <div className="mt-3 text-sm text-red-600">{permissionError}</div>
-            ) : null}
-
             {previewUrl ? (
                 <div className="mt-4 flex h-[120px] items-center rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-4">
                     <audio controls className="w-full" src={previewUrl}>

@@ -180,7 +180,7 @@ Before going live, verify:
 
 ## Important
 
-### 7. Polish the create workflow
+### 7. Polish the create workflow - done
 - Clean up source type selection layout.
 - Improve upload and text entry clarity.
 - Improve validation and error messages.
