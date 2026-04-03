@@ -14,16 +14,20 @@ class SettingsController extends Controller
     {
         return Inertia::render('Settings/Index', [
             'settings' => [
-                'openai_api_key' => $settings->get('openai_api_key', ''),
-                'claude_api_key' => $settings->get('claude_api_key', ''),
-                'aws_access_key_id' => $settings->get('aws_access_key_id', ''),
-                'aws_secret_access_key' => $settings->get('aws_secret_access_key', ''),
+                'openai_api_key' => '',
+                'claude_api_key' => '',
+                'aws_access_key_id' => '',
+                'aws_secret_access_key' => '',
                 'aws_default_region' => $settings->get('aws_default_region', ''),
                 'aws_bucket' => $settings->get('aws_bucket', ''),
                 'aws_url' => $settings->get('aws_url', ''),
                 'aws_endpoint' => $settings->get('aws_endpoint', ''),
                 'aws_use_path_style_endpoint' => $settings->get('aws_use_path_style_endpoint', 'false'),
                 'bypass_openai_for_testing' => $settings->get('bypass_openai_for_testing', 'false'),
+                'has_openai_api_key' => $settings->has('openai_api_key'),
+                'has_claude_api_key' => $settings->has('claude_api_key'),
+                'has_aws_access_key_id' => $settings->has('aws_access_key_id'),
+                'has_aws_secret_access_key' => $settings->has('aws_secret_access_key'),
             ],
         ]);
     }
@@ -43,7 +47,22 @@ class SettingsController extends Controller
             'bypass_openai_for_testing' => ['nullable', 'in:true,false,1,0'],
         ]);
 
+        $secretKeys = [
+            'openai_api_key',
+            'claude_api_key',
+            'aws_access_key_id',
+            'aws_secret_access_key',
+        ];
+
         foreach ($validated as $key => $value) {
+            if (in_array($key, $secretKeys, true)) {
+                if ($value !== null && trim($value) !== '') {
+                    $settings->set($key, $value, 'string', true);
+                }
+
+                continue;
+            }
+
             $settings->set($key, $value, 'string', true);
         }
 

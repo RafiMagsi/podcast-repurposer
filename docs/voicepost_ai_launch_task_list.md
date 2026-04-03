@@ -172,7 +172,7 @@ Before going live, verify:
 - Confirm retry paths reset only the required fields.
 - Remove automatic retries to save OPEN API calls and tokens
 
-### 6. Verify storage and media access security
+### 6. Verify storage and media access security - done
 - Review whether media files should be public or signed.
 - Validate media URLs before rendering players.
 - Confirm settings and secrets stay server-side only.
@@ -183,7 +183,8 @@ Before going live, verify:
 ### 7. Polish the create workflow
 - Clean up source type selection layout.
 - Improve upload and text entry clarity.
-- Improve validation and inline error messages.
+- Improve validation and error messages.
+- Replace all inline errors with popup error messages for better UX.
 - Improve submit success/redirect behavior.
 
 ### 8. Finalize recording UX

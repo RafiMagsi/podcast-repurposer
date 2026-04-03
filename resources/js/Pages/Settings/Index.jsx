@@ -3,6 +3,12 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 
 export default function SettingsIndex({ auth, settings }) {
     const { flash } = usePage().props;
+    const configuredLabels = {
+        openai_api_key: settings.has_openai_api_key,
+        claude_api_key: settings.has_claude_api_key,
+        aws_access_key_id: settings.has_aws_access_key_id,
+        aws_secret_access_key: settings.has_aws_secret_access_key,
+    };
 
     const { data, setData, post, processing, errors } = useForm({
         openai_api_key: settings.openai_api_key || '',
@@ -92,7 +98,11 @@ export default function SettingsIndex({ auth, settings }) {
                                 value={data.openai_api_key}
                                 onChange={(e) => setData('openai_api_key', e.target.value)}
                                 className="input-theme"
+                                placeholder={configuredLabels.openai_api_key ? 'Saved on server. Enter a new key to replace it.' : 'Enter OpenAI API key'}
                             />
+                            {configuredLabels.openai_api_key ? (
+                                <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">Existing key is stored server-side and hidden from the browser.</p>
+                            ) : null}
                             {errors.openai_api_key && <p className="form-error">{errors.openai_api_key}</p>}
                         </div>
                         <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
@@ -136,7 +146,11 @@ export default function SettingsIndex({ auth, settings }) {
                                 value={data.claude_api_key}
                                 onChange={(e) => setData('claude_api_key', e.target.value)}
                                 className="input-theme"
+                                placeholder={configuredLabels.claude_api_key ? 'Saved on server. Enter a new key to replace it.' : 'Enter Claude API key'}
                             />
+                            {configuredLabels.claude_api_key ? (
+                                <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">Existing key is stored server-side and hidden from the browser.</p>
+                            ) : null}
                             {errors.claude_api_key && <p className="form-error">{errors.claude_api_key}</p>}
                         </div>
                     </div>
@@ -158,7 +172,11 @@ export default function SettingsIndex({ auth, settings }) {
                                 value={data.aws_access_key_id}
                                 onChange={(e) => setData('aws_access_key_id', e.target.value)}
                                 className="input-theme"
+                                placeholder={configuredLabels.aws_access_key_id ? 'Saved on server. Enter a new key to replace it.' : 'Enter AWS access key ID'}
                             />
+                            {configuredLabels.aws_access_key_id ? (
+                                <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">Existing key is stored server-side and hidden from the browser.</p>
+                            ) : null}
                             {errors.aws_access_key_id && <p className="form-error">{errors.aws_access_key_id}</p>}
                         </div>
 
@@ -169,7 +187,11 @@ export default function SettingsIndex({ auth, settings }) {
                                 value={data.aws_secret_access_key}
                                 onChange={(e) => setData('aws_secret_access_key', e.target.value)}
                                 className="input-theme"
+                                placeholder={configuredLabels.aws_secret_access_key ? 'Saved on server. Enter a new key to replace it.' : 'Enter AWS secret access key'}
                             />
+                            {configuredLabels.aws_secret_access_key ? (
+                                <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">Existing key is stored server-side and hidden from the browser.</p>
+                            ) : null}
                             {errors.aws_secret_access_key && <p className="form-error">{errors.aws_secret_access_key}</p>}
                         </div>
 

@@ -401,34 +401,36 @@ class ContentRequestController extends Controller
             $contentRequest->contentResponses()->delete();
 
             try {
-                if ($contentRequest->file_path) {
-                    $disk = app(\App\Services\S3DiskFactory::class)->make();
-                    $disk->delete($contentRequest->file_path);
+                $disk = app(\App\Services\S3DiskFactory::class)->make();
 
-                    Log::info('Content request file deleted from storage', [
-                        'content_request_id' => $contentRequest->id,
-                        'file_path' => $contentRequest->file_path,
-                    ]);
+                if ($contentRequest->file_path) {
+                    $this->deleteOwnedMediaPath(
+                        $disk,
+                        $contentRequest->file_path,
+                        ['content-requests/'],
+                        'source file',
+                        $contentRequest
+                    );
                 }
 
                 if ($contentRequest->preview_path) {
-                    $disk = app(\App\Services\S3DiskFactory::class)->make();
-                    $disk->delete($contentRequest->preview_path);
-
-                    Log::info('Content request preview deleted from storage', [
-                        'content_request_id' => $contentRequest->id,
-                        'preview_path' => $contentRequest->preview_path,
-                    ]);
+                    $this->deleteOwnedMediaPath(
+                        $disk,
+                        $contentRequest->preview_path,
+                        ['content-request-previews/'],
+                        'preview',
+                        $contentRequest
+                    );
                 }
 
                 if ($contentRequest->thumbnail_path) {
-                    $disk = app(\App\Services\S3DiskFactory::class)->make();
-                    $disk->delete($contentRequest->thumbnail_path);
-
-                    Log::info('Content request thumbnail deleted from storage', [
-                        'content_request_id' => $contentRequest->id,
-                        'thumbnail_path' => $contentRequest->thumbnail_path,
-                    ]);
+                    $this->deleteOwnedMediaPath(
+                        $disk,
+                        $contentRequest->thumbnail_path,
+                        ['content-request-thumbnails/'],
+                        'thumbnail',
+                        $contentRequest
+                    );
                 }
             } catch (Throwable $storageException) {
                 report($storageException);
@@ -475,19 +477,19 @@ class ContentRequestController extends Controller
 
     private function serializeContentRequest(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): array
     {
-        $mediaUrl = $this->temporaryPreviewUrl($contentRequest, $s3DiskFactory);
+        $mediaUrl = $this->sanitizeMediaUrl($this->temporaryPreviewUrl($contentRequest, $s3DiskFactory));
         $mediaUrlSource = 'temporary_url';
 
         if (! $mediaUrl) {
-            $mediaUrl = $this->signedPreviewUrl($contentRequest);
+            $mediaUrl = $this->sanitizeMediaUrl($this->signedPreviewUrl($contentRequest));
             $mediaUrlSource = 'signed_route';
         }
 
-        $thumbnailUrl = $this->temporaryThumbnailUrl($contentRequest, $s3DiskFactory);
+        $thumbnailUrl = $this->sanitizeMediaUrl($this->temporaryThumbnailUrl($contentRequest, $s3DiskFactory));
         $thumbnailUrlSource = 'temporary_url';
 
         if (! $thumbnailUrl) {
-            $thumbnailUrl = $this->signedThumbnailUrl($contentRequest);
+            $thumbnailUrl = $this->sanitizeMediaUrl($this->signedThumbnailUrl($contentRequest));
             $thumbnailUrlSource = 'signed_route';
         }
 
@@ -821,5 +823,47 @@ class ContentRequestController extends Controller
 
             return null;
         }
+    }
+
+    private function sanitizeMediaUrl(?string $url): ?string
+    {
+        if (! is_string($url) || trim($url) === '') {
+            return null;
+        }
+
+        $parsed = parse_url($url);
+        $scheme = strtolower((string) ($parsed['scheme'] ?? ''));
+
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+
+        if (empty($parsed['host'])) {
+            return null;
+        }
+
+        return $url;
+    }
+
+    private function deleteOwnedMediaPath($disk, string $path, array $allowedPrefixes, string $label, ContentRequest $contentRequest): void
+    {
+        foreach ($allowedPrefixes as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                $disk->delete($path);
+
+                Log::info(sprintf('Content request %s deleted from storage', $label), [
+                    'content_request_id' => $contentRequest->id,
+                    'path' => $path,
+                ]);
+
+                return;
+            }
+        }
+
+        Log::warning('Skipped deleting unexpected media path', [
+            'content_request_id' => $contentRequest->id,
+            'label' => $label,
+            'path' => $path,
+        ]);
     }
 }

@@ -1,9 +1,29 @@
 import { useEffect, useRef } from 'react';
 
+function safeMediaUrl(url) {
+    if (!url || typeof url !== 'string') {
+        return null;
+    }
+
+    try {
+        const parsed = new URL(url, window.location.origin);
+
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+            return null;
+        }
+
+        return parsed.toString();
+    } catch (_error) {
+        return null;
+    }
+}
+
 export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
     const isVideoSource = contentRequest.media_kind === 'video';
     const isAudioSource = contentRequest.media_kind === 'audio';
     const mediaElementRef = useRef(null);
+    const mediaUrl = safeMediaUrl(contentRequest.media_url);
+    const thumbnailUrl = safeMediaUrl(contentRequest.media_thumbnail_url);
 
     useEffect(() => {
         const stopPreview = () => {
@@ -74,7 +94,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                             {contentRequest.source_text || 'No text source available.'}
                         </div>
                     </div>
-                ) : isAudioSource && contentRequest.media_url ? (
+                ) : isAudioSource && mediaUrl ? (
                     <div className="rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Audio preview
@@ -85,33 +105,33 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                                 controls
                                 preload="metadata"
                                 className="w-full"
-                                src={contentRequest.media_url}
+                                src={mediaUrl}
                             >
                                 Your browser does not support audio playback.
                             </audio>
                         </div>
                     </div>
-                ) : isVideoSource && (contentRequest.media_url || contentRequest.media_thumbnail_url) ? (
+                ) : isVideoSource && (mediaUrl || thumbnailUrl) ? (
                     <div className="rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Video preview
                         </div>
                         <div className="mt-4 overflow-hidden rounded-[18px] border border-[rgb(var(--color-border))] bg-black">
                             <div className="relative flex h-[420px] items-center justify-center bg-black sm:h-[460px] lg:h-[500px]">
-                                {contentRequest.media_url ? (
+                                {mediaUrl ? (
                                     <video
                                         ref={mediaElementRef}
                                         controls
                                         preload="metadata"
-                                        poster={contentRequest.media_thumbnail_url || undefined}
+                                        poster={thumbnailUrl || undefined}
                                         className="max-h-full max-w-full object-contain"
-                                        src={contentRequest.media_url}
+                                        src={mediaUrl}
                                     >
                                         Your browser does not support video playback.
                                     </video>
-                                ) : contentRequest.media_thumbnail_url ? (
+                                ) : thumbnailUrl ? (
                                     <img
-                                        src={contentRequest.media_thumbnail_url}
+                                        src={thumbnailUrl}
                                         alt={`${contentRequest.title} thumbnail`}
                                         className="max-h-full max-w-full object-contain"
                                     />

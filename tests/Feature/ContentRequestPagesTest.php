@@ -2,6 +2,8 @@
 
 use App\Models\ContentRequest;
 use App\Models\User;
+use App\Services\S3DiskFactory;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\RateLimiter;
 
 it('redirects guests from content request pages', function () {
@@ -165,4 +167,38 @@ it('rate limits retry and regenerate actions with a safe fallback error', functi
     ]);
 
     RateLimiter::clear($key);
+});
+
+it('deletes only expected media paths from storage when removing a content request', function () {
+    $user = User::factory()->create();
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Delete me',
+        'tone' => 'professional',
+        'input_type' => 'video',
+        'media_kind' => 'video',
+        'original_file_name' => 'clip.mp4',
+        'file_path' => '../unexpected/path.mp4',
+        'preview_path' => 'content-request-previews/safe-preview.mp4',
+        'thumbnail_path' => 'content-request-thumbnails/safe-thumb.jpg',
+        'mime_type' => 'video/mp4',
+        'file_size' => 1024,
+        'status' => ContentRequest::STATUS_COMPLETED,
+    ]);
+
+    $fakeDisk = \Mockery::mock(Filesystem::class);
+    $fakeDisk->shouldReceive('delete')->once()->with('content-request-previews/safe-preview.mp4');
+    $fakeDisk->shouldReceive('delete')->once()->with('content-request-thumbnails/safe-thumb.jpg');
+    $fakeDisk->shouldNotReceive('delete')->with('../unexpected/path.mp4');
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldReceive('make')->once()->andReturn($fakeDisk);
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $response = $this
+        ->actingAs($user)
+        ->delete(route('content-requests.destroy', $contentRequest));
+
+    $response->assertRedirect(route('content-requests.index'));
+    expect(ContentRequest::find($contentRequest->id))->toBeNull();
 });
