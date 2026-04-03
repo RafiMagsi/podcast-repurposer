@@ -61,7 +61,7 @@ class ContentRequestController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
-            'source_type' => ['required', 'in:text,audio,video,recording'],
+            'source_type' => ['required', 'in:text,audio,video'],
             'source_text' => ['nullable', 'string', 'max:200'],
         ]);
 
@@ -101,7 +101,7 @@ class ContentRequestController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
-            'source_type' => ['nullable', 'in:text,audio,video,recording'],
+            'source_type' => ['nullable', 'in:text,audio,video'],
             'source_text' => [
                 'nullable',
                 'string',
@@ -135,10 +135,6 @@ class ContentRequestController extends Controller
         $sourceType = $validated['source_type'] ?? null;
         $sourceText = trim((string) ($validated['source_text'] ?? ''));
         $requestedSourceType = $sourceType;
-
-        if ($sourceType === 'recording') {
-            $sourceType = 'audio';
-        }
 
         if (! $sourceType) {
             if ($request->hasFile('audio')) {
@@ -472,7 +468,7 @@ class ContentRequestController extends Controller
             return 'audio';
         }
 
-        return 'recording';
+        return 'audio';
     }
 
     private function serializeContentRequest(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): array
@@ -625,9 +621,7 @@ class ContentRequestController extends Controller
             return sprintf('Video uploads must be %s or less.', $uploadLimits['video']['label']);
         }
 
-        return $requestedSourceType === 'recording'
-            ? sprintf('Audio recordings must be %s or less.', $uploadLimits['audio']['label'])
-            : sprintf('Audio uploads must be %s or less.', $uploadLimits['audio']['label']);
+        return sprintf('Audio uploads must be %s or less.', $uploadLimits['audio']['label']);
     }
 
     private function validateUploadedMediaDuration(
@@ -650,9 +644,7 @@ class ContentRequestController extends Controller
                     return 'Video uploads must be 1 minute or less.';
                 }
 
-                return $requestedSourceType === 'recording'
-                    ? 'Audio recordings must be 1 minute or less.'
-                    : 'Audio uploads must be 1 minute or less.';
+                return 'Audio uploads must be 1 minute or less.';
             }
 
             return $sourceType === 'video'

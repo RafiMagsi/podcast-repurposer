@@ -23,13 +23,6 @@ const sourceOptions = [
         iconClass: 'profile-icon-blue',
     },
     {
-        value: 'recording',
-        title: '1-minute recording',
-        description: 'Use the same upload flow for a raw voice recording captured from your device.',
-        icon: 'R',
-        iconClass: 'profile-icon-green',
-    },
-    {
         value: 'text',
         title: '200-character sentence',
         description: 'Paste one short idea and turn it into content without uploading a file.',
@@ -71,7 +64,7 @@ export default function CreateContent({
     const { data, setData, post, processing, progress, errors, clearErrors, setError, cancel, transform } = useForm({
         title: '',
         tone: toneOptions[0]?.value || 'professional',
-        source_type: 'text',
+        source_type: sourceOptions[0]?.value || 'video',
         source_mode: 'upload',
         source_file: null,
         source_text: '',
@@ -99,7 +92,7 @@ export default function CreateContent({
     const fileError = errors.source_file || errors.audio;
     const resolvedFileHelpText =
         fileHelpText ??
-        `Supported formats: MP3, WAV, M4A, MP4, MOV, WebM. Audio and recordings must be ${resolvedUploadLimits.audio.label} or less. Video uploads must be ${resolvedUploadLimits.video.label} or less.`;
+        `Supported formats: MP3, WAV, M4A, MP4, MOV, WebM. Audio uploads must be ${resolvedUploadLimits.audio.label} or less. Video uploads must be ${resolvedUploadLimits.video.label} or less.`;
 
     const fileLimitForSourceType = (sourceType) =>
         sourceType === 'video' ? resolvedUploadLimits.video : resolvedUploadLimits.audio;
@@ -342,11 +335,6 @@ export default function CreateContent({
             eyebrow: 'Audio source',
             title: 'Use a short audio clip with clear spoken voice.',
             detail: `Keep it under 1 minute and ${resolvedUploadLimits.audio.label}. MP3, WAV, M4A, and WebM audio are supported.`,
-        },
-        recording: {
-            eyebrow: 'Voice recording',
-            title: 'Capture a quick spoken note and turn it into content.',
-            detail: `Recorded voice notes follow the same 1-minute and ${resolvedUploadLimits.audio.label} audio limits.`,
         },
         text: {
             eyebrow: 'Text source',
@@ -668,7 +656,7 @@ export default function CreateContent({
                         Limits
                     </div>
                     <div className="mt-3 space-y-3 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                        <p>Video, audio, or recording: 1 minute</p>
+                        <p>Video or audio: 1 minute</p>
                         <p>Text note: 200 characters</p>
                         <p>Outputs: summary, LinkedIn post, X post, Instagram caption, and newsletter from one idea.</p>
                     </div>

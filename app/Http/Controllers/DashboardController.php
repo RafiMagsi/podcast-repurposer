@@ -46,6 +46,6 @@ class DashboardController extends Controller
             return 'audio';
         }
 
-        return 'recording';
+        return 'audio';
     }
 }

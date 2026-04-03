@@ -452,6 +452,8 @@
     .profile-card-active {
         border-width: 2px;
         border-color: rgb(154 164 196);
+        background: rgb(var(--color-surface-blue));
+        box-shadow: 0 10px 24px rgba(173, 189, 233, 0.18);
     }
 
     .profile-icon {

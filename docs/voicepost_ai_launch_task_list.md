@@ -194,7 +194,7 @@ Before going live, verify:
 - Handle permission denial gracefully.
 - Show audio visualizer for recordings
 
-### 9. Validate all five content outputs
+### 9. Validate all five content outputs - done
 - Verify summary format is concise and consistent.
 - Verify LinkedIn post format matches product tone.
 - Verify X post stays under the required limit.

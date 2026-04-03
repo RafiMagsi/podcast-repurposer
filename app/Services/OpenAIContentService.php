@@ -33,13 +33,13 @@ class OpenAIContentService
 
             $summary = 'Test mode summary: ' . mb_substr($base, 0, 140);
 
-            return [
+            return $this->normalizeOutputs([
                 'summary' => $summary,
                 'linkedin_post' => "Test mode LinkedIn post:\n\n" . mb_substr($base, 0, 220) . "\n\n#AI #Testing #VoicePostAI",
                 'x_post' => 'Test mode X post: ' . mb_substr($base, 0, 180),
                 'instagram_caption' => "Test mode Instagram caption:\n\n" . mb_substr($base, 0, 160) . "\n\n#VoicePostAI #Content #AI #Marketing #Testing",
                 'newsletter' => "Subject: Test mode newsletter idea\n\n" . mb_substr($base, 0, 320),
-            ];
+            ], $base);
         }
 
         $apiKey = $this->settings->get('openai_api_key');
@@ -214,13 +214,211 @@ PROMPT;
             throw new RuntimeException('OpenAI did not return valid JSON. JSON error: ' . json_last_error_msg());
         }
 
-        return [
+        return $this->normalizeOutputs([
             'summary' => trim((string) ($decoded['summary'] ?? '')),
             'linkedin_post' => trim((string) ($decoded['linkedin_post'] ?? '')),
             'x_post' => trim((string) ($decoded['x_post'] ?? '')),
             'instagram_caption' => trim((string) ($decoded['instagram_caption'] ?? '')),
             'newsletter' => trim((string) ($decoded['newsletter'] ?? '')),
+        ], $source);
+    }
+
+    protected function normalizeOutputs(array $outputs, string $source): array
+    {
+        $summary = $this->normalizeSummary((string) ($outputs['summary'] ?? ''), $source);
+        $linkedinPost = $this->normalizeLinkedInPost((string) ($outputs['linkedin_post'] ?? ''), $summary);
+        $xPost = $this->normalizeXPost((string) ($outputs['x_post'] ?? ''), $summary);
+        $instagramCaption = $this->normalizeInstagramCaption((string) ($outputs['instagram_caption'] ?? ''), $summary . ' ' . $source);
+        $newsletter = $this->normalizeNewsletter((string) ($outputs['newsletter'] ?? ''), $summary, $source);
+
+        foreach ([
+            'summary' => $summary,
+            'linkedin_post' => $linkedinPost,
+            'x_post' => $xPost,
+            'instagram_caption' => $instagramCaption,
+            'newsletter' => $newsletter,
+        ] as $key => $value) {
+            if (trim($value) === '') {
+                throw new RuntimeException("OpenAI content generation returned an invalid {$key} output.");
+            }
+        }
+
+        return [
+            'summary' => $summary,
+            'linkedin_post' => $linkedinPost,
+            'x_post' => $xPost,
+            'instagram_caption' => $instagramCaption,
+            'newsletter' => $newsletter,
         ];
+    }
+
+    protected function normalizeSummary(string $summary, string $source): string
+    {
+        $candidate = $this->normalizeWhitespace($summary);
+
+        if ($candidate === '') {
+            $candidate = $this->normalizeWhitespace($source);
+        }
+
+        $sentences = preg_split('/(?<=[.!?])\s+/u', $candidate, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $sentences = array_values(array_filter(array_map(fn ($sentence) => trim($sentence), $sentences)));
+
+        if (count($sentences) === 0 && $candidate !== '') {
+            $sentences = [$this->ensureSentenceEnding(mb_substr($candidate, 0, 180))];
+        }
+
+        if (count($sentences) === 1) {
+            $sentences[0] = $this->ensureSentenceEnding($sentences[0]);
+        }
+
+        return trim(implode(' ', array_slice($sentences, 0, 3)));
+    }
+
+    protected function normalizeLinkedInPost(string $post, string $summary): string
+    {
+        $candidate = trim($post) !== '' ? trim($post) : $summary;
+        $candidate = preg_replace('/(?:\n\s*){3,}/', "\n\n", $candidate);
+        $candidate = preg_replace('/(?:^|\s)#\S+/u', '', $candidate);
+        $candidate = trim((string) $candidate);
+
+        $words = preg_split('/\s+/u', $candidate, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if (count($words) > 170) {
+            $candidate = $this->truncateWords($candidate, 170);
+        }
+
+        return trim($candidate);
+    }
+
+    protected function normalizeXPost(string $post, string $summary): string
+    {
+        $candidate = $this->normalizeWhitespace($post);
+
+        if ($candidate === '') {
+            $candidate = $summary;
+        }
+
+        if (mb_strlen($candidate) <= 280) {
+            return $candidate;
+        }
+
+        $truncated = mb_substr($candidate, 0, 277);
+        $truncated = preg_replace('/\s+\S*$/u', '', $truncated) ?: $truncated;
+
+        return rtrim($truncated, " \t\n\r\0\x0B.,;:-") . '...';
+    }
+
+    protected function normalizeInstagramCaption(string $caption, string $seedText): string
+    {
+        $candidate = trim($caption);
+        preg_match_all('/#([\p{L}\p{N}_]+)/u', $candidate, $matches);
+        $hashtags = array_values(array_unique(array_map(
+            fn ($tag) => '#' . trim($tag),
+            $matches[1] ?? []
+        )));
+
+        $body = trim((string) preg_replace('/(?:^|\s)#[\p{L}\p{N}_]+/u', '', $candidate));
+        $body = preg_replace('/(?:\n\s*){3,}/', "\n\n", $body);
+        $body = trim((string) $body);
+
+        if ($body === '') {
+            $body = $this->normalizeSummary($seedText, $seedText);
+        }
+
+        if (count($hashtags) < 5) {
+            $hashtags = array_values(array_unique(array_merge($hashtags, $this->deriveHashtags($seedText))));
+        }
+
+        $hashtags = array_slice($hashtags, 0, 5);
+
+        while (count($hashtags) < 5) {
+            $hashtags[] = '#VoicePostAI';
+            $hashtags = array_values(array_unique($hashtags));
+        }
+
+        return $body . "\n\n" . implode(' ', array_slice($hashtags, 0, 5));
+    }
+
+    protected function normalizeNewsletter(string $newsletter, string $summary, string $source): string
+    {
+        $candidate = trim($newsletter);
+        $subject = '';
+        $body = '';
+
+        if (preg_match('/^subject:\s*(.+)$/im', $candidate, $matches)) {
+            $subject = trim($matches[1]);
+            $body = trim((string) preg_replace('/^subject:\s*.+$/im', '', $candidate, 1));
+        } else {
+            $body = $candidate;
+        }
+
+        if ($subject === '') {
+            $subjectSeed = $summary !== '' ? $summary : $this->normalizeWhitespace($source);
+            $subject = rtrim(mb_substr($subjectSeed, 0, 72), " \t\n\r\0\x0B.,;:-");
+        }
+
+        if ($body === '') {
+            $body = $summary !== '' ? $summary : $this->normalizeWhitespace($source);
+        }
+
+        return 'Subject: ' . $this->ensureSentenceEnding($subject, false) . "\n\n" . trim($body);
+    }
+
+    protected function deriveHashtags(string $text): array
+    {
+        preg_match_all('/\b[\p{L}][\p{L}\p{N}]{3,}\b/u', mb_strtolower($text), $matches);
+        $stopWords = ['this', 'that', 'with', 'from', 'your', 'have', 'into', 'about', 'there', 'their', 'would', 'could', 'should', 'voicepost', 'post', 'content'];
+        $hashtags = [];
+
+        foreach ($matches[0] ?? [] as $word) {
+            if (in_array($word, $stopWords, true)) {
+                continue;
+            }
+
+            $hashtags[] = '#' . ucfirst($word);
+
+            if (count(array_unique($hashtags)) >= 5) {
+                break;
+            }
+        }
+
+        return array_values(array_unique(array_merge($hashtags, [
+            '#VoicePostAI',
+            '#ContentMarketing',
+            '#CreatorTools',
+            '#SocialMedia',
+            '#Marketing',
+        ])));
+    }
+
+    protected function truncateWords(string $text, int $maxWords): string
+    {
+        $words = preg_split('/\s+/u', trim($text), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        return implode(' ', array_slice($words, 0, $maxWords));
+    }
+
+    protected function normalizeWhitespace(string $text): string
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", trim($text));
+        $text = preg_replace('/[ \t]+/u', ' ', $text);
+        $text = preg_replace('/\n{3,}/u', "\n\n", $text);
+
+        return trim((string) $text);
+    }
+
+    protected function ensureSentenceEnding(string $text, bool $appendPeriod = true): string
+    {
+        $trimmed = trim($text);
+
+        if ($trimmed === '') {
+            return '';
+        }
+
+        if (! $appendPeriod) {
+            return $trimmed;
+        }
+
+        return preg_match('/[.!?]$/u', $trimmed) ? $trimmed : $trimmed . '.';
     }
 
     protected function extractTextFromResponse(array $json): ?string

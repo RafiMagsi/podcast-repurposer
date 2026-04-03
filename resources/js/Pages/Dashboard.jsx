@@ -49,7 +49,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                             Create content from one short source.
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                            Bring in a 1-minute video, audio clip, recording, or one sentence under
+                            Bring in a 1-minute video, audio clip, or one sentence under
                             200 characters, submit the run, and jump straight into the recording workspace.
                         </p>
                     </div>

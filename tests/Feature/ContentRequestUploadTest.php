@@ -227,13 +227,13 @@ it('rejects recordings longer than 1 minute before storage', function () {
         ->post(route('content-requests.store'), [
             'title' => 'Long recording',
             'tone' => 'professional',
-            'source_type' => 'recording',
+            'source_type' => 'audio',
             'audio' => $file,
         ]);
 
     $response->assertRedirect(route('content-requests.create'));
     $response->assertSessionHasErrors([
-        'source_file' => 'Audio recordings must be 1 minute or less.',
+        'source_file' => 'Audio uploads must be 1 minute or less.',
     ]);
 
     Queue::assertNothingPushed();

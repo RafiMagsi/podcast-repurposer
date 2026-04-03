@@ -40,7 +40,7 @@ class PipelineController extends Controller
             return 'audio';
         }
 
-        return 'recording';
+        return 'audio';
     }
 
     private function activeContentRequests(Request $request)
