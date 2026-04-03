@@ -8,6 +8,7 @@ use App\Jobs\TranscribeContentRequest;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Queue;
 
@@ -300,4 +301,67 @@ it('blocks new processing when the user has reached the usage limit', function (
     $response->assertSessionHasErrors([
         'source_file' => 'You have reached your 2-run limit on the $10 plan. Upgrade or wait before starting a new run.',
     ]);
+});
+
+it('rate limits create and upload actions with a safe error message', function () {
+    $user = User::factory()->create();
+    $key = 'content-rate:create:user:' . $user->id;
+
+    RateLimiter::clear($key);
+
+    foreach (range(1, 8) as $attempt) {
+        RateLimiter::hit($key, 600);
+    }
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldNotReceive('make');
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldNotReceive('assertMediaWithinDurationLimit');
+    $this->app->instance(WhisperService::class, $whisper);
+
+    $file = UploadedFile::fake()->create('sample.mp3', 1000, 'audio/mpeg');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post(route('content-requests.store'), [
+            'title' => 'Rate limited request',
+            'tone' => 'professional',
+            'audio' => $file,
+        ]);
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors([
+        'source_file' => 'Too many new runs in a short time. Please wait a few minutes before creating another one.',
+    ]);
+
+    RateLimiter::clear($key);
+});
+
+it('rate limits suggestion requests with a safe json message', function () {
+    $user = User::factory()->create();
+    $key = 'content-rate:suggestions:user:' . $user->id;
+
+    RateLimiter::clear($key);
+
+    foreach (range(1, 12) as $attempt) {
+        RateLimiter::hit($key, 600);
+    }
+
+    $response = $this
+        ->actingAs($user)
+        ->postJson(route('content-requests.suggestions'), [
+            'title' => 'Idea',
+            'tone' => 'professional',
+            'source_type' => 'text',
+            'source_text' => 'Short note',
+        ]);
+
+    $response->assertStatus(429)
+        ->assertJsonPath('message', 'Too many suggestion requests in a short time. Please wait a few minutes and try again.')
+        ->assertJsonPath('errors.contentRequest.0', 'Too many suggestion requests in a short time. Please wait a few minutes and try again.');
+
+    RateLimiter::clear($key);
 });

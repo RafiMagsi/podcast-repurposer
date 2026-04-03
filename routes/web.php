@@ -40,15 +40,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/content-requests', [ContentRequestController::class, 'index'])->name('content-requests.index');
     Route::get('/content-requests/create', [ContentRequestController::class, 'create'])->name('content-requests.create');
-    Route::post('/content-requests/suggestions', [ContentRequestController::class, 'suggestions'])->name('content-requests.suggestions');
-    Route::post('/content-requests', [ContentRequestController::class, 'store'])->name('content-requests.store');
+    Route::post('/content-requests/suggestions', [ContentRequestController::class, 'suggestions'])
+        ->middleware('content.rate:suggestions')
+        ->name('content-requests.suggestions');
+    Route::post('/content-requests', [ContentRequestController::class, 'store'])
+        ->middleware('content.rate:create')
+        ->name('content-requests.store');
     Route::get('/content-requests/{contentRequest}', [ContentRequestController::class, 'show'])
         ->name('content-requests.show');
     Route::get('/content-requests/{contentRequest}/status', [ContentRequestController::class, 'status'])
         ->name('content-requests.status');
     Route::post('/content-requests/{contentRequest}/retry-transcription', [ContentRequestController::class, 'retryTranscription'])
+        ->middleware('content.rate:action')
         ->name('content-requests.retry-transcription');
     Route::post('/content-requests/{contentRequest}/regenerate-content', [ContentRequestController::class, 'regenerateContent'])
+        ->middleware('content.rate:action')
         ->name('content-requests.regenerate-content');
     Route::post('/content-requests/{contentRequest}/cancel-processing', [ContentRequestController::class, 'cancelProcessing'])
         ->name('content-requests.cancel-processing');

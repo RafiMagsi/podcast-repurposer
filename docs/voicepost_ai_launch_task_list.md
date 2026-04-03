@@ -26,7 +26,7 @@ Validate the 1-minute limit on the server for audio, video, and recordings. Do n
 ### 3. Add usage limits per user
 Track how many runs each user has used and block processing when the limit is reached. Show remaining usage clearly in the UI.
 
-### 4. Add rate limiting and abuse protection
+### 4. Add rate limiting and abuse protection - done
 Protect upload, create, retry, and regenerate actions so users cannot spam jobs or overload storage and queues.
 
 ### 5. Strengthen failed-job handling
@@ -159,17 +159,18 @@ Before going live, verify:
 - Show remaining usage in dashboard and create flow.
 - Block new processing when the limit is reached.
 
-### 4. Add rate limiting and abuse protection
+### 4. Add rate limiting and abuse protection - done
 - Rate-limit create/upload actions.
 - Rate-limit retry and regenerate actions.
 - Prevent repeated spam submissions from the same user.
 - Add safe fallback error messages for blocked requests.
 
 ### 5. Strengthen failed-job handling
-- Ensure failed jobs always update episode status.
+- Ensure failed jobs always update request status.
 - Save a useful error message on failure.
 - Distinguish transcription failure from generation failure.
 - Confirm retry paths reset only the required fields.
+- Remove automatic retries to save OPEN API calls and tokens
 
 ### 6. Verify storage and media access security
 - Review whether media files should be public or signed.

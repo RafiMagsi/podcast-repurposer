@@ -2,6 +2,7 @@
 
 use App\Models\ContentRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\RateLimiter;
 
 it('redirects guests from content request pages', function () {
     $this->get(route('content-requests.index'))->assertRedirect(route('login'));
@@ -128,4 +129,40 @@ it('blocks regenerate content while processing is already active', function () {
     $response->assertSessionHasErrors([
         'contentRequest' => 'This recording is already processing. Cancel it first or wait for it to finish.',
     ]);
+});
+
+it('rate limits retry and regenerate actions with a safe fallback error', function () {
+    $user = User::factory()->create();
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Completed recording',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'Ready transcript',
+        'status' => ContentRequest::STATUS_COMPLETED,
+    ]);
+
+    $key = 'content-rate:action:user:' . $user->id;
+    RateLimiter::clear($key);
+
+    foreach (range(1, 10) as $attempt) {
+        RateLimiter::hit($key, 600);
+    }
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.show', $contentRequest))
+        ->post(route('content-requests.regenerate-content', $contentRequest));
+
+    $response->assertRedirect(route('content-requests.show', $contentRequest));
+    $response->assertSessionHasErrors([
+        'contentRequest' => 'Too many retry or regenerate attempts in a short time. Please wait a few minutes and try again.',
+    ]);
+
+    RateLimiter::clear($key);
 });
