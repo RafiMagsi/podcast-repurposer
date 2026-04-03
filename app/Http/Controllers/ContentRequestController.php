@@ -62,7 +62,7 @@ class ContentRequestController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
-            'source_type' => ['nullable', 'in:video,audio,recording,text'],
+            'source_type' => ['nullable', 'in:text,audio,video,recording'],
             'source_text' => [
                 'nullable',
                 'string',
@@ -73,14 +73,13 @@ class ContentRequestController extends Controller
                 'nullable',
                 'file',
                 'mimes:mp3,wav,m4a,mp4,mov,webm',
-                'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,video/mp4,video/quicktime,video/webm',
-                Rule::requiredIf(fn () => $request->input('source_type') !== 'text' && ! filled($request->input('source_text')) && ! $request->hasFile('audio')),
+                'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,audio/webm,video/mp4,video/quicktime,video/webm',
+                Rule::requiredIf(fn () => $request->input('source_type') !== 'text' && ! $request->hasFile('audio')),
             ],
             'audio' => [
                 'nullable',
                 'file',
-                'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a',
-                'max:' . (int) ceil($uploadLimits['audio']['bytes'] / 1024),
+                'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,audio/webm',
             ],
         ]);
 
@@ -107,12 +106,16 @@ class ContentRequestController extends Controller
             }
         }
 
-        $sourceText = trim((string) ($validated['source_text'] ?? ''));
         $sourceType = $validated['source_type'] ?? null;
+        $sourceText = trim((string) ($validated['source_text'] ?? ''));
+
+        if ($sourceType === 'recording') {
+            $sourceType = 'audio';
+        }
 
         if (! $sourceType) {
             if ($request->hasFile('audio')) {
-                $sourceType = 'recording';
+                $sourceType = 'audio';
             } elseif ($request->hasFile('source_file')) {
                 $uploadedMime = (string) ($file?->getMimeType() ?? '');
                 $sourceType = str_starts_with($uploadedMime, 'video/') ? 'video' : 'audio';
@@ -177,7 +180,9 @@ class ContentRequestController extends Controller
             }
 
             $mimeType = (string) $file->getMimeType();
-            $mediaKind = str_starts_with($mimeType, 'video/') ? 'video' : 'audio';
+            $mediaKind = $sourceType === 'video'
+                ? 'video'
+                : ($sourceType === 'audio' ? 'audio' : (str_starts_with($mimeType, 'video/') ? 'video' : 'audio'));
 
             $contentRequest = ContentRequest::create([
                 'user_id' => $userId,
@@ -427,15 +432,15 @@ class ContentRequestController extends Controller
             $thumbnailUrlSource = 'signed_route';
         }
 
-        Log::debug('Content request preview delivery resolved', [
-            'content_request_id' => $contentRequest->id,
-            'public_id' => $contentRequest->public_id,
-            'media_kind' => $contentRequest->media_kind,
-            'media_url_source' => $mediaUrlSource,
-            'thumbnail_url_source' => $thumbnailUrlSource,
-            'has_media_url' => filled($mediaUrl),
-            'has_thumbnail_url' => filled($thumbnailUrl),
-        ]);
+        // Log::debug('Content request preview delivery resolved', [
+        //     'content_request_id' => $contentRequest->id,
+        //     'public_id' => $contentRequest->public_id,
+        //     'media_kind' => $contentRequest->media_kind,
+        //     'media_url_source' => $mediaUrlSource,
+        //     'thumbnail_url_source' => $thumbnailUrlSource,
+        //     'has_media_url' => filled($mediaUrl),
+        //     'has_thumbnail_url' => filled($thumbnailUrl),
+        // ]);
 
         return [
             'id' => $contentRequest->id,

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@inertiajs/react';
+import SourceModeSelector from '@/Components/content-requests/SourceModeSelector';
+import UploadSourcePanel from '@/Components/content-requests/UploadSourcePanel';
+import AudioRecorder from '@/Components/content-requests/AudioRecorder';
+import VideoRecorder from '@/Components/content-requests/VideoRecorder';
+import MediaPreviewCard from '@/Components/content-requests/MediaPreviewCard';
 
 const sourceOptions = [
     {
@@ -64,7 +69,8 @@ export default function CreateContent({
     const { data, setData, post, processing, progress, errors, clearErrors, setError, cancel } = useForm({
         title: '',
         tone: toneOptions[0]?.value || 'professional',
-        source_type: 'recording',
+        source_type: 'text',
+        source_mode: 'upload',
         source_file: null,
         source_text: '',
     });
@@ -106,23 +112,6 @@ export default function CreateContent({
         clearErrors('source_file');
 
         return true;
-    };
-
-    const handleSourceTypeChange = (sourceType) => {
-        setData('source_type', sourceType);
-
-        if (sourceType === 'text') {
-            setData('source_file', null);
-            clearErrors('source_file');
-            return;
-        }
-
-        if (data.source_file) {
-            validateSourceFile(data.source_file, sourceType);
-            return;
-        }
-
-        clearErrors('source_file');
     };
 
     const handleFileChange = (event) => {
@@ -232,6 +221,34 @@ export default function CreateContent({
             ? `Uploading ${Math.round(uploadProgress)}%`
             : 'Preparing upload...';
 
+    const handleSourceTypeChange = (type) => {
+        setData((prev) => ({
+            ...prev,
+            source_type: type,
+            source_mode: type === 'text' ? 'upload' : 'upload',
+            source_file: null,
+            source_text: type === 'text' ? prev.source_text : '',
+        }));
+
+        clearErrors('source_file');
+        clearErrors('source_text');
+    };
+
+    const handleRecordedFile = (file) => {
+        setData('source_file', file);
+        clearErrors('source_file');
+    };
+
+    const handleUploadFile = (file) => {
+        setData('source_file', file);
+        clearErrors('source_file');
+    };
+
+    const clearSelectedFile = () => {
+        setData('source_file', null);
+        clearErrors('source_file');
+    };
+
     return (
         <div className={`app-card overflow-hidden ${className}`}>
             {showCardHeader ? (
@@ -282,6 +299,16 @@ export default function CreateContent({
                         ))}
                     </div>
 
+                    <SourceModeSelector
+                        sourceType={data.source_type}
+                        value={data.source_mode}
+                        onChange={(mode) => {
+                            setData('source_mode', mode);
+                            setData('source_file', null);
+                            clearErrors('source_file');
+                        }}
+                    />
+
                     <form onSubmit={submit} className="mt-6 space-y-5">
                         <div>
                             <label className="label-theme">Recording title</label>
@@ -296,45 +323,52 @@ export default function CreateContent({
                         </div>
 
                         <div className="grid gap-5">
-                            <div>
-                                {isTextSource ? (
-                                    <>
-                                        <div className="mb-2 flex items-center justify-between gap-3">
-                                            <label className="label-theme mb-0">Text sentence</label>
-                                            <span className="text-xs font-medium text-[rgb(var(--color-text-faint))]">
-                                                {textLength}/200
-                                            </span>
-                                        </div>
-                                        <textarea
-                                            value={data.source_text}
-                                            onChange={(e) => setData('source_text', e.target.value.slice(0, 200))}
-                                            className="textarea-theme"
-                                            rows={6}
-                                            maxLength={200}
-                                            placeholder="Paste one short insight, takeaway, or idea. Keep it under 200 characters."
-                                        />
-                                        {errors.source_text && <p className="form-error">{errors.source_text}</p>}
-                                    </>
-                                ) : (
-                                    <>
-                                        <label className="label-theme">
-                                            {data.source_type === 'video' ? 'Video file' : 'Source file'}
-                                        </label>
-                                        <div className="upload-zone min-h-[220px] items-start justify-start text-left">
-                                            <input
-                                                type="file"
-                                                accept="audio/*,video/mp4,video/quicktime,video/webm"
-                                                onChange={handleFileChange}
-                                                className="block w-full text-sm text-[rgb(var(--color-text-muted))] file:mr-4 file:rounded-full file:border-0 file:bg-[rgb(var(--color-primary))] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[rgb(var(--color-primary-hover))]"
-                                            />
-                                            <div className="mt-4 max-w-sm text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                                {resolvedFileHelpText}
-                                            </div>
-                                        </div>
-                                        {fileError && <p className="form-error">{fileError}</p>}
-                                    </>
-                                )}
+                            {data.source_type === 'text' ? (
+                            <div className="mt-5">
+                                <label className="label-theme">Text Prompt</label>
+                                <textarea
+                                    value={data.source_text}
+                                    onChange={(e) => {
+                                        setData('source_text', e.target.value);
+                                        clearErrors('source_text');
+                                    }}
+                                    rows={5}
+                                    className="input-theme min-h-[140px]"
+                                    placeholder="Enter a short idea, note, or spoken-style prompt..."
+                                />
+                                {errors.source_text ? (
+                                    <div className="mt-2 text-sm text-red-600">{errors.source_text}</div>
+                                ) : null}
                             </div>
+                        ) : (
+                            <>
+                                {data.source_mode === 'upload' ? (
+                                    <UploadSourcePanel
+                                        sourceType={data.source_type}
+                                        selectedFile={data.source_file}
+                                        error={errors.source_file}
+                                        onFileChange={handleUploadFile}
+                                        onClear={clearSelectedFile}
+                                    />
+                                ) : null}
+
+                                {data.source_mode === 'record' && data.source_type === 'audio' ? (
+                                    <AudioRecorder onRecorded={handleRecordedFile} maxSeconds={60} />
+                                ) : null}
+
+                                {data.source_mode === 'record' && data.source_type === 'video' ? (
+                                    <VideoRecorder onRecorded={handleRecordedFile} maxSeconds={60} />
+                                ) : null}
+
+                                {data.source_mode !== 'record' ? (
+                                    <MediaPreviewCard
+                                        file={data.source_file}
+                                        sourceType={data.source_type}
+                                        sourceText={data.source_text}
+                                    />
+                                ) : null}
+                            </>
+                        )}
 
                             <div>
                                 <label className="label-theme">Voice and tone</label>

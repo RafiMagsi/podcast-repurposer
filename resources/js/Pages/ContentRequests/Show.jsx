@@ -173,6 +173,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                     return 'Upload received. Video preview preparation is queued and will start shortly.';
                 }
 
+                if (liveContentRequest.media_kind === 'audio') {
+                    return 'Upload received. Audio processing will start shortly.';
+                }
+
                 return 'Upload received. Waiting to start processing.';
             case 'transcribing':
                 if (liveContentRequest.compression_status === 'started') {
@@ -181,6 +185,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         (!liveContentRequest.preview_path || !liveContentRequest.media_thumbnail_url)
                     ) {
                         return 'Preparing video preview, extracting a thumbnail, and getting the source ready for transcription...';
+                    }
+
+                    if (liveContentRequest.media_kind === 'audio') {
+                        return 'Preparing audio and compressing it for transcription...';
                     }
 
                     return 'Preparing media, extracting audio, and compressing for transcription...';
