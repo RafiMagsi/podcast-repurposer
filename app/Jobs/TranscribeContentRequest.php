@@ -61,9 +61,26 @@ class TranscribeContentRequest implements ShouldQueue
                 'transcript_length' => strlen($transcript),
             ]);
 
+            $transcript = trim((string) $whisperService->transcribe($contentRequest));
+
+            if ($transcript === '') {
+                $contentRequest->update([
+                    'status' => 'failed',
+                    'error_message' => 'Transcription returned empty text.',
+                ]);
+
+                Log::error('TranscribeContentRequest empty transcript', [
+                    'content_request_id' => $contentRequest->id,
+                    'mime_type' => $contentRequest->mime_type,
+                ]);
+
+                return;
+            }
+
             $contentRequest->update([
                 'transcript' => $transcript,
                 'status' => 'transcribed',
+                'error_message' => null,
             ]);
 
             Log::info('Content request status changed to transcribed', [

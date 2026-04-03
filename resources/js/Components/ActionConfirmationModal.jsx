@@ -29,14 +29,18 @@ export default function ActionConfirmationModal({
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
                         >
-                            <path
-                                fillRule="evenodd"
-                                d="M18 10A8 8 0 114 4.92V4a1 1 0 10-2 0v4a1 1 0 001 1h4a1 1 0 100-2H5.14A6 6 0 1016 10a1 1 0 102 0z"
-                                clipRule="evenodd"
-                            />
+                            <path d="M3 12a9 9 0 0 1 15.3-6.3" />
+                            <path d="M18 3v4h-4" />
+                            <path d="M21 12a9 9 0 0 1-15.3 6.3" />
+                            <path d="M6 21v-4h4" />
                         </svg>
                     </div>
 

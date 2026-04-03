@@ -34,6 +34,7 @@ class ContentRequest extends Model
         'input_type',
         'media_kind',
         'source_text',
+        'thumbnail_path',
     ];
 
     protected static function booted(): void

@@ -100,6 +100,7 @@ Before going live, verify:
 - Show video player for uploaded video.
 - Show source text block for text input.
 - Confirm preview works for S3/local URLs.
+- Add Voice and Video recording option with preview
 
 ### 2. Stabilize `WhisperService`
 - Review current transcription flow for audio, video, and recording.

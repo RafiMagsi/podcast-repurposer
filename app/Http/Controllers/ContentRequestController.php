@@ -32,7 +32,7 @@ class ContentRequestController extends Controller
                 'tone' => $contentRequest->tone,
                 'original_file_name' => $contentRequest->original_file_name,
                 'mime_type' => $contentRequest->mime_type,
-                'source_type' => $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
+                'source_type' => $contentRequest->input_type ?? $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
                 'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
             ]);
 
@@ -68,7 +68,6 @@ class ContentRequestController extends Controller
                 'nullable',
                 'file',
                 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,video/mp4,video/quicktime,video/webm',
-                'max:5120',
                 Rule::requiredIf(fn () => $request->input('source_type') !== 'text' && ! filled($request->input('source_text')) && ! $request->hasFile('audio')),
             ],
             'audio' => [
@@ -80,6 +79,20 @@ class ContentRequestController extends Controller
         ]);
 
         $file = $request->file('source_file') ?? $request->file('audio');
+                if ($request->hasFile('source_file')) {
+            $uploadedMime = (string) ($file?->getMimeType() ?? '');
+            $isVideoUpload = str_starts_with($uploadedMime, 'video/');
+            $maxBytes = $isVideoUpload ? 300 * 1024 * 1024 : 15 * 1024 * 1024;
+
+            if (($file?->getSize() ?? 0) > $maxBytes) {
+                return back()->withErrors([
+                    'source_file' => $isVideoUpload
+                        ? 'Video uploads must be 300 MB or less.'
+                        : 'Audio uploads must be 5 MB or less.',
+                ])->withInput();
+            }
+        }
+
         $sourceText = trim((string) ($validated['source_text'] ?? ''));
         $sourceType = $validated['source_type'] ?? null;
 
@@ -106,7 +119,7 @@ class ContentRequestController extends Controller
                     'media_kind' => null,
                     'source_text' => $sourceText,
                     'original_file_name' => null,
-                    'file_path' => null,
+                    'file_path' => '',
                     'mime_type' => 'text/plain',
                     'file_size' => mb_strlen($sourceText),
                     'status' => 'transcribed',
@@ -190,6 +203,27 @@ class ContentRequestController extends Controller
             }
         }
 
+        $thumbnailUrl = null;
+
+        if ($contentRequest->thumbnail_path) {
+            try {
+                $disk = $s3DiskFactory->make();
+                $adapterClass = get_class($disk->getAdapter());
+
+                if (str_contains(strtolower($adapterClass), 's3')) {
+                    $thumbnailUrl = $disk->temporaryUrl(
+                        $contentRequest->thumbnail_path,
+                        now()->addMinutes(30)
+                    );
+                } else {
+                    $thumbnailUrl = $disk->url($contentRequest->thumbnail_path);
+                }
+            } catch (Throwable $e) {
+                report($e);
+                $thumbnailUrl = null;
+            }
+        }
+
         return Inertia::render('ContentRequests/Show', [
             'contentRequest' => [
                 'id' => $contentRequest->id,
@@ -199,7 +233,7 @@ class ContentRequestController extends Controller
                 'tone' => $contentRequest->tone,
                 'original_file_name' => $contentRequest->original_file_name,
                 'mime_type' => $contentRequest->mime_type,
-                'source_type' => $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
+                'source_type' => $contentRequest->input_type ?? $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
                 'file_size' => $contentRequest->file_size,
                 'compressed_file_size' => $contentRequest->compressed_file_size,
                 'compression_status' => $contentRequest->compression_status,
@@ -212,6 +246,7 @@ class ContentRequestController extends Controller
                 'media_kind' => $contentRequest->media_kind,
                 'source_text' => $contentRequest->source_text,
                 'media_url' => $mediaUrl,
+                'media_thumbnail_url' => $thumbnailUrl,
                 'content_responses' => $contentRequest->contentResponses->map(fn ($contentResponse) => [
                     'id' => $contentResponse->id,
                     'content_type' => $contentResponse->content_type,
@@ -334,7 +369,7 @@ class ContentRequestController extends Controller
         return 'recording';
     }
     
-    public function preview(Request $request, ContentRequest $contentRequest)
+    public function preview(Request $request, ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
@@ -343,8 +378,7 @@ class ContentRequestController extends Controller
         }
 
         try {
-            $diskName = config('filesystems.default');
-            $disk = Storage::disk($diskName);
+            $disk = $s3DiskFactory->make();
 
             if (! $disk->exists($contentRequest->file_path)) {
                 abort(404);
