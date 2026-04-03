@@ -7,6 +7,7 @@ use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
 use App\Services\ContentSuggestionService;
 use App\Services\S3DiskFactory;
+use App\Services\UsageLimitService;
 use App\Services\WhisperService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -76,10 +77,26 @@ class ContentRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request, S3DiskFactory $s3DiskFactory, WhisperService $whisperService): RedirectResponse
+    public function store(
+        Request $request,
+        S3DiskFactory $s3DiskFactory,
+        WhisperService $whisperService,
+        UsageLimitService $usageLimitService
+    ): RedirectResponse
     {
         $userId = $request->user()->id;
         $uploadLimits = $this->uploadLimits();
+        $usageSummary = $usageLimitService->summaryForUser($request->user());
+
+        if ($usageSummary['reached']) {
+            return back()->withErrors([
+                'source_file' => sprintf(
+                    'You have reached your %d-run limit on the $%s plan. Upgrade or wait before starting a new run.',
+                    $usageSummary['limit'],
+                    rtrim(rtrim(number_format((float) $usageSummary['plan_price_usd'], 2, '.', ''), '0'), '.')
+                ),
+            ])->withInput();
+        }
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],

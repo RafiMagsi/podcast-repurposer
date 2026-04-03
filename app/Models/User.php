@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'run_limit',
+        'plan_price_usd',
     ];
 
     /**
@@ -43,6 +45,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'run_limit' => 'integer',
+            'plan_price_usd' => 'decimal:2',
         ];
     }
     

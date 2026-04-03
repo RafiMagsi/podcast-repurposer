@@ -53,6 +53,7 @@ const handoffSteps = [
 export default function CreateContent({
     tones = [],
     uploadLimits = null,
+    usageLimits = null,
     showCardHeader = true,
     showCancelButton = false,
     preserveScroll = false,
@@ -89,6 +90,7 @@ export default function CreateContent({
     const [pendingSuggestion, setPendingSuggestion] = useState('');
 
     const isTextSource = data.source_type === 'text';
+    const usageLimitReached = Boolean(usageLimits?.reached);
     const textLength = data.source_text.length;
     const fileError = errors.source_file || errors.audio;
     const resolvedFileHelpText =
@@ -378,6 +380,41 @@ export default function CreateContent({
                     />
 
                     <form onSubmit={submit} className="mt-6 space-y-5">
+                        {usageLimits ? (
+                            <div className={`rounded-[20px] border px-5 py-4 ${
+                                usageLimitReached
+                                    ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
+                                    : 'border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))]'
+                            }`}>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                            Usage remaining
+                                        </div>
+                                        <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                                            {usageLimits.remaining} of {usageLimits.limit} runs left
+                                        </div>
+                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                            ${usageLimits.plan_price_usd} plan. Every new request uses one run.
+                                        </div>
+                                    </div>
+                                    <div className="min-w-[180px]">
+                                        <div className="usage-bar-track">
+                                            <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
+                                        </div>
+                                        <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                            {usageLimits.used} used
+                                        </div>
+                                    </div>
+                                </div>
+                                {usageLimitReached ? (
+                                    <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                        The current quota is exhausted. New processing is blocked until the limit is increased.
+                                    </div>
+                                ) : null}
+                            </div>
+                        ) : null}
+
                         <div>
                             <label className="label-theme">Recording title</label>
                             <input
@@ -512,10 +549,10 @@ export default function CreateContent({
                                 ) : null}
                                 <button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={processing || usageLimitReached}
                                     className="btn-primary min-w-[172px] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {processing ? 'Processing...' : submitLabel}
+                                    {usageLimitReached ? 'Usage limit reached' : processing ? 'Processing...' : submitLabel}
                                 </button>
                             </div>
                         </div>

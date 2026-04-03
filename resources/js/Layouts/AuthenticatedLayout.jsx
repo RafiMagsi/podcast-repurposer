@@ -29,6 +29,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
     const page = usePage();
     const url = page.url || '';
     const authUser = passedUser || page.props?.auth?.user || null;
+    const usageLimits = page.props?.usageLimits || null;
     const breadcrumb = buildBreadcrumb(url);
 
     return (
@@ -57,16 +58,29 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                         <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                             VoicePost AI
                         </div>
+                        {usageLimits ? (
+                            <div className="mt-1 text-xs text-[rgb(var(--color-text-muted))]">
+                                ${usageLimits.plan_price_usd} plan · {usageLimits.remaining} / {usageLimits.limit} runs left
+                            </div>
+                        ) : null}
                         <div className="mt-2 flex items-center gap-3">
                             <div className="flex-1">
                                 <div className="usage-bar-track">
-                                    <div className="usage-bar-fill" style={{ width: '78%' }} />
+                                    <div
+                                        className="usage-bar-fill"
+                                        style={{ width: `${usageLimits?.percent_used ?? 0}%` }}
+                                    />
                                 </div>
                             </div>
                             <span className="text-xs font-medium text-[rgb(var(--color-text-muted))]">
-                                78%
+                                {usageLimits ? `${usageLimits.percent_used}%` : '0%'}
                             </span>
                         </div>
+                        {usageLimits?.reached ? (
+                            <div className="mt-3 rounded-[14px] border border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)] px-3 py-2 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
+                                Usage limit reached. New runs are blocked until the quota is increased.
+                            </div>
+                        ) : null}
                     </div>
 
                     <div className="sidebar-section-label">Workspace</div>

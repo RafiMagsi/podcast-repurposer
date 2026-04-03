@@ -11,7 +11,10 @@ it('redirects guests from content request pages', function () {
 });
 
 it('allows authenticated users to view content request pages', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'run_limit' => 100,
+        'plan_price_usd' => 10,
+    ]);
     $contentRequest = ContentRequest::create([
         'user_id' => $user->id,
         'title' => 'Test recording',
@@ -25,10 +28,19 @@ it('allows authenticated users to view content request pages', function () {
         'status' => ContentRequest::STATUS_UPLOADED,
     ]);
 
-    $this->actingAs($user)->get(route('content-requests.index'))->assertOk();
-    $this->actingAs($user)->get(route('content-requests.create'))->assertOk();
+    $this->actingAs($user)
+        ->get(route('content-requests.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('usageLimits.remaining', 99));
+    $this->actingAs($user)
+        ->get(route('content-requests.create'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('usageLimits.remaining', 99));
     $this->actingAs($user)->get(route('pipeline.index'))->assertOk();
-    $this->actingAs($user)->get(route('dashboard'))->assertOk();
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('usageLimits.limit', 100)->where('usageLimits.plan_price_usd', 10));
     $this->actingAs($user)->get(route('pipeline.status'))->assertOk()->assertJsonStructure(['contentRequests']);
     $statusResponse = $this->actingAs($user)->get(route('content-requests.status', $contentRequest));
     $statusResponse->assertOk()->assertJsonStructure(['contentRequest']);

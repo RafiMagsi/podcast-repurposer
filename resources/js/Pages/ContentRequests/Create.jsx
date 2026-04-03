@@ -1,8 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CreateContent from '@/Components/create-content/CreateContent';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 export default function ContentRequestsCreate({ auth, tones = [], uploadLimits = null }) {
+    const { usageLimits } = usePage().props;
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -15,6 +17,11 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
                             Upload a 1-minute video, audio clip, recording, or paste a sentence under
                             200 characters, then jump straight into the recording workspace while VoicePost AI processes the run.
                         </p>
+                        {usageLimits ? (
+                            <div className="mt-4 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                                {usageLimits.remaining} of {usageLimits.limit} runs remaining on the ${usageLimits.plan_price_usd} plan.
+                            </div>
+                        ) : null}
                     </div>
 
                     <div className="app-card-soft p-6">
@@ -56,6 +63,7 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
             <CreateContent
                 tones={tones}
                 uploadLimits={uploadLimits}
+                usageLimits={usageLimits}
                 showCardHeader={false}
                 showCancelButton
                 titlePlaceholder="e.g. 3 lessons from one client call"

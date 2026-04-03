@@ -153,7 +153,7 @@ Before going live, verify:
 - Validate duration on the server for recordings.
 - Return clear validation errors for over-limit media.
 
-### 3. Add usage limits per user
+### 3. Add usage limits per user - done
 - Track processed runs per user.
 - Add backend limit checks before job dispatch.
 - Show remaining usage in dashboard and create flow.

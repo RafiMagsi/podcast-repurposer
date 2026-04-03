@@ -255,3 +255,49 @@ it('redirects back with a simple upload error when the post body is too large', 
         'source_file' => 'This upload is too large for this server. Choose a smaller file and try again.',
     ]);
 });
+
+it('blocks new processing when the user has reached the usage limit', function () {
+    $user = User::factory()->create([
+        'run_limit' => 2,
+        'plan_price_usd' => 10,
+    ]);
+
+    foreach (range(1, 2) as $index) {
+        ContentRequest::create([
+            'user_id' => $user->id,
+            'title' => 'Used run ' . $index,
+            'tone' => 'professional',
+            'input_type' => 'audio',
+            'media_kind' => 'audio',
+            'original_file_name' => "clip-{$index}.mp3",
+            'file_path' => "content-requests/used-{$index}.mp3",
+            'mime_type' => 'audio/mpeg',
+            'file_size' => 1024,
+            'status' => ContentRequest::STATUS_COMPLETED,
+        ]);
+    }
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldNotReceive('make');
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldNotReceive('assertMediaWithinDurationLimit');
+    $this->app->instance(WhisperService::class, $whisper);
+
+    $file = UploadedFile::fake()->create('sample.mp3', 1000, 'audio/mpeg');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post(route('content-requests.store'), [
+            'title' => 'Blocked request',
+            'tone' => 'professional',
+            'audio' => $file,
+        ]);
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors([
+        'source_file' => 'You have reached your 2-run limit on the $10 plan. Upgrade or wait before starting a new run.',
+    ]);
+});

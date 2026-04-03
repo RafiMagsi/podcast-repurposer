@@ -1,6 +1,6 @@
-export default function StatsCard({ contentRequests, completedCount, processingCount, failedCount }) {
+export default function StatsCard({ contentRequests, completedCount, processingCount, failedCount, usageLimits }) {
     return (
-        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <div className="stat-card">
                 <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                     Total runs
@@ -46,6 +46,18 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                 </div>
                 <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
                     Items that need another pass or a settings fix.
+                </div>
+            </div>
+
+            <div className="stat-card">
+                <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                    Remaining
+                </div>
+                <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
+                    {usageLimits?.remaining ?? '0'}
+                </div>
+                <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                    {usageLimits ? `${usageLimits.limit} runs on the $${usageLimits.plan_price_usd} plan.` : 'Usage data unavailable.'}
                 </div>
             </div>
         </div>

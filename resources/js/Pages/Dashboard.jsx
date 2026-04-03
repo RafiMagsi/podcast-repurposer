@@ -30,7 +30,7 @@ const outputCards = [
 ];
 
 export default function Dashboard({ auth, contentRequests = [] }) {
-    const { flash } = usePage().props;
+    const { flash, usageLimits } = usePage().props;
     const completedCount = contentRequests.filter((contentRequest) => contentRequest.status === 'completed').length;
     const processingCount = contentRequests.filter((contentRequest) =>
         ['uploaded', 'transcribing', 'transcribed', 'generating'].includes(contentRequest.status),
@@ -71,11 +71,37 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                     </div>
                 )}
 
+                {usageLimits ? (
+                    <div className="app-card p-5">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <div className="app-badge-neutral">Usage</div>
+                                <div className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                                    {usageLimits.remaining} of {usageLimits.limit} runs remaining
+                                </div>
+                                <div className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                                    ${usageLimits.plan_price_usd} plan. Each new content request counts as one run.
+                                </div>
+                            </div>
+
+                            <div className="min-w-[220px] flex-1 lg:max-w-[320px]">
+                                <div className="usage-bar-track">
+                                    <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
+                                </div>
+                                <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                    {usageLimits.used} used · {usageLimits.percent_used}% consumed
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+
                 <StatsCard
                     contentRequests={contentRequests}
                     completedCount={completedCount}
                     processingCount={processingCount}
                     failedCount={failedCount}
+                    usageLimits={usageLimits}
                 />
 
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
