@@ -5,6 +5,7 @@ import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 import ProcessingStatusCard from '@/Components/ProcessingStatusCard';
 import ContentResponseCard from '@/Components/content-responses/ContentResponseCard';
+import ContentPreviewCard from '@/Components/content-responses/ContentPreviewCard';
 
 function formatContentType(value) {
     return value
@@ -173,6 +174,19 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             window.removeEventListener('focus', onFocus);
         };
     }, [isProcessing]);
+
+    function sourceLabel(sourceType) {
+        switch (sourceType) {
+            case 'video':
+                return 'Video';
+            case 'text':
+                return 'Text note';
+            case 'audio':
+                return 'Audio';
+            default:
+                return 'Recording';
+        }
+    }
 
     return (
         <AuthenticatedLayout
@@ -345,6 +359,8 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 </div>
 
                 <div className="space-y-6">
+                    <ContentPreviewCard contentRequest={contentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel}/>
+                    
                     <div className="app-card p-6">
                         <div className="flex items-start justify-between gap-4">
                             <div>

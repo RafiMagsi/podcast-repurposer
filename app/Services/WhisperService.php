@@ -147,27 +147,38 @@ class WhisperService
                 throw new RuntimeException('OpenAI transcription failed: ' . $response->body());
             }
 
-            $text = $response->json('text');
+            $payload = $response->json();
 
-            if (! $text) {
-                throw new RuntimeException('OpenAI transcription returned empty text.');
-            }
+            Log::info('OpenAI response debug:payload', [
+                'status' => $response->status(),
+                'text'   => $payload,
+            ]);
 
-            $text = data_get($response->json(), 'output.0.content.0.text')
-            ?? data_get($response->json(), 'output_text');
+            $text = data_get($payload, 'full_response.text')           // ✅ your actual structure
+                ?? data_get($payload, 'text')                          // fallback: raw OpenAI response
+                ?? data_get($payload, 'output.0.content.0.text')       // Responses API format
+                ?? data_get($payload, 'output_text')                   // another fallback
+                ?? data_get($payload, 'results.0.alternatives.0.transcript'); // just in case
 
             Log::info('OpenAI response debug', [
                 'status' => $response->status(),
-                'text' => $text,
-                'full_response' => $response->json(),
+                'text'   => $text,
             ]);
+
+            if (! is_string($text) || trim($text) === '') {
+                throw new RuntimeException('OpenAI transcription returned empty text. Payload: ' . json_encode($payload));
+            }
+
+            $text = trim($text);
+
 
             Log::info('OpenAI transcription text extracted successfully', [
                 'content_request_id' => $contentRequest->id,
                 'text_length' => strlen($text),
             ]);
 
-            return trim($text);
+            return $text;
+            
         } catch (\Throwable $e) {
             $contentRequest->update([
                 'compression_status' => 'failed',

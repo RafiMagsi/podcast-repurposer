@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('content-requests.regenerate-content');
     Route::delete('/content-requests/{contentRequest}', [ContentRequestController::class, 'destroy'])
         ->name('content-requests.destroy');
+    Route::get('/content-requests/{contentRequest}/preview', [ContentRequestController::class, 'preview'])
+        ->name('content-requests.preview');
 });
 
 

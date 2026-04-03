@@ -31,6 +31,9 @@ class ContentRequest extends Model
         'transcript',
         'summary',
         'error_message',
+        'input_type',
+        'media_kind',
+        'source_text',
     ];
 
     protected static function booted(): void

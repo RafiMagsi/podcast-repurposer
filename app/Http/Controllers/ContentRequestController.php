@@ -13,7 +13,8 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
-
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContentRequestController extends Controller
 {
@@ -80,7 +81,20 @@ class ContentRequestController extends Controller
 
         $file = $request->file('source_file') ?? $request->file('audio');
         $sourceText = trim((string) ($validated['source_text'] ?? ''));
-        $isTextSource = $request->input('source_type') === 'text' || ($sourceText !== '' && ! $file);
+        $sourceType = $validated['source_type'] ?? null;
+
+        if (! $sourceType) {
+            if ($request->hasFile('audio')) {
+                $sourceType = 'recording';
+            } elseif ($request->hasFile('source_file')) {
+                $uploadedMime = (string) ($file?->getMimeType() ?? '');
+                $sourceType = str_starts_with($uploadedMime, 'video/') ? 'video' : 'audio';
+            } elseif ($sourceText !== '') {
+                $sourceType = 'text';
+            }
+        }
+
+        $isTextSource = $sourceType === 'text' || ($sourceText !== '' && ! $file);
 
         try {
             if ($isTextSource) {
@@ -88,8 +102,11 @@ class ContentRequestController extends Controller
                     'user_id' => $request->user()->id,
                     'title' => $validated['title'],
                     'tone' => $validated['tone'],
+                    'input_type' => 'text',
+                    'media_kind' => null,
+                    'source_text' => $sourceText,
                     'original_file_name' => null,
-                    'file_path' => '',
+                    'file_path' => null,
                     'mime_type' => 'text/plain',
                     'file_size' => mb_strlen($sourceText),
                     'status' => 'transcribed',
@@ -115,13 +132,19 @@ class ContentRequestController extends Controller
                 ]);
             }
 
+            $mimeType = (string) $file->getMimeType();
+            $mediaKind = str_starts_with($mimeType, 'video/') ? 'video' : 'audio';
+
             $contentRequest = ContentRequest::create([
                 'user_id' => $request->user()->id,
                 'title' => $validated['title'],
                 'tone' => $validated['tone'],
+                'input_type' => $sourceType,
+                'media_kind' => $mediaKind,
+                'source_text' => null,
                 'original_file_name' => $file->getClientOriginalName(),
                 'file_path' => $path,
-                'mime_type' => $file->getMimeType(),
+                'mime_type' => $mimeType,
                 'file_size' => $file->getSize(),
                 'status' => 'uploaded',
             ]);
@@ -140,11 +163,32 @@ class ContentRequestController extends Controller
         }
     }
 
-    public function show(Request $request, ContentRequest $contentRequest): Response
+    public function show(Request $request, ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): Response
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
         $contentRequest->load('contentResponses');
+
+        $mediaUrl = null;
+
+        if ($contentRequest->file_path) {
+            try {
+                $disk = $s3DiskFactory->make();
+                $adapterClass = get_class($disk->getAdapter());
+
+                if (str_contains(strtolower($adapterClass), 's3')) {
+                    $mediaUrl = $disk->temporaryUrl(
+                        $contentRequest->file_path,
+                        now()->addMinutes(30)
+                    );
+                } else {
+                    $mediaUrl = $disk->url($contentRequest->file_path);
+                }
+            } catch (Throwable $e) {
+                report($e);
+                $mediaUrl = null;
+            }
+        }
 
         return Inertia::render('ContentRequests/Show', [
             'contentRequest' => [
@@ -164,6 +208,10 @@ class ContentRequestController extends Controller
                 'summary' => $contentRequest->summary,
                 'error_message' => $contentRequest->error_message,
                 'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
+                'input_type' => $contentRequest->input_type,
+                'media_kind' => $contentRequest->media_kind,
+                'source_text' => $contentRequest->source_text,
+                'media_url' => $mediaUrl,
                 'content_responses' => $contentRequest->contentResponses->map(fn ($contentResponse) => [
                     'id' => $contentResponse->id,
                     'content_type' => $contentResponse->content_type,
@@ -284,5 +332,35 @@ class ContentRequestController extends Controller
         }
 
         return 'recording';
+    }
+    
+    public function preview(Request $request, ContentRequest $contentRequest)
+    {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        if (! $contentRequest->file_path) {
+            abort(404);
+        }
+
+        try {
+            $diskName = config('filesystems.default');
+            $disk = Storage::disk($diskName);
+
+            if (! $disk->exists($contentRequest->file_path)) {
+                abort(404);
+            }
+
+            return $disk->response(
+                $contentRequest->file_path,
+                $contentRequest->original_file_name ?? basename($contentRequest->file_path),
+                [
+                    'Content-Type' => $contentRequest->mime_type ?: 'application/octet-stream',
+                    'Content-Disposition' => 'inline; filename="' . ($contentRequest->original_file_name ?? basename($contentRequest->file_path)) . '"',
+                ]
+            );
+        } catch (Throwable $e) {
+            report($e);
+            abort(404);
+        }
     }
 }
