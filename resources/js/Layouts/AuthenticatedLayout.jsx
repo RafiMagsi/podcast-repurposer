@@ -41,7 +41,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             />
                         </Link>
 
-                        <div className="hidden rounded-full bg-[rgb(var(--color-surface-blue))] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgb(var(--color-secondary-text))] lg:inline-flex">
+                        <div className="hidden rounded-full bg-[rgb(var(--color-surface-blue))] px-3 py-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgb(var(--color-secondary-text))] lg:inline-flex">
                             Studio
                         </div>
                     </div>
@@ -80,7 +80,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             className={`sidebar-link ${isActive(url, '/episodes') ? 'sidebar-link-active' : ''}`}
                         >
                             <span className="sidebar-icon">R</span>
-                            Recordings
+                            Content Library
                         </Link>
                         <Link
                             href={route('settings.index')}

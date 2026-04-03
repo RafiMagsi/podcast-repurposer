@@ -164,7 +164,7 @@ export default function EpisodesIndex({ auth, episodes }) {
                         </div>
                     </div>
                     <Link href={route('episodes.create')} className="btn-primary">
-                        Upload
+                        Create New
                     </Link>
                 </div>
             </div>
@@ -176,7 +176,7 @@ export default function EpisodesIndex({ auth, episodes }) {
                         <p className="app-muted">Your uploaded sources, current status, and entry to each workspace.</p>
                     </div>
                     <Link href={route('episodes.create')} className="btn-secondary">
-                        Add source
+                        Create New
                     </Link>
                 </div>
 

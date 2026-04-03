@@ -413,3 +413,4 @@ Recommended order from here:
 4. Finish Task 17: test with real files and add automated coverage
 5. Give 3 suggestions based on entered source in popup modal, user selects it and then generates the content
 6. Make a prompt for generating ideas, 3 ideas will be given, "Idea hint"
+7. Show processing of AI API calls as AI writing like chatgpt response or claude response, with statuses
