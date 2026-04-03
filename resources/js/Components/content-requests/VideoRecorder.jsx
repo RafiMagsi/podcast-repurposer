@@ -15,12 +15,15 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
     const [isRecording, setIsRecording] = useState(false);
     const [elapsed, setElapsed] = useState(0);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [recordedDuration, setRecordedDuration] = useState(0);
+    const [permissionState, setPermissionState] = useState('idle');
 
     const liveVideoRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const streamRef = useRef(null);
     const chunksRef = useRef([]);
     const timerRef = useRef(null);
+    const elapsedRef = useRef(0);
 
     useEffect(() => {
         return () => {
@@ -44,18 +47,28 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
         }
     };
 
+    const formatDuration = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+
+        return `${mins}:${String(secs).padStart(2, '0')}`;
+    };
+
     const startRecording = async () => {
         try {
+            setPermissionState('requesting');
             if (previewUrl) {
                 URL.revokeObjectURL(previewUrl);
                 setPreviewUrl(null);
             }
 
+            setRecordedDuration(0);
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: true,
                 audio: true,
             });
 
+            setPermissionState('granted');
             streamRef.current = stream;
 
             if (liveVideoRef.current) {
@@ -101,16 +114,20 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 stopTracks();
                 clearTimer();
                 setIsRecording(false);
+                setRecordedDuration(elapsedRef.current || maxSeconds);
                 setElapsed(0);
+                elapsedRef.current = 0;
             };
 
             recorder.start();
             setIsRecording(true);
             setElapsed(0);
+            elapsedRef.current = 0;
 
             timerRef.current = setInterval(() => {
                 setElapsed((prev) => {
                     const next = prev + 1;
+                    elapsedRef.current = next;
                     if (next >= maxSeconds) {
                         stopRecording();
                     }
@@ -118,6 +135,7 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 });
             }, 1000);
         } catch (error) {
+            setPermissionState('denied');
             onError?.('Camera or microphone access was denied or is not available.');
         }
     };
@@ -142,7 +160,10 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
         stopTracks();
         onRecorded(null);
         setElapsed(0);
+        setRecordedDuration(0);
+        elapsedRef.current = 0;
         setIsRecording(false);
+        setPermissionState('idle');
     };
 
     return (
@@ -153,6 +174,28 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
 
             <div className="mt-3 text-sm text-[rgb(var(--color-text-muted))]">
                 Record up to {maxSeconds} seconds. Camera and microphone access are required.
+            </div>
+
+            <div className="recording-status-panel mt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <div className="recording-status-label">
+                            {isRecording ? 'Recording now' : previewUrl ? 'Recording captured' : 'Ready to record'}
+                        </div>
+                        <div className="recording-status-text">
+                            {isRecording
+                                ? 'Camera and microphone are live. Stop when the clip is ready.'
+                                : previewUrl
+                                ? `Saved preview ready. Duration ${formatDuration(recordedDuration)}.`
+                                : 'Use a clear frame and voice. The recorder will stop automatically at 1 minute.'}
+                        </div>
+                    </div>
+
+                    <div className={`recording-pill ${isRecording ? 'recording-pill-live' : ''}`}>
+                        <span className="recording-pill-dot" />
+                        {isRecording ? 'Live' : previewUrl ? 'Saved' : 'Idle'}
+                    </div>
+                </div>
             </div>
 
             <div className="mt-4 overflow-hidden rounded-[18px] border border-[rgb(var(--color-border))] bg-black">
@@ -174,11 +217,11 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
             <div className="mt-4 flex flex-wrap items-center gap-3">
                 {!isRecording ? (
                     <button type="button" onClick={startRecording} className="btn-primary">
-                        Start Video Recording
+                        {previewUrl ? 'Record again' : 'Start recording'}
                     </button>
                 ) : (
-                    <button type="button" onClick={stopRecording} className="btn-primary">
-                        Stop Recording
+                    <button type="button" onClick={stopRecording} className="btn-danger">
+                        Stop recording
                     </button>
                 )}
 
@@ -187,9 +230,20 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 </button>
 
                 <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                    {elapsed}s / {maxSeconds}s
+                    {isRecording ? `${elapsed}s / ${maxSeconds}s` : previewUrl ? formatDuration(recordedDuration) : `0s / ${maxSeconds}s`}
                 </div>
             </div>
+
+            {permissionState === 'denied' ? (
+                <div className="mt-4 rounded-[18px] border border-[rgba(191,61,61,0.18)] bg-[rgb(var(--color-danger-bg))] px-4 py-4">
+                    <div className="text-sm font-semibold text-[rgb(var(--color-danger-text))]">
+                        Camera or microphone access is blocked.
+                    </div>
+                    <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                        Allow camera and microphone access in your browser settings, then try recording again.
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }

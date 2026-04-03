@@ -187,11 +187,12 @@ Before going live, verify:
 - Replace all inline errors with popup error messages for better UX.
 - Improve submit success/redirect behavior.
 
-### 8. Finalize recording UX
+### 8. Finalize recording UX - done
 - Improve record start/stop controls.
 - Show recording state clearly while recording.
 - Show preview and duration after recording stops.
 - Handle permission denial gracefully.
+- Show audio visualizer for recordings
 
 ### 9. Validate all five content outputs
 - Verify summary format is concise and consistent.
