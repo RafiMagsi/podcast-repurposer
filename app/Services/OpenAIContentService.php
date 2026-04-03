@@ -13,7 +13,7 @@ class OpenAIContentService
     ) {
     }
 
-    public function generate(string $transcript, string $tone = 'professional'): array
+    public function generate(string $transcript, string $tone = 'professional', ?string $selectedSuggestion = null): array
     {
         $shouldBypass = filter_var(
             (string) $this->settings->get('bypass_openai_for_testing', 'false'),
@@ -24,6 +24,7 @@ class OpenAIContentService
             Log::info('OpenAIContentService bypassed OpenAI content generation for testing', [
                 'tone' => $tone,
                 'transcript_length' => strlen($transcript),
+                'has_selected_suggestion' => filled($selectedSuggestion),
             ]);
 
             $base = trim($transcript) !== ''
@@ -64,7 +65,7 @@ class OpenAIContentService
             'used_notes' => strlen($cleanTranscript) > 12000,
         ]);
 
-        return $this->generateOutputs($apiKey, $source, $tone);
+        return $this->generateOutputs($apiKey, $source, $tone, $selectedSuggestion);
     }
 
     protected function cleanTranscript(string $transcript): string
@@ -120,8 +121,12 @@ PROMPT;
         return trim($text);
     }
 
-    protected function generateOutputs(string $apiKey, string $source, string $tone): array
+    protected function generateOutputs(string $apiKey, string $source, string $tone, ?string $selectedSuggestion = null): array
     {
+        $selectedDirection = filled($selectedSuggestion)
+            ? "Preferred direction:\n{$selectedSuggestion}\n\nUse this direction as the main angle for every output while staying faithful to the source.\n\n"
+            : '';
+
         $prompt = <<<PROMPT
 Return only valid JSON.
 
@@ -138,6 +143,8 @@ Create exactly these outputs:
 - newsletter
 
 Tone: {$tone}
+
+{$selectedDirection}
 
 Output limits:
 - summary: 2 to 3 sentences capturing the core idea

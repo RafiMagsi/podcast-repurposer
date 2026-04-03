@@ -127,19 +127,13 @@ Before going live, verify:
 - Add failure-case tests for invalid files and provider errors.
 - Verify live status polling works during processing.
 
-### 6. Add 3 suggestions from entered source
+### 6. Add 3 suggestions from entered source - done
 - Create backend prompt/service for suggestion generation.
 - Show suggestions in a modal before final generation.
 - Let user select one suggestion to continue.
 - Store or pass the selected suggestion into generation.
 
-### 7. Add “Idea hint” flow
-- Create a prompt that returns 3 idea hints.
-- Add a small UI entry point near text/source input.
-- Show hints in a compact modal or panel.
-- Let user insert a selected hint into the source field.
-
-### 8. Show AI writing-style progress states
+### 7. Show AI writing-style progress states
 - Add progressive processing messages per stage.
 - Show AI-style writing/status animation in workspace.
 - Map each backend status to a clear UI message.

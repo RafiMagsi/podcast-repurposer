@@ -42,6 +42,7 @@ class ContentRequest extends Model
         'input_type',
         'media_kind',
         'source_text',
+        'selected_suggestion',
         'thumbnail_path',
         'preview_path',
     ];

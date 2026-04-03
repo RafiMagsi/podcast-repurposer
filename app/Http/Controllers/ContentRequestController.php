@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\GenerateContentResponses;
 use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
+use App\Services\ContentSuggestionService;
 use App\Services\S3DiskFactory;
 use App\Services\WhisperService;
 use Illuminate\Http\JsonResponse;
@@ -54,6 +55,27 @@ class ContentRequestController extends Controller
         ]);
     }
 
+    public function suggestions(Request $request, ContentSuggestionService $contentSuggestionService): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'tone' => ['required', 'in:professional,engaging,concise'],
+            'source_type' => ['required', 'in:text,audio,video,recording'],
+            'source_text' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $suggestions = $contentSuggestionService->generate(
+            $validated['title'],
+            $validated['tone'],
+            $validated['source_type'],
+            $validated['source_text'] ?? null,
+        );
+
+        return response()->json([
+            'suggestions' => $suggestions,
+        ]);
+    }
+
     public function store(Request $request, S3DiskFactory $s3DiskFactory): RedirectResponse
     {
         $userId = $request->user()->id;
@@ -81,6 +103,7 @@ class ContentRequestController extends Controller
                 'file',
                 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,audio/webm',
             ],
+            'selected_suggestion' => ['nullable', 'string', 'max:255'],
         ]);
 
         $file = $request->file('source_file') ?? $request->file('audio');
@@ -139,6 +162,7 @@ class ContentRequestController extends Controller
                     'input_type' => 'text',
                     'media_kind' => null,
                     'source_text' => $sourceText,
+                    'selected_suggestion' => $validated['selected_suggestion'] ?? null,
                     'original_file_name' => null,
                     'file_path' => '',
                     'mime_type' => 'text/plain',
@@ -191,6 +215,7 @@ class ContentRequestController extends Controller
                 'input_type' => $sourceType,
                 'media_kind' => $mediaKind,
                 'source_text' => null,
+                'selected_suggestion' => $validated['selected_suggestion'] ?? null,
                 'original_file_name' => $file->getClientOriginalName(),
                 'file_path' => $path,
                 'mime_type' => $mimeType,

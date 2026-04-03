@@ -59,7 +59,7 @@ it('marks the content request failed when output generation throws', function ()
     $openAI = Mockery::mock(OpenAIContentService::class);
     $openAI->shouldReceive('generate')
         ->once()
-        ->with('Ready transcript', 'professional')
+        ->with('Ready transcript', 'professional', null)
         ->andThrow(new RuntimeException('Content generation failed.'));
 
     try {

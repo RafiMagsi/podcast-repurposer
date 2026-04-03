@@ -67,7 +67,11 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
         ]);
 
         try {
-            $outputs = $openAIContentService->generate($contentRequest->transcript, $contentRequest->tone);
+            $outputs = $openAIContentService->generate(
+                $contentRequest->transcript,
+                $contentRequest->tone,
+                $contentRequest->selected_suggestion
+            );
             $contentRequest->refresh();
             $this->abortIfCancelled($contentRequest);
 

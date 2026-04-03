@@ -5,6 +5,8 @@ use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
 use App\Models\ContentResponse;
 use App\Models\User;
+use App\Services\ContentSuggestionService;
+use App\Services\OpenAIContentService;
 use Illuminate\Support\Facades\Queue;
 
 it('creates a text content request and queues content generation', function () {
@@ -30,6 +32,57 @@ it('creates a text content request and queues content generation', function () {
     Queue::assertPushed(GenerateContentResponses::class, function ($job) use ($contentRequest) {
         return $job->contentRequestId === $contentRequest->id;
     });
+});
+
+it('returns 3 suggestions for the entered source', function () {
+    $user = User::factory()->create();
+
+    $service = Mockery::mock(ContentSuggestionService::class);
+    $service->shouldReceive('generate')
+        ->once()
+        ->with('One-line idea', 'professional', 'text', 'Turn this short idea into reusable content.')
+        ->andReturn([
+            'Lead with the sharpest lesson from the idea.',
+            'Frame the idea as a practical post with one takeaway.',
+            'Turn the idea into a concise opinion-led content angle.',
+        ]);
+
+    app()->instance(ContentSuggestionService::class, $service);
+
+    $response = $this->actingAs($user)->postJson(route('content-requests.suggestions'), [
+        'title' => 'One-line idea',
+        'tone' => 'professional',
+        'source_type' => 'text',
+        'source_text' => 'Turn this short idea into reusable content.',
+    ]);
+
+    $response->assertOk()->assertJson([
+        'suggestions' => [
+            'Lead with the sharpest lesson from the idea.',
+            'Frame the idea as a practical post with one takeaway.',
+            'Turn the idea into a concise opinion-led content angle.',
+        ],
+    ]);
+});
+
+it('stores the selected suggestion when creating a text content request', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $response = $this->actingAs($user)->post(route('content-requests.store'), [
+        'title' => 'One-line idea',
+        'tone' => 'professional',
+        'source_type' => 'text',
+        'source_text' => 'Turn this short idea into reusable content.',
+        'selected_suggestion' => 'Lead with the strongest lesson and turn it into a practical post.',
+    ]);
+
+    $response->assertRedirect();
+
+    $contentRequest = ContentRequest::query()->latest('id')->first();
+
+    expect($contentRequest)->not->toBeNull();
+    expect($contentRequest->selected_suggestion)->toBe('Lead with the strongest lesson and turn it into a practical post.');
 });
 
 it('retries transcription by clearing transcript state and queueing a new transcription job', function () {
@@ -125,6 +178,43 @@ it('regenerates content by clearing old responses and queueing generation again'
     Queue::assertPushed(GenerateContentResponses::class, function ($job) use ($contentRequest) {
         return $job->contentRequestId === $contentRequest->id;
     });
+});
+
+it('passes the selected suggestion into content generation', function () {
+    $user = User::factory()->create();
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Regenerate me',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'Ready transcript',
+        'selected_suggestion' => 'Lead with the strongest idea and make it practical.',
+        'status' => ContentRequest::STATUS_TRANSCRIBED,
+    ]);
+
+    $openAI = Mockery::mock(OpenAIContentService::class);
+    $openAI->shouldReceive('generate')
+        ->once()
+        ->with('Ready transcript', 'professional', 'Lead with the strongest idea and make it practical.')
+        ->andReturn([
+            'summary' => 'Summary',
+            'linkedin_post' => 'LinkedIn',
+            'x_post' => 'X',
+            'instagram_caption' => 'Instagram',
+            'newsletter' => 'Newsletter',
+        ]);
+
+    (new GenerateContentResponses($contentRequest->id))->handle($openAI);
+
+    $contentRequest->refresh();
+
+    expect($contentRequest->status)->toBe(ContentRequest::STATUS_COMPLETED);
+    expect($contentRequest->summary)->toBe('Summary');
 });
 
 it('rejects unsupported source files with a validation error', function () {
