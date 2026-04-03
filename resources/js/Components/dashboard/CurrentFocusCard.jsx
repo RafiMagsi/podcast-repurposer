@@ -1,5 +1,3 @@
-import { Link } from '@inertiajs/react';
-
 export default function CurrentFocusCard({ activeContentRequest }) {
     return (
         <div className="app-card p-6">
@@ -46,18 +44,18 @@ export default function CurrentFocusCard({ activeContentRequest }) {
 
             <div className="mt-5 flex flex-col gap-3">
                 {activeContentRequest ? (
-                    <Link href={route('content-requests.show', activeContentRequest.public_id)} className="btn-primary w-full">
+                    <a href={route('content-requests.show', activeContentRequest.public_id)} className="btn-primary w-full">
                         Open latest workspace
-                    </Link>
+                    </a>
                 ) : (
-                    <Link href={route('content-requests.create')} className="btn-primary w-full">
+                    <a href={route('content-requests.create')} className="btn-primary w-full">
                         Open full upload page
-                    </Link>
+                    </a>
                 )}
 
-                <Link href={route('settings.index')} className="btn-secondary w-full">
+                <a href={route('settings.index')} className="btn-secondary w-full">
                     Configure providers
-                </Link>
+                </a>
             </div>
         </div>
     );

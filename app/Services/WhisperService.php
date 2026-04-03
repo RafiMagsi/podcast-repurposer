@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ProcessingCancelledException;
 use App\Models\ContentRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -33,6 +34,7 @@ class WhisperService
         $compressedPath = null;
 
         try {
+            $this->abortIfCancelled($contentRequest);
             $sourcePath = $this->downloadSourceToTempFile($contentRequest);
 
             $duration = $this->assertMediaWithinDurationLimit($sourcePath, 60);
@@ -48,6 +50,8 @@ class WhisperService
                 'media_kind' => $contentRequest->media_kind,
                 'mime_type' => $contentRequest->mime_type,
             ]);
+
+            $this->abortIfCancelled($contentRequest);
 
             if (
                 ($contentRequest->input_type === 'video' || $contentRequest->media_kind === 'video' || str_starts_with((string) $contentRequest->mime_type, 'video/'))
@@ -75,6 +79,8 @@ class WhisperService
                 }
             }
 
+            $this->abortIfCancelled($contentRequest);
+
             $contentRequest->update([
                 'compression_status' => 'started',
                 'compression_error' => null,
@@ -99,6 +105,8 @@ class WhisperService
                 'compressed_size' => $compressedSize,
             ]);
 
+            $this->abortIfCancelled($contentRequest);
+
             if (($compressedSize ?? 0) > (25 * 1024 * 1024)) {
                 throw new RuntimeException('Compressed audio is still larger than 25MB.');
             }
@@ -113,6 +121,8 @@ class WhisperService
 
                 return 'This is a mock transcript generated in testing mode. VoicePost AI bypassed the OpenAI transcription call and returned a local transcript placeholder so you can test the workflow without API usage.';
             }
+
+            $this->abortIfCancelled($contentRequest);
 
             $apiKey = $this->settings->get('openai_api_key');
 
@@ -144,16 +154,13 @@ class WhisperService
                 'body' => $response->failed() ? $response->body() : null,
             ]);
 
+            $this->abortIfCancelled($contentRequest);
+
             if (! $response->successful()) {
                 throw new RuntimeException('OpenAI transcription failed: ' . $response->body());
             }
 
             $payload = $response->json();
-
-            Log::info('OpenAI response debug:payload', [
-                'status' => $response->status(),
-                'text'   => $payload,
-            ]);
 
             $text = data_get($payload, 'full_response.text')           // ✅ your actual structure
                 ?? data_get($payload, 'text')                          // fallback: raw OpenAI response
@@ -161,9 +168,10 @@ class WhisperService
                 ?? data_get($payload, 'output_text')                   // another fallback
                 ?? data_get($payload, 'results.0.alternatives.0.transcript'); // just in case
 
-            Log::info('OpenAI response debug', [
+            Log::info('OpenAI transcription text extraction resolved', [
+                'content_request_id' => $contentRequest->id,
                 'status' => $response->status(),
-                'text'   => $text,
+                'has_text' => is_string($text) && trim($text) !== '',
             ]);
 
             if (! is_string($text) || trim($text) === '') {
@@ -179,7 +187,19 @@ class WhisperService
             ]);
 
             return $text;
-            
+        } catch (ProcessingCancelledException $e) {
+            if (in_array($contentRequest->compression_status, [null, 'started'], true)) {
+                $contentRequest->update([
+                    'compression_status' => 'cancelled',
+                    'compression_error' => null,
+                ]);
+            }
+
+            Log::info('WhisperService detected cancellation', [
+                'content_request_id' => $contentRequest->id,
+            ]);
+
+            throw $e;
         } catch (\Throwable $e) {
             $contentRequest->update([
                 'compression_status' => 'failed',
@@ -210,6 +230,15 @@ class WhisperService
                     'compressed_path' => $compressedPath,
                 ]);
             }
+        }
+    }
+
+    private function abortIfCancelled(ContentRequest $contentRequest): void
+    {
+        $contentRequest->refresh();
+
+        if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+            throw new ProcessingCancelledException('Processing was cancelled.');
         }
     }
 
@@ -316,7 +345,7 @@ class WhisperService
         return $outputPath;
     }
 
-    private function generateVideoThumbnail(ContentRequest $contentRequest, string $sourcePath): ?string
+    public function generateVideoThumbnail(ContentRequest $contentRequest, string $sourcePath): ?string
     {
         if (
             $contentRequest->input_type !== 'video' &&
@@ -352,10 +381,219 @@ class WhisperService
         $storedThumbPath = 'content-request-thumbnails/' . now()->format('Y/m') . '/' . uniqid('thumb_', true) . '.jpg';
 
         $disk = $this->s3DiskFactory->make();
-        $disk->put($storedThumbPath, file_get_contents($thumbPath));
+        $thumbStream = fopen($thumbPath, 'r');
+
+        if (! is_resource($thumbStream)) {
+            @unlink($thumbPath);
+            return null;
+        }
+
+        $disk->put($storedThumbPath, $thumbStream);
+
+        fclose($thumbStream);
 
         @unlink($thumbPath);
 
         return $storedThumbPath;
+    }
+
+    public function prepareVideoAssets(ContentRequest $contentRequest): void
+    {
+        if (
+            $contentRequest->input_type !== 'video' &&
+            $contentRequest->media_kind !== 'video' &&
+            !str_starts_with((string) $contentRequest->mime_type, 'video/')
+        ) {
+            return;
+        }
+
+        $this->abortIfCancelled($contentRequest);
+
+        $sourcePath = null;
+
+        try {
+            $sourcePath = $this->downloadSourceToTempFile($contentRequest);
+
+            $updates = [];
+
+            if (empty($contentRequest->preview_path)) {
+                $previewPath = $this->generateStreamingVideoPreview($contentRequest, $sourcePath);
+
+                if ($previewPath) {
+                    $updates['preview_path'] = $previewPath;
+                }
+            }
+
+            if (empty($contentRequest->thumbnail_path)) {
+                $thumbnailPath = $this->generateVideoThumbnail($contentRequest, $sourcePath);
+
+                if ($thumbnailPath) {
+                    $updates['thumbnail_path'] = $thumbnailPath;
+                }
+            }
+
+            if ($updates !== []) {
+                $contentRequest->update($updates);
+
+                Log::info('Video preview assets prepared', [
+                    'content_request_id' => $contentRequest->id,
+                    'public_id' => $contentRequest->public_id,
+                    'preview_path' => $updates['preview_path'] ?? $contentRequest->preview_path,
+                    'thumbnail_path' => $updates['thumbnail_path'] ?? $contentRequest->thumbnail_path,
+                ]);
+            }
+        } finally {
+            if ($sourcePath && file_exists($sourcePath)) {
+                @unlink($sourcePath);
+            }
+        }
+    }
+
+    public function generateStreamingVideoPreview(ContentRequest $contentRequest, string $sourcePath): ?string
+    {
+        if (
+            $contentRequest->input_type !== 'video' &&
+            $contentRequest->media_kind !== 'video' &&
+            !str_starts_with((string) $contentRequest->mime_type, 'video/')
+        ) {
+            return null;
+        }
+
+        if (! file_exists($sourcePath)) {
+            return null;
+        }
+
+        $previewPath = sys_get_temp_dir() . '/' . uniqid('cr_preview_', true) . '.mp4';
+        $startedAt = microtime(true);
+        $strategy = $this->supportsFastPreviewRemux($sourcePath) ? 'remux' : 'transcode';
+        $process = $strategy === 'remux'
+            ? $this->makeFastPreviewRemuxProcess($sourcePath, $previewPath)
+            : $this->makeStreamingPreviewTranscodeProcess($sourcePath, $previewPath);
+
+        $process->setTimeout(600);
+        $process->run();
+
+        if ((! $process->isSuccessful() || ! file_exists($previewPath)) && $strategy === 'remux') {
+            @unlink($previewPath);
+
+            Log::info('Fast preview remux failed, retrying with transcode', [
+                'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'message' => $process->getErrorOutput() ?: $process->getOutput(),
+            ]);
+
+            $strategy = 'transcode';
+            $process = $this->makeStreamingPreviewTranscodeProcess($sourcePath, $previewPath);
+            $process->setTimeout(600);
+            $process->run();
+        }
+
+        if (! $process->isSuccessful() || ! file_exists($previewPath)) {
+            @unlink($previewPath);
+
+            Log::warning('Unable to generate streaming video preview', [
+                'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'strategy' => $strategy,
+                'message' => $process->getErrorOutput() ?: $process->getOutput(),
+            ]);
+
+            return null;
+        }
+
+        $storedPreviewPath = 'content-request-previews/' . now()->format('Y/m') . '/' . uniqid('preview_', true) . '.mp4';
+
+        $disk = $this->s3DiskFactory->make();
+        $previewStream = fopen($previewPath, 'r');
+
+        if (! is_resource($previewStream)) {
+            @unlink($previewPath);
+            return null;
+        }
+
+        $disk->put($storedPreviewPath, $previewStream);
+
+        fclose($previewStream);
+
+        @unlink($previewPath);
+
+        Log::info('Streaming video preview generated successfully', [
+            'content_request_id' => $contentRequest->id,
+            'public_id' => $contentRequest->public_id,
+            'preview_path' => $storedPreviewPath,
+            'strategy' => $strategy,
+            'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+        ]);
+
+        return $storedPreviewPath;
+    }
+
+    private function supportsFastPreviewRemux(string $sourcePath): bool
+    {
+        $process = new \Symfony\Component\Process\Process([
+            'ffprobe',
+            '-v', 'error',
+            '-show_entries', 'stream=codec_type,codec_name',
+            '-of', 'json',
+            $sourcePath,
+        ]);
+
+        $process->setTimeout(120);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return false;
+        }
+
+        $streams = data_get(json_decode($process->getOutput(), true), 'streams', []);
+        $videoCodec = null;
+        $audioCodec = null;
+
+        foreach ($streams as $stream) {
+            $codecType = data_get($stream, 'codec_type');
+            $codecName = strtolower((string) data_get($stream, 'codec_name', ''));
+
+            if ($codecType === 'video' && $videoCodec === null) {
+                $videoCodec = $codecName;
+            }
+
+            if ($codecType === 'audio' && $audioCodec === null) {
+                $audioCodec = $codecName;
+            }
+        }
+
+        return $videoCodec === 'h264' && in_array($audioCodec, ['aac', 'mp3', null], true);
+    }
+
+    private function makeFastPreviewRemuxProcess(string $sourcePath, string $previewPath): \Symfony\Component\Process\Process
+    {
+        return new \Symfony\Component\Process\Process([
+            'ffmpeg',
+            '-y',
+            '-i', $sourcePath,
+            '-movflags', '+faststart',
+            '-c', 'copy',
+            $previewPath,
+        ]);
+    }
+
+    private function makeStreamingPreviewTranscodeProcess(string $sourcePath, string $previewPath): \Symfony\Component\Process\Process
+    {
+        return new \Symfony\Component\Process\Process([
+            'ffmpeg',
+            '-y',
+            '-i', $sourcePath,
+            '-movflags', '+faststart',
+            '-pix_fmt', 'yuv420p',
+            '-c:v', 'libx264',
+            '-preset', 'veryfast',
+            '-crf', '28',
+            '-maxrate', '1200k',
+            '-bufsize', '2400k',
+            '-vf', 'scale=\'min(1280,iw)\':-2',
+            '-c:a', 'aac',
+            '-b:a', '128k',
+            $previewPath,
+        ]);
     }
 }

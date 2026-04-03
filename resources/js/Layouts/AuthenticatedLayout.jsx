@@ -10,6 +10,10 @@ function buildBreadcrumb(url) {
         return ['Workspace', 'Recordings'];
     }
 
+    if (isActive(url, '/pipeline')) {
+        return ['Workspace', 'Pipeline'];
+    }
+
     if (isActive(url, '/settings')) {
         return ['Workspace', 'Settings'];
     }
@@ -32,14 +36,14 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
             <div className="workspace-shell">
                 <aside className="sidebar">
                     <div className="flex items-center justify-between gap-3 pb-4 lg:block">
-                        <Link href={route('dashboard')} className="flex items-center gap-3">
+                        <a href={route('dashboard')} className="flex items-center gap-3">
                             <ApplicationLogo
                                 className="h-10 w-10 rounded-2xl"
                                 withText
                                 textClassName="text-base font-semibold text-[rgb(var(--color-text-strong))]"
                                 subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-[rgb(var(--color-text-muted))]"
                             />
-                        </Link>
+                        </a>
 
                         <div className="hidden rounded-full bg-[rgb(var(--color-surface-blue))] px-3 py-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgb(var(--color-secondary-text))] lg:inline-flex">
                             Studio
@@ -68,43 +72,50 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                     <div className="sidebar-section-label">Workspace</div>
 
                     <nav className="grid gap-1">
-                        <Link
+                        <a
                             href={route('dashboard')}
                             className={`sidebar-link ${isActive(url, '/dashboard') ? 'sidebar-link-active' : ''}`}
                         >
                             <span className="sidebar-icon">D</span>
                             Dashboard
-                        </Link>
-                        <Link
+                        </a>
+                        <a
                             href={route('content-requests.index')}
                             className={`sidebar-link ${isActive(url, '/content-requests') ? 'sidebar-link-active' : ''}`}
                         >
                             <span className="sidebar-icon">R</span>
                             Content Library
-                        </Link>
-                        <Link
+                        </a>
+                        <a
+                            href={route('pipeline.index')}
+                            className={`sidebar-link ${isActive(url, '/pipeline') ? 'sidebar-link-active' : ''}`}
+                        >
+                            <span className="sidebar-icon">P</span>
+                            Pipeline
+                        </a>
+                        <a
                             href={route('settings.index')}
                             className={`sidebar-link ${isActive(url, '/settings') ? 'sidebar-link-active' : ''}`}
                         >
                             <span className="sidebar-icon">S</span>
                             Settings
-                        </Link>
+                        </a>
                     </nav>
 
                     <div className="sidebar-section-label">Account</div>
 
                     <nav className="grid gap-1">
-                        <Link
+                        <a
                             href={route('profile.edit')}
                             className={`sidebar-link ${isActive(url, '/profile') ? 'sidebar-link-active' : ''}`}
                         >
                             <span className="sidebar-icon">P</span>
                             Profile
-                        </Link>
-                        <Link href="/" className="sidebar-link">
+                        </a>
+                        <a href="/" className="sidebar-link">
                             <span className="sidebar-icon">H</span>
                             Home
-                        </Link>
+                        </a>
                     </nav>
 
                     <div className="mt-6 hidden lg:block">
@@ -115,9 +126,9 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                                 Upload one recording and let VoicePost AI draft the rest.
                             </div>
-                            <Link href={route('content-requests.create')} className="btn-primary mt-4 w-full">
+                            <a href={route('content-requests.create')} className="btn-primary mt-4 w-full">
                                 New recording
-                            </Link>
+                            </a>
                         </div>
                     </div>
                 </aside>
@@ -139,18 +150,21 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2">
-                                <Link href={route('dashboard')} className="topbar-action">
+                                <a href={route('dashboard')} className="topbar-action">
                                     Dashboard
-                                </Link>
-                                <Link href={route('content-requests.index')} className="topbar-action">
+                                </a>
+                                <a href={route('content-requests.index')} className="topbar-action">
                                     Library
-                                </Link>
-                                <Link href={route('settings.index')} className="btn-secondary">
+                                </a>
+                                <a href={route('pipeline.index')} className="topbar-action">
+                                    Pipeline
+                                </a>
+                                <a href={route('settings.index')} className="btn-secondary">
                                     Settings
-                                </Link>
-                                <Link href={route('content-requests.create')} className="btn-primary-rect">
+                                </a>
+                                <a href={route('content-requests.create')} className="btn-primary-rect">
                                     New recording
-                                </Link>
+                                </a>
                                 <Link href={route('logout')} method="post" as="button" className="btn-outline">
                                     Logout
                                 </Link>

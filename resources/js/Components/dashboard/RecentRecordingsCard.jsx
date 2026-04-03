@@ -1,5 +1,3 @@
-import { Link } from '@inertiajs/react';
-
 export default function RecentRecordingsCard({ contentRequests }) {
     function sourcePillClass(sourceType) {
         switch (sourceType) {
@@ -31,6 +29,8 @@ export default function RecentRecordingsCard({ contentRequests }) {
         switch (status) {
             case 'completed':
                 return 'status-badge status-completed';
+            case 'cancelled':
+                return 'status-badge status-cancelled';
             case 'transcribing':
             case 'transcribed':
                 return 'status-badge status-transcribing';
@@ -71,9 +71,9 @@ export default function RecentRecordingsCard({ contentRequests }) {
                     </p>
                 </div>
 
-                <Link href={route('content-requests.index')} className="btn-secondary">
+                <a href={route('content-requests.index')} className="btn-secondary">
                     Open library
-                </Link>
+                </a>
             </div>
 
             {contentRequests.length === 0 ? (
@@ -103,9 +103,9 @@ export default function RecentRecordingsCard({ contentRequests }) {
                                 </div>
                             </div>
 
-                            <Link href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary">
+                            <a href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary">
                                 Open workspace
-                            </Link>
+                            </a>
                         </div>
                     ))}
                 </div>

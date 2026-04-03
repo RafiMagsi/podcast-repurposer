@@ -2,23 +2,31 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\ProcessingCancelledException;
 use App\Models\ContentRequest;
 use App\Services\WhisperService;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class TranscribeContentRequest implements ShouldQueue
+class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
     public int $tries = 3;
     public int $timeout = 1200;
+    public int $uniqueFor = 3600;
 
     public function __construct(
         public int $contentRequestId
     ) {
+    }
+
+    public function uniqueId(): string
+    {
+        return 'transcribe:' . $this->contentRequestId;
     }
 
     public function handle(WhisperService $whisperService): void
@@ -36,8 +44,10 @@ class TranscribeContentRequest implements ShouldQueue
             return;
         }
 
+        $this->abortIfCancelled($contentRequest);
+
         $contentRequest->update([
-            'status' => 'transcribing',
+            'status' => ContentRequest::STATUS_TRANSCRIBING,
             'error_message' => null,
             'compression_error' => null,
         ]);
@@ -55,10 +65,12 @@ class TranscribeContentRequest implements ShouldQueue
             ]);
 
             $transcript = trim((string) $whisperService->transcribe($contentRequest));
+            $contentRequest->refresh();
+            $this->abortIfCancelled($contentRequest);
 
             if ($transcript === '') {
                 $contentRequest->update([
-                    'status' => 'failed',
+                    'status' => ContentRequest::STATUS_FAILED,
                     'error_message' => 'Transcription returned empty text.',
                 ]);
 
@@ -77,9 +89,12 @@ class TranscribeContentRequest implements ShouldQueue
 
             $contentRequest->update([
                 'transcript' => $transcript,
-                'status' => 'transcribed',
+                'status' => ContentRequest::STATUS_TRANSCRIBED,
                 'error_message' => null,
             ]);
+
+            $contentRequest->refresh();
+            $this->abortIfCancelled($contentRequest);
 
             Log::info('Content request status changed to transcribed', [
                 'content_request_id' => $contentRequest->id,
@@ -90,7 +105,24 @@ class TranscribeContentRequest implements ShouldQueue
             Log::info('GenerateContentResponses dispatched', [
                 'content_request_id' => $contentRequest->id,
             ]);
+        } catch (ProcessingCancelledException $e) {
+            Log::info('TranscribeContentRequest cancelled', [
+                'content_request_id' => $contentRequest->id,
+            ]);
+
+            return;
         } catch (Throwable $e) {
+            $contentRequest->refresh();
+
+            if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+                Log::info('TranscribeContentRequest error ignored after cancellation', [
+                    'content_request_id' => $contentRequest->id,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return;
+            }
+
             report($e);
 
             Log::error('TranscribeContentRequest failed', [
@@ -99,11 +131,20 @@ class TranscribeContentRequest implements ShouldQueue
             ]);
 
             $contentRequest->update([
-                'status' => 'failed',
+                'status' => ContentRequest::STATUS_FAILED,
                 'error_message' => $e->getMessage(),
             ]);
 
             throw $e;
+        }
+    }
+
+    private function abortIfCancelled(ContentRequest $contentRequest): void
+    {
+        $contentRequest->refresh();
+
+        if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+            throw new ProcessingCancelledException('Processing was cancelled.');
         }
     }
 }

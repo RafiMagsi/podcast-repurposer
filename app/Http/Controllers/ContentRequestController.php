@@ -6,15 +6,16 @@ use App\Jobs\GenerateContentResponses;
 use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
 use App\Services\S3DiskFactory;
+use App\Services\WhisperService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContentRequestController extends Controller
 {
@@ -55,6 +56,7 @@ class ContentRequestController extends Controller
 
     public function store(Request $request, S3DiskFactory $s3DiskFactory): RedirectResponse
     {
+        $userId = $request->user()->id;
         $uploadLimits = $this->uploadLimits();
 
         $validated = $request->validate([
@@ -121,10 +123,14 @@ class ContentRequestController extends Controller
 
         $isTextSource = $sourceType === 'text' || ($sourceText !== '' && ! $file);
 
+        if ($request->hasSession()) {
+            $request->session()->save();
+        }
+
         try {
             if ($isTextSource) {
                 $contentRequest = ContentRequest::create([
-                    'user_id' => $request->user()->id,
+                    'user_id' => $userId,
                     'title' => $validated['title'],
                     'tone' => $validated['tone'],
                     'input_type' => 'text',
@@ -141,8 +147,7 @@ class ContentRequestController extends Controller
                 GenerateContentResponses::dispatch($contentRequest->id);
 
                 return redirect()
-                    ->route('content-requests.show', $contentRequest)
-                    ->with('success', 'Text note saved successfully. Content generation has been queued.');
+                    ->route('content-requests.show', $contentRequest);
             }
 
             $disk = $s3DiskFactory->make();
@@ -175,7 +180,7 @@ class ContentRequestController extends Controller
             $mediaKind = str_starts_with($mimeType, 'video/') ? 'video' : 'audio';
 
             $contentRequest = ContentRequest::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $userId,
                 'title' => $validated['title'],
                 'tone' => $validated['tone'],
                 'input_type' => $sourceType,
@@ -185,14 +190,14 @@ class ContentRequestController extends Controller
                 'file_path' => $path,
                 'mime_type' => $mimeType,
                 'file_size' => $file->getSize(),
-                'status' => 'uploaded',
+                'status' => $mediaKind === 'video' ? ContentRequest::STATUS_TRANSCRIBING : ContentRequest::STATUS_UPLOADED,
+                'compression_status' => $mediaKind === 'video' ? 'started' : null,
             ]);
 
             TranscribeContentRequest::dispatch($contentRequest->id);
 
             return redirect()
-                ->route('content-requests.show', $contentRequest)
-                ->with('success', 'Source uploaded successfully. Transcription has been queued.');
+                ->route('content-requests.show', $contentRequest);
         } catch (Throwable $e) {
             report($e);
 
@@ -216,85 +221,31 @@ class ContentRequestController extends Controller
 
         $contentRequest->load('contentResponses');
 
-        $mediaUrl = null;
-
-        if ($contentRequest->file_path) {
-            try {
-                $disk = $s3DiskFactory->make();
-                $adapterClass = get_class($disk->getAdapter());
-
-                if (str_contains(strtolower($adapterClass), 's3')) {
-                    $mediaUrl = $disk->temporaryUrl(
-                        $contentRequest->file_path,
-                        now()->addMinutes(30)
-                    );
-                } else {
-                    $mediaUrl = $disk->url($contentRequest->file_path);
-                }
-            } catch (Throwable $e) {
-                report($e);
-                $mediaUrl = null;
-            }
-        }
-
-        $thumbnailUrl = null;
-
-        if ($contentRequest->thumbnail_path) {
-            try {
-                $disk = $s3DiskFactory->make();
-                $adapterClass = get_class($disk->getAdapter());
-
-                if (str_contains(strtolower($adapterClass), 's3')) {
-                    $thumbnailUrl = $disk->temporaryUrl(
-                        $contentRequest->thumbnail_path,
-                        now()->addMinutes(30)
-                    );
-                } else {
-                    $thumbnailUrl = $disk->url($contentRequest->thumbnail_path);
-                }
-            } catch (Throwable $e) {
-                report($e);
-                $thumbnailUrl = null;
-            }
-        }
-
         return Inertia::render('ContentRequests/Show', [
-            'contentRequest' => [
-                'id' => $contentRequest->id,
-                'public_id' => $contentRequest->public_id,
-                'title' => $contentRequest->title,
-                'status' => $contentRequest->status,
-                'tone' => $contentRequest->tone,
-                'original_file_name' => $contentRequest->original_file_name,
-                'mime_type' => $contentRequest->mime_type,
-                'source_type' => $contentRequest->input_type ?? $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
-                'file_size' => $contentRequest->file_size,
-                'compressed_file_size' => $contentRequest->compressed_file_size,
-                'compression_status' => $contentRequest->compression_status,
-                'compression_error' => $contentRequest->compression_error,
-                'transcript' => $contentRequest->transcript,
-                'summary' => $contentRequest->summary,
-                'error_message' => $contentRequest->error_message,
-                'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
-                'input_type' => $contentRequest->input_type,
-                'media_kind' => $contentRequest->media_kind,
-                'source_text' => $contentRequest->source_text,
-                'media_url' => $mediaUrl,
-                'media_thumbnail_url' => $thumbnailUrl,
-                'content_responses' => $contentRequest->contentResponses->map(fn ($contentResponse) => [
-                    'id' => $contentResponse->id,
-                    'content_type' => $contentResponse->content_type,
-                    'title' => $contentResponse->title,
-                    'body' => $contentResponse->body,
-                    'meta' => $contentResponse->meta,
-                ])->values(),
-            ],
+            'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
+        ]);
+    }
+
+    public function status(Request $request, ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): JsonResponse
+    {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        $contentRequest->load('contentResponses');
+
+        return response()->json([
+            'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
         ]);
     }
 
     public function retryTranscription(Request $request, ContentRequest $contentRequest): RedirectResponse
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        if (in_array($contentRequest->status, ContentRequest::processingStatuses(), true)) {
+            return back()->withErrors([
+                'contentRequest' => 'This recording is already processing. Cancel it first or wait for it to finish.',
+            ]);
+        }
 
         if (! $contentRequest->file_path) {
             return back()->withErrors([
@@ -303,10 +254,12 @@ class ContentRequestController extends Controller
         }
 
         $contentRequest->update([
-            'status' => 'uploaded',
+            'status' => ContentRequest::STATUS_UPLOADED,
             'error_message' => null,
             'transcript' => null,
             'summary' => null,
+            'compression_status' => null,
+            'compression_error' => null,
         ]);
 
         $contentRequest->contentResponses()->delete();
@@ -320,6 +273,12 @@ class ContentRequestController extends Controller
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
+        if (in_array($contentRequest->status, ContentRequest::processingStatuses(), true)) {
+            return back()->withErrors([
+                'contentRequest' => 'This recording is already processing. Cancel it first or wait for it to finish.',
+            ]);
+        }
+
         if (! $contentRequest->transcript) {
             return back()->withErrors([
                 'contentRequest' => 'Transcript is missing. Retry transcription first.',
@@ -327,7 +286,7 @@ class ContentRequestController extends Controller
         }
 
         $contentRequest->update([
-            'status' => 'transcribed',
+            'status' => ContentRequest::STATUS_TRANSCRIBED,
             'error_message' => null,
             'summary' => null,
         ]);
@@ -337,6 +296,31 @@ class ContentRequestController extends Controller
         GenerateContentResponses::dispatch($contentRequest->id);
 
         return back()->with('success', 'Content regeneration started.');
+    }
+
+    public function cancelProcessing(Request $request, ContentRequest $contentRequest): RedirectResponse
+    {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        if (! in_array($contentRequest->status, ContentRequest::processingStatuses(), true)) {
+            return back()->withErrors([
+                'contentRequest' => 'Only active processing can be cancelled.',
+            ]);
+        }
+
+        $updates = [
+            'status' => ContentRequest::STATUS_CANCELLED,
+            'error_message' => 'Processing was cancelled.',
+        ];
+
+        if (in_array($contentRequest->compression_status, [null, 'started'], true)) {
+            $updates['compression_status'] = 'cancelled';
+            $updates['compression_error'] = null;
+        }
+
+        $contentRequest->update($updates);
+
+        return back()->with('success', 'Processing cancelled.');
     }
 
     public function destroy(Request $request, ContentRequest $contentRequest): RedirectResponse
@@ -362,12 +346,34 @@ class ContentRequestController extends Controller
                         'file_path' => $contentRequest->file_path,
                     ]);
                 }
+
+                if ($contentRequest->preview_path) {
+                    $disk = app(\App\Services\S3DiskFactory::class)->make();
+                    $disk->delete($contentRequest->preview_path);
+
+                    Log::info('Content request preview deleted from storage', [
+                        'content_request_id' => $contentRequest->id,
+                        'preview_path' => $contentRequest->preview_path,
+                    ]);
+                }
+
+                if ($contentRequest->thumbnail_path) {
+                    $disk = app(\App\Services\S3DiskFactory::class)->make();
+                    $disk->delete($contentRequest->thumbnail_path);
+
+                    Log::info('Content request thumbnail deleted from storage', [
+                        'content_request_id' => $contentRequest->id,
+                        'thumbnail_path' => $contentRequest->thumbnail_path,
+                    ]);
+                }
             } catch (Throwable $storageException) {
                 report($storageException);
 
                 Log::warning('Content request file delete failed, continuing DB delete', [
                     'content_request_id' => $contentRequest->id,
                     'file_path' => $contentRequest->file_path,
+                    'preview_path' => $contentRequest->preview_path,
+                    'thumbnail_path' => $contentRequest->thumbnail_path,
                     'message' => $storageException->getMessage(),
                 ]);
             }
@@ -403,11 +409,72 @@ class ContentRequestController extends Controller
         return 'recording';
     }
 
+    private function serializeContentRequest(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): array
+    {
+        $mediaUrl = $this->temporaryPreviewUrl($contentRequest, $s3DiskFactory);
+        $mediaUrlSource = 'temporary_url';
+
+        if (! $mediaUrl) {
+            $mediaUrl = $this->signedPreviewUrl($contentRequest);
+            $mediaUrlSource = 'signed_route';
+        }
+
+        $thumbnailUrl = $this->temporaryThumbnailUrl($contentRequest, $s3DiskFactory);
+        $thumbnailUrlSource = 'temporary_url';
+
+        if (! $thumbnailUrl) {
+            $thumbnailUrl = $this->signedThumbnailUrl($contentRequest);
+            $thumbnailUrlSource = 'signed_route';
+        }
+
+        Log::debug('Content request preview delivery resolved', [
+            'content_request_id' => $contentRequest->id,
+            'public_id' => $contentRequest->public_id,
+            'media_kind' => $contentRequest->media_kind,
+            'media_url_source' => $mediaUrlSource,
+            'thumbnail_url_source' => $thumbnailUrlSource,
+            'has_media_url' => filled($mediaUrl),
+            'has_thumbnail_url' => filled($thumbnailUrl),
+        ]);
+
+        return [
+            'id' => $contentRequest->id,
+            'public_id' => $contentRequest->public_id,
+            'title' => $contentRequest->title,
+            'status' => $contentRequest->status,
+            'tone' => $contentRequest->tone,
+            'original_file_name' => $contentRequest->original_file_name,
+            'mime_type' => $contentRequest->mime_type,
+            'source_type' => $contentRequest->input_type ?? $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
+            'file_size' => $contentRequest->file_size,
+            'compressed_file_size' => $contentRequest->compressed_file_size,
+            'compression_status' => $contentRequest->compression_status,
+            'compression_error' => $contentRequest->compression_error,
+            'transcript' => $contentRequest->transcript,
+            'summary' => $contentRequest->summary,
+            'error_message' => $contentRequest->error_message,
+            'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
+            'input_type' => $contentRequest->input_type,
+            'media_kind' => $contentRequest->media_kind,
+            'source_text' => $contentRequest->source_text,
+            'preview_path' => $contentRequest->preview_path,
+            'media_url' => $mediaUrl,
+            'media_thumbnail_url' => $thumbnailUrl,
+            'content_responses' => $contentRequest->contentResponses->map(fn ($contentResponse) => [
+                'id' => $contentResponse->id,
+                'content_type' => $contentResponse->content_type,
+                'title' => $contentResponse->title,
+                'body' => $contentResponse->body,
+                'meta' => $contentResponse->meta,
+            ])->values(),
+        ];
+    }
+
     private function uploadLimits(): array
     {
         $phpLimitBytes = $this->phpUploadLimitBytes();
         $videoLimitBytes = 300 * 1024 * 1024;
-        $audioLimitBytes = 5 * 1024 * 1024;
+        $audioLimitBytes = 25 * 1024 * 1024;
 
         if ($phpLimitBytes !== null) {
             $safePhpLimitBytes = max(1024, $phpLimitBytes - (1024 * 1024));
@@ -482,28 +549,163 @@ class ContentRequestController extends Controller
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        if (! $contentRequest->file_path) {
+        return $this->streamPreviewResponse($contentRequest, $s3DiskFactory);
+    }
+
+    public function thumbnail(Request $request, ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)
+    {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        return $this->streamThumbnailResponse($contentRequest, $s3DiskFactory);
+    }
+
+    public function signedPreview(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)
+    {
+        return $this->streamPreviewResponse($contentRequest, $s3DiskFactory);
+    }
+
+    public function signedThumbnail(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)
+    {
+        return $this->streamThumbnailResponse($contentRequest, $s3DiskFactory);
+    }
+
+    private function streamPreviewResponse(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)
+    {
+        $path = $contentRequest->preview_path ?: $contentRequest->file_path;
+
+        if (! $path) {
             abort(404);
         }
 
         try {
             $disk = $s3DiskFactory->make();
 
-            if (! $disk->exists($contentRequest->file_path)) {
+            if (! $disk->exists($path)) {
                 abort(404);
             }
 
+            $contentType = $contentRequest->preview_path ? 'video/mp4' : ($contentRequest->mime_type ?: 'application/octet-stream');
+            $filename = $contentRequest->preview_path
+                ? pathinfo((string) $contentRequest->original_file_name, PATHINFO_FILENAME) . '-preview.mp4'
+                : ($contentRequest->original_file_name ?? basename($path));
+
             return $disk->response(
-                $contentRequest->file_path,
-                $contentRequest->original_file_name ?? basename($contentRequest->file_path),
+                $path,
+                $filename,
                 [
-                    'Content-Type' => $contentRequest->mime_type ?: 'application/octet-stream',
-                    'Content-Disposition' => 'inline; filename="' . ($contentRequest->original_file_name ?? basename($contentRequest->file_path)) . '"',
+                    'Content-Type' => $contentType,
+                    'Content-Disposition' => 'inline; filename="' . $filename . '"',
                 ]
             );
         } catch (Throwable $e) {
             report($e);
             abort(404);
+        }
+    }
+
+    private function streamThumbnailResponse(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)
+    {
+        if (! $contentRequest->thumbnail_path) {
+            abort(404);
+        }
+
+        try {
+            $disk = $s3DiskFactory->make();
+
+            if (! $disk->exists($contentRequest->thumbnail_path)) {
+                abort(404);
+            }
+
+            return $disk->response(
+                $contentRequest->thumbnail_path,
+                basename($contentRequest->thumbnail_path),
+                [
+                    'Content-Type' => 'image/jpeg',
+                    'Content-Disposition' => 'inline; filename="' . basename($contentRequest->thumbnail_path) . '"',
+                ]
+            );
+        } catch (Throwable $e) {
+            report($e);
+            abort(404);
+        }
+    }
+
+    private function signedPreviewUrl(ContentRequest $contentRequest): ?string
+    {
+        if (! $contentRequest->file_path) {
+            return null;
+        }
+
+        return URL::signedRoute('content-requests.preview.signed', [
+            'contentRequest' => $contentRequest,
+        ]);
+    }
+
+    private function signedThumbnailUrl(ContentRequest $contentRequest): ?string
+    {
+        if (! $contentRequest->thumbnail_path) {
+            return null;
+        }
+
+        return URL::signedRoute('content-requests.thumbnail.signed', [
+            'contentRequest' => $contentRequest,
+        ]);
+    }
+
+    private function temporaryPreviewUrl(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): ?string
+    {
+        $path = $contentRequest->preview_path ?: $contentRequest->file_path;
+
+        if (! $path) {
+            return null;
+        }
+
+        try {
+            $disk = $s3DiskFactory->make();
+
+            $contentType = $contentRequest->preview_path ? 'video/mp4' : ($contentRequest->mime_type ?: 'application/octet-stream');
+            $filename = $contentRequest->preview_path
+                ? pathinfo((string) $contentRequest->original_file_name, PATHINFO_FILENAME) . '-preview.mp4'
+                : ($contentRequest->original_file_name ?? basename($path));
+
+            return $disk->temporaryUrl($path, now()->addMinutes(20), [
+                'ResponseContentType' => $contentType,
+                'ResponseContentDisposition' => 'inline; filename="' . $filename . '"',
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Unable to create temporary preview URL, using signed route fallback', [
+                'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'preview_path' => $contentRequest->preview_path,
+                'file_path' => $contentRequest->file_path,
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function temporaryThumbnailUrl(ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory): ?string
+    {
+        if (! $contentRequest->thumbnail_path) {
+            return null;
+        }
+
+        try {
+            $disk = $s3DiskFactory->make();
+
+            return $disk->temporaryUrl($contentRequest->thumbnail_path, now()->addMinutes(20), [
+                'ResponseContentType' => 'image/jpeg',
+                'ResponseContentDisposition' => 'inline; filename="' . basename($contentRequest->thumbnail_path) . '"',
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Unable to create temporary thumbnail URL, using signed route fallback', [
+                'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
         }
     }
 }

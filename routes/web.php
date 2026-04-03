@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PipelineController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -8,6 +9,11 @@ use App\Http\Controllers\ContentRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Services\S3DiskFactory;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 
 Route::get('/', function () {
@@ -29,21 +35,51 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/pipeline', PipelineController::class)->name('pipeline.index');
+    Route::get('/pipeline/status', [PipelineController::class, 'status'])->name('pipeline.status');
 
     Route::get('/content-requests', [ContentRequestController::class, 'index'])->name('content-requests.index');
     Route::get('/content-requests/create', [ContentRequestController::class, 'create'])->name('content-requests.create');
     Route::post('/content-requests', [ContentRequestController::class, 'store'])->name('content-requests.store');
     Route::get('/content-requests/{contentRequest}', [ContentRequestController::class, 'show'])
         ->name('content-requests.show');
+    Route::get('/content-requests/{contentRequest}/status', [ContentRequestController::class, 'status'])
+        ->name('content-requests.status');
     Route::post('/content-requests/{contentRequest}/retry-transcription', [ContentRequestController::class, 'retryTranscription'])
         ->name('content-requests.retry-transcription');
     Route::post('/content-requests/{contentRequest}/regenerate-content', [ContentRequestController::class, 'regenerateContent'])
         ->name('content-requests.regenerate-content');
+    Route::post('/content-requests/{contentRequest}/cancel-processing', [ContentRequestController::class, 'cancelProcessing'])
+        ->name('content-requests.cancel-processing');
     Route::delete('/content-requests/{contentRequest}', [ContentRequestController::class, 'destroy'])
         ->name('content-requests.destroy');
     Route::get('/content-requests/{contentRequest}/preview', [ContentRequestController::class, 'preview'])
         ->name('content-requests.preview');
+    Route::get('/content-requests/{contentRequest}/thumbnail', [ContentRequestController::class, 'thumbnail'])
+        ->name('content-requests.thumbnail');
 });
+
+Route::get('/signed/content-requests/{contentRequest}/preview', [ContentRequestController::class, 'signedPreview'])
+    ->middleware('signed')
+    ->withoutMiddleware([
+        EncryptCookies::class,
+        AddQueuedCookiesToResponse::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        VerifyCsrfToken::class,
+    ])
+    ->name('content-requests.preview.signed');
+
+Route::get('/signed/content-requests/{contentRequest}/thumbnail', [ContentRequestController::class, 'signedThumbnail'])
+    ->middleware('signed')
+    ->withoutMiddleware([
+        EncryptCookies::class,
+        AddQueuedCookiesToResponse::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        VerifyCsrfToken::class,
+    ])
+    ->name('content-requests.thumbnail.signed');
 
 
 Route::get('/test-s3', function (S3DiskFactory $factory) {

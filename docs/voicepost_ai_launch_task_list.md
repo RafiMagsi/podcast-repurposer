@@ -101,6 +101,7 @@ Before going live, verify:
 - Show source text block for text input.
 - Confirm preview works for S3/local URLs.
 - Add Voice and Video recording option with preview
+- Make page for pipeline that shows current going on active processings
 
 ### 2. Stabilize `WhisperService`
 - Review current transcription flow for audio, video, and recording.

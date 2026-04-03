@@ -12,6 +12,14 @@ class ContentRequest extends Model
 {
     use HasFactory;
 
+    public const STATUS_UPLOADED = 'uploaded';
+    public const STATUS_TRANSCRIBING = 'transcribing';
+    public const STATUS_TRANSCRIBED = 'transcribed';
+    public const STATUS_GENERATING = 'generating';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_FAILED = 'failed';
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $table = 'episodes';
 
     protected $fillable = [
@@ -35,6 +43,7 @@ class ContentRequest extends Model
         'media_kind',
         'source_text',
         'thumbnail_path',
+        'preview_path',
     ];
 
     protected static function booted(): void
@@ -59,5 +68,15 @@ class ContentRequest extends Model
     public function contentResponses(): HasMany
     {
         return $this->hasMany(ContentResponse::class, 'episode_id');
+    }
+
+    public static function processingStatuses(): array
+    {
+        return [
+            self::STATUS_UPLOADED,
+            self::STATUS_TRANSCRIBING,
+            self::STATUS_TRANSCRIBED,
+            self::STATUS_GENERATING,
+        ];
     }
 }

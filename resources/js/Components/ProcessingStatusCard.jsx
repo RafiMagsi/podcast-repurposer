@@ -4,6 +4,8 @@ function statusClass(status) {
     switch (status) {
         case 'completed':
             return 'status-badge status-completed';
+        case 'cancelled':
+            return 'status-badge status-cancelled';
         case 'transcribing':
         case 'transcribed':
             return 'status-badge status-transcribing';
@@ -21,7 +23,7 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
         contentRequest.status === 'transcribing' && contentRequest.compression_status === 'started';
 
     const progressWidth = isCompressionActive
-        ? '35%'
+        ? '42%'
         : contentRequest.status === 'uploaded'
         ? '15%'
         : contentRequest.status === 'transcribing'
@@ -39,6 +41,8 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                     ? 'border-blue-200 bg-blue-50'
                     : contentRequest.status === 'completed'
                     ? 'border-emerald-200 bg-emerald-50'
+                    : contentRequest.status === 'cancelled'
+                    ? 'border-amber-200 bg-amber-50'
                     : contentRequest.status === 'failed'
                     ? 'border-red-200 bg-red-50'
                     : ''
@@ -55,6 +59,8 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                     </>
                 ) : contentRequest.status === 'completed' ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-200/30 blur-3xl" />
+                ) : contentRequest.status === 'cancelled' ? (
+                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-200/30 blur-3xl" />
                 ) : contentRequest.status === 'failed' ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-red-200/30 blur-3xl" />
                 ) : null}

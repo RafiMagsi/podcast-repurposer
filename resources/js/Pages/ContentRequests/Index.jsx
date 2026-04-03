@@ -7,6 +7,8 @@ function statusClass(status) {
     switch (status) {
         case 'completed':
             return 'status-badge status-completed';
+        case 'cancelled':
+            return 'status-badge status-cancelled';
         case 'transcribing':
         case 'transcribed':
             return 'status-badge status-transcribing';

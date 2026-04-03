@@ -18,6 +18,8 @@ function statusClass(status) {
     switch (status) {
         case 'completed':
             return 'status-badge status-completed';
+        case 'cancelled':
+            return 'status-badge status-cancelled';
         case 'transcribing':
         case 'transcribed':
             return 'status-badge status-transcribing';
@@ -53,11 +55,36 @@ function sourceLabel(sourceType) {
     }
 }
 
+function mergeStableMediaUrls(currentContentRequest, nextContentRequest) {
+    if (!currentContentRequest) {
+        return nextContentRequest;
+    }
+
+    return {
+        ...nextContentRequest,
+        media_url:
+            currentContentRequest.media_url && nextContentRequest.media_url
+                ? currentContentRequest.media_url
+                : nextContentRequest.media_url,
+        media_thumbnail_url:
+            currentContentRequest.media_thumbnail_url && nextContentRequest.media_thumbnail_url
+                ? currentContentRequest.media_thumbnail_url
+                : nextContentRequest.media_thumbnail_url,
+    };
+}
+
 export default function ContentRequestsShow({ auth, contentRequest }) {
     const { flash, errors } = usePage().props;
-    const canRetryTranscription = contentRequest.source_type !== 'text';
+    const [liveContentRequest, setLiveContentRequest] = useState(contentRequest);
+    const canRetryTranscription = liveContentRequest.source_type !== 'text';
 
-    const orderedContentResponses = [...(contentRequest.content_responses || [])].sort((a, b) => {
+    useEffect(() => {
+        setLiveContentRequest((currentContentRequest) =>
+            mergeStableMediaUrls(currentContentRequest, contentRequest),
+        );
+    }, [contentRequest]);
+
+    const orderedContentResponses = [...(liveContentRequest.content_responses || [])].sort((a, b) => {
         const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
         return order.indexOf(a.content_type) - order.indexOf(b.content_type);
     });
@@ -65,7 +92,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     const retryTranscription = () => {
         setRetrying(true);
 
-        router.post(route('content-requests.retry-transcription', contentRequest.public_id), {}, {
+        router.post(route('content-requests.retry-transcription', liveContentRequest.public_id), {}, {
             onSuccess: () => {
                 setShowRetryModal(false);
             },
@@ -78,7 +105,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     const regenerateContent = () => {
         setRegenerating(true);
 
-        router.post(route('content-requests.regenerate-content', contentRequest.public_id), {}, {
+        router.post(route('content-requests.regenerate-content', liveContentRequest.public_id), {}, {
             onSuccess: () => {
                 setShowRegenerateModal(false);
             },
@@ -89,27 +116,29 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     };
 
     const details = [
-        ['Source type', sourceLabel(contentRequest.source_type)],
-        ['Original file', contentRequest.original_file_name || 'Inline text note'],
-        ['Original size', formatMb(contentRequest.file_size)],
-        ['Compressed size', formatMb(contentRequest.compressed_file_size)],
-        ['Compression status', contentRequest.compression_status || 'Not started'],
-        ['Tone', contentRequest.tone || 'N/A'],
-        ['Created at', contentRequest.created_at || 'N/A'],
-        ['Recording ID', contentRequest.public_id || contentRequest.id || 'N/A'],
+        ['Source type', sourceLabel(liveContentRequest.source_type)],
+        ['Original file', liveContentRequest.original_file_name || 'Inline text note'],
+        ['Original size', formatMb(liveContentRequest.file_size)],
+        ['Compressed size', formatMb(liveContentRequest.compressed_file_size)],
+        ['Compression status', liveContentRequest.compression_status || 'Not started'],
+        ['Tone', liveContentRequest.tone || 'N/A'],
+        ['Created at', liveContentRequest.created_at || 'N/A'],
+        ['Recording ID', liveContentRequest.public_id || liveContentRequest.id || 'N/A'],
     ];
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [showRetryModal, setShowRetryModal] = useState(false);
     const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
     const [retrying, setRetrying] = useState(false);
     const [regenerating, setRegenerating] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     const deleteContentRequest = () => {
         setDeleting(true);
 
-        router.delete(route('content-requests.destroy', contentRequest.public_id), {
+        router.delete(route('content-requests.destroy', liveContentRequest.public_id), {
             onSuccess: () => {
                 setDeleting(false);
                 setShowDeleteModal(false);
@@ -124,21 +153,40 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     };
 
     const processingStatuses = ['uploaded', 'transcribing', 'transcribed', 'generating'];
+    const finalizedStatuses = ['completed', 'failed', 'cancelled'];
 
     const isProcessing = useMemo(() => {
-        return processingStatuses.includes(contentRequest.status);
-    }, [contentRequest.status]);
+        return processingStatuses.includes(liveContentRequest.status);
+    }, [liveContentRequest.status]);
+
+    const isFinalized = useMemo(() => {
+        return finalizedStatuses.includes(liveContentRequest.status);
+    }, [liveContentRequest.status]);
+
+    const showRetryAction = canRetryTranscription && isFinalized;
+    const showRegenerateAction = isFinalized && Boolean(liveContentRequest.transcript);
 
     const liveStatusLabel = useMemo(() => {
-        switch (contentRequest.status) {
+        switch (liveContentRequest.status) {
             case 'uploaded':
+                if (liveContentRequest.media_kind === 'video') {
+                    return 'Upload received. Video preview preparation is queued and will start shortly.';
+                }
+
                 return 'Upload received. Waiting to start processing.';
             case 'transcribing':
-                if (contentRequest.compression_status === 'started') {
+                if (liveContentRequest.compression_status === 'started') {
+                    if (
+                        liveContentRequest.media_kind === 'video' &&
+                        (!liveContentRequest.preview_path || !liveContentRequest.media_thumbnail_url)
+                    ) {
+                        return 'Preparing video preview, extracting a thumbnail, and getting the source ready for transcription...';
+                    }
+
                     return 'Preparing media, extracting audio, and compressing for transcription...';
                 }
 
-                if (contentRequest.compression_status === 'completed') {
+                if (liveContentRequest.compression_status === 'completed') {
                     return 'Media prep is complete. Transcribing source into text...';
                 }
 
@@ -149,8 +197,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 return 'Building summary and social content...';
             case 'completed':
                 return 'Content is ready.';
+            case 'cancelled':
+                return 'Processing was cancelled. You can retry transcription or regenerate content when ready.';
             case 'failed':
-                if (contentRequest.compression_status === 'failed') {
+                if (liveContentRequest.compression_status === 'failed') {
                     return 'Media preparation failed. Review the compression issue and retry if needed.';
                 }
 
@@ -158,34 +208,72 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             default:
                 return 'Status updated.';
         }
-    }, [contentRequest.compression_status, contentRequest.status]);
+    }, [liveContentRequest.compression_status, liveContentRequest.status]);
+
+    const cancelProcessing = () => {
+        setCancelling(true);
+
+        router.post(route('content-requests.cancel-processing', liveContentRequest.public_id), {}, {
+            onSuccess: () => {
+                setShowCancelModal(false);
+            },
+            onFinish: () => {
+                setCancelling(false);
+            },
+        });
+    };
 
     useEffect(() => {
         if (!isProcessing) return;
 
-        const interval = window.setInterval(() => {
-            router.reload({
-                only: ['contentRequest', 'flash', 'errors'],
-                preserveScroll: true,
-                preserveState: true,
-            });
-        }, 2500);
+        let cancelled = false;
 
+        const syncStatus = async () => {
+            if (cancelled || document.visibilityState !== 'visible') {
+                return;
+            }
+
+            try {
+                const response = await window.fetch(
+                    route('content-requests.status', liveContentRequest.public_id),
+                    {
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                    },
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const payload = await response.json();
+
+                if (!cancelled && payload?.contentRequest) {
+                    setLiveContentRequest((currentContentRequest) =>
+                        mergeStableMediaUrls(currentContentRequest, payload.contentRequest),
+                    );
+                }
+            } catch (_error) {
+                // Keep polling passive. The next interval can recover.
+            }
+        };
+
+        const interval = window.setInterval(syncStatus, 2500);
         const onFocus = () => {
-            router.reload({
-                only: ['contentRequest', 'flash', 'errors'],
-                preserveScroll: true,
-                preserveState: true,
-            });
+            void syncStatus();
         };
 
         window.addEventListener('focus', onFocus);
 
         return () => {
+            cancelled = true;
             window.clearInterval(interval);
             window.removeEventListener('focus', onFocus);
         };
-    }, [isProcessing]);
+    }, [isProcessing, liveContentRequest.public_id]);
 
     return (
         <AuthenticatedLayout
@@ -194,17 +282,26 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 <div className="grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
                     <div>
                         <div className="app-badge mb-4">Recording workspace</div>
-                        <h1 className="app-heading">{contentRequest.title}</h1>
+                        <h1 className="app-heading">{liveContentRequest.title}</h1>
                         <p className="app-subheading mt-5 max-w-2xl">
                             Inspired by the screenshots, this page now leans into a clearer recording
                             workspace: dark text, lighter panels, and more structured transcript and output review.
                         </p>
                         <div className="mt-6 flex flex-wrap items-center gap-3">
-                            <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
+                            <span className={statusClass(liveContentRequest.status)}>{liveContentRequest.status}</span>
                             {isProcessing ? (
                                 <span className="app-badge-neutral">Auto updating</span>
                             ) : null}
-                            {canRetryTranscription ? (
+                            {isProcessing ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="btn-outline"
+                                >
+                                    Cancel Processing
+                                </button>
+                            ) : null}
+                            {showRetryAction ? (
                                 <button
                                     type="button"
                                     onClick={() => setShowRetryModal(true)}
@@ -214,14 +311,15 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                 </button>
                             ) : null}
 
-                            <button
-                                type="button"
-                                onClick={() => setShowRegenerateModal(true)}
-                                className="btn-primary"
-                                disabled={!contentRequest.transcript}
-                            >
-                                Regenerate Content
-                            </button>
+                            {showRegenerateAction ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRegenerateModal(true)}
+                                    className="btn-primary"
+                                >
+                                    Regenerate Content
+                                </button>
+                            ) : null}
                         </div>
                     </div>
 
@@ -234,8 +332,8 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-3">
                             {[
-                                ['Summary', contentRequest.summary ? 'Ready' : 'Pending'],
-                                ['Transcript', contentRequest.transcript ? 'Ready' : 'Pending'],
+                                ['Summary', liveContentRequest.summary ? 'Ready' : 'Pending'],
+                                ['Transcript', liveContentRequest.transcript ? 'Ready' : 'Pending'],
                                 ['Responses', `${orderedContentResponses.length} generated`],
                             ].map(([label, value]) => (
                                 <div
@@ -255,7 +353,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 </div>
             }
         >
-            <Head title={contentRequest.title} />
+            <Head title={liveContentRequest.title} />
 
             {flash?.success && (
                 <div className="app-card bg-[rgb(var(--color-success-bg))] p-4 text-sm text-[rgb(var(--color-success-text))]">
@@ -264,7 +362,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             )}
 
             <ProcessingStatusCard
-                contentRequest={contentRequest}
+                contentRequest={liveContentRequest}
                 isProcessing={isProcessing}
                 liveStatusLabel={liveStatusLabel}
             />
@@ -296,40 +394,49 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         </div>
                     </div>
 
-                    {contentRequest.compression_error && (
+                    {liveContentRequest.compression_error && (
                         <div className="app-card bg-[rgb(var(--color-warning-bg))] p-6 text-[rgb(var(--color-warning-text))]">
                             <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Compression issue</h2>
-                            <p className="mt-3 text-sm">{contentRequest.compression_error}</p>
+                            <p className="mt-3 text-sm">{liveContentRequest.compression_error}</p>
                         </div>
                     )}
 
-                    {contentRequest.error_message && (
+                    {liveContentRequest.error_message && (
                         <div className="app-card bg-[rgb(var(--color-danger-bg))] p-6 text-[rgb(var(--color-danger-text))]">
                             <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">Processing issue</h2>
-                            <p className="mt-3 text-sm">{contentRequest.error_message}</p>
+                            <p className="mt-3 text-sm">{liveContentRequest.error_message}</p>
                         </div>
                     )}
+
+                    {isProcessing ? (
+                        <div className="app-card bg-[rgb(var(--color-surface-soft))] p-6">
+                            <h2 className="app-section-title">Content actions locked</h2>
+                            <p className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                Retry transcription and regenerate content are only available after this run reaches a final state.
+                            </p>
+                        </div>
+                    ) : null}
 
                     <div className="app-card p-6">
                         <h2 className="app-section-title">Quick actions</h2>
                         <div className="mt-5 flex flex-col gap-3">
                             <button
                                 type="button"
-                                onClick={() => copyToClipboard(contentRequest.transcript || '')}
+                                onClick={() => copyToClipboard(liveContentRequest.transcript || '')}
                                 className="btn-outline w-full"
-                                disabled={!contentRequest.transcript}
+                                disabled={!liveContentRequest.transcript}
                             >
                                 Copy transcript
                             </button>
                             <button
                                 type="button"
-                                onClick={() => copyToClipboard(contentRequest.summary || '')}
+                                onClick={() => copyToClipboard(liveContentRequest.summary || '')}
                                 className="btn-outline w-full"
-                                disabled={!contentRequest.summary}
+                                disabled={!liveContentRequest.summary}
                             >
                                 Copy summary
                             </button>
-                            {canRetryTranscription ? (
+                            {showRetryAction ? (
                                 <button
                                     type="button"
                                     onClick={() => setShowRetryModal(true)}
@@ -338,14 +445,24 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     Retry transcription
                                 </button>
                             ) : null}
-                            <button
-                                type="button"
-                                onClick={() => setShowRegenerateModal(true)}
-                                className="btn-primary w-full"
-                                disabled={!contentRequest.transcript}
-                            >
-                                Regenerate content
-                            </button>
+                            {isProcessing ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="btn-outline w-full"
+                                >
+                                    Cancel processing
+                                </button>
+                            ) : null}
+                            {showRegenerateAction ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRegenerateModal(true)}
+                                    className="btn-primary w-full"
+                                >
+                                    Regenerate content
+                                </button>
+                            ) : null}
                             <button
                                 type="button"
                                 onClick={() => setShowDeleteModal(true)}
@@ -358,7 +475,30 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 </div>
 
                 <div className="space-y-6">
-                    <ContentPreviewCard contentRequest={contentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel}/>
+                    <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel}/>
+                    
+                    <div className="app-card p-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="app-section-title">Transcript</h2>
+                                <p className="app-muted mt-2">
+                                    The full text source used by the generation pipeline.
+                                </p>
+                            </div>
+                            {liveContentRequest.transcript ? (
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(liveContentRequest.transcript)}
+                                    className="btn-copy"
+                                >
+                                    Copy
+                                </button>
+                            ) : null}
+                        </div>
+                        <div className="mt-5 max-h-[500px] overflow-y-auto rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
+                            {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
+                        </div>
+                    </div>
                     
                     <div className="app-card p-6">
                         <div className="flex items-start justify-between gap-4">
@@ -368,10 +508,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     Condensed context before you review the full transcript.
                                 </p>
                             </div>
-                            {contentRequest.summary ? (
+                            {liveContentRequest.summary ? (
                                 <button
                                     type="button"
-                                    onClick={() => copyToClipboard(contentRequest.summary)}
+                                    onClick={() => copyToClipboard(liveContentRequest.summary)}
                                     className="btn-copy"
                                 >
                                     Copy
@@ -379,30 +519,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                             ) : null}
                         </div>
                         <div className="mt-5 rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {contentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
-                        </div>
-                    </div>
-
-                    <div className="app-card p-6">
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 className="app-section-title">Transcript</h2>
-                                <p className="app-muted mt-2">
-                                    The full text source used by the generation pipeline.
-                                </p>
-                            </div>
-                            {contentRequest.transcript ? (
-                                <button
-                                    type="button"
-                                    onClick={() => copyToClipboard(contentRequest.transcript)}
-                                    className="btn-copy"
-                                >
-                                    Copy
-                                </button>
-                            ) : null}
-                        </div>
-                        <div className="mt-5 max-h-[500px] overflow-y-auto rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {contentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
+                            {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
                         </div>
                     </div>
 
@@ -439,7 +556,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 onConfirm={deleteContentRequest}
                 processing={deleting}
                 title="Delete recording?"
-                message={`This will permanently remove the source file, transcript, summary, and content responses for "${contentRequest.title}".`}
+                message={`This will permanently remove the source file, transcript, summary, and content responses for "${liveContentRequest.title}".`}
             />
 
             <ActionConfirmationModal
@@ -462,6 +579,17 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 title="Regenerate content?"
                 message="This will keep the transcript, remove the current content responses, and create fresh outputs again."
                 confirmText="Regenerate Content"
+            />
+
+            <ActionConfirmationModal
+                show={showCancelModal}
+                onClose={() => !cancelling && setShowCancelModal(false)}
+                onConfirm={cancelProcessing}
+                processing={cancelling}
+                variant="warning"
+                title="Cancel processing?"
+                message="This stops the current transcription or content-generation run and marks the recording as cancelled."
+                confirmText="Cancel Processing"
             />
         </AuthenticatedLayout>
     );

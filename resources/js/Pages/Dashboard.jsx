@@ -55,14 +55,8 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                        <Link href={route('content-requests.index')} className="topbar-action">
-                            Library
-                        </Link>
-                        <Link href={route('settings.index')} className="topbar-action">
-                            Settings
-                        </Link>
                         <Link href={route('content-requests.create')} className="btn-primary-rect">
-                            Full upload page
+                            Video transcript
                         </Link>
                     </div>
                 </div>

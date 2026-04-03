@@ -190,8 +190,8 @@ PROMPT;
             throw new RuntimeException('OpenAI content generation returned empty text.');
         }
 
-        Log::info('VoicePost raw generation text', [
-            'text' => $text,
+        Log::info('VoicePost generation text received', [
+            'length' => strlen($text),
         ]);
 
         $text = $this->sanitizeJsonText($text);

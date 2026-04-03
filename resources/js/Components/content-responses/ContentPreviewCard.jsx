@@ -1,15 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
-    const [isVideoReady, setIsVideoReady] = useState(false);
-
-    useEffect(() => {
-        setIsVideoReady(false);
-    }, [contentRequest.media_url, contentRequest.media_thumbnail_url]);
-
     const isVideoSource = contentRequest.media_kind === 'video';
     const isAudioSource = contentRequest.media_kind === 'audio';
-    const showVideoOverlay = isVideoSource && contentRequest.media_url && !isVideoReady;
+    const mediaElementRef = useRef(null);
+
+    useEffect(() => {
+        const stopPreview = () => {
+            const mediaElement = mediaElementRef.current;
+
+            if (!mediaElement) {
+                return;
+            }
+
+            try {
+                mediaElement.pause();
+            } catch (_error) {
+                // Best-effort cleanup before navigation.
+            }
+        };
+
+        const handlePageHide = () => {
+            stopPreview();
+        };
+
+        const handleDocumentClick = (event) => {
+            const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+
+            if (target) {
+                stopPreview();
+            }
+        };
+
+        window.addEventListener('pagehide', handlePageHide);
+        window.addEventListener('beforeunload', handlePageHide);
+        document.addEventListener('click', handleDocumentClick, true);
+
+        return () => {
+            window.removeEventListener('pagehide', handlePageHide);
+            window.removeEventListener('beforeunload', handlePageHide);
+            document.removeEventListener('click', handleDocumentClick, true);
+            stopPreview();
+        };
+    }, []);
 
     return (
         <div className="app-card p-6">
@@ -20,7 +53,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         Source Preview
                     </h2>
                     <p className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                        Review the original source before checking transcript and content responses.
+                        Media previews stream normally and begin playback with browser buffering instead of forcing a full download.
                     </p>
                 </div>
 
@@ -47,11 +80,13 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                             Audio preview
                         </div>
                         <div className="mt-4 flex h-[120px] items-center rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-4">
-                            <audio controls className="w-full">
-                                <source
-                                    src={contentRequest.media_url}
-                                    type={contentRequest.mime_type || 'audio/mpeg'}
-                                />
+                            <audio
+                                ref={mediaElementRef}
+                                controls
+                                preload="metadata"
+                                className="w-full"
+                                src={contentRequest.media_url}
+                            >
                                 Your browser does not support audio playback.
                             </audio>
                         </div>
@@ -63,29 +98,15 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         </div>
                         <div className="mt-4 overflow-hidden rounded-[18px] border border-[rgb(var(--color-border))] bg-black">
                             <div className="relative flex h-[420px] items-center justify-center bg-black sm:h-[460px] lg:h-[500px]">
-                                {showVideoOverlay ? (
-                                    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/35 backdrop-blur-[1px]">
-                                        <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/25 border-t-white" />
-                                        <div className="text-sm font-medium text-white/90">
-                                            Loading video preview...
-                                        </div>
-                                    </div>
-                                ) : null}
-
                                 {contentRequest.media_url ? (
                                     <video
+                                        ref={mediaElementRef}
                                         controls
-                                        poster={contentRequest.media_thumbnail_url || undefined}
                                         preload="metadata"
-                                        onLoadedData={() => setIsVideoReady(true)}
-                                        onCanPlay={() => setIsVideoReady(true)}
-                                        onError={() => setIsVideoReady(true)}
+                                        poster={contentRequest.media_thumbnail_url || undefined}
                                         className="max-h-full max-w-full object-contain"
+                                        src={contentRequest.media_url}
                                     >
-                                        <source
-                                            src={contentRequest.media_url}
-                                            type={contentRequest.mime_type || 'video/mp4'}
-                                        />
                                         Your browser does not support video playback.
                                     </video>
                                 ) : contentRequest.media_thumbnail_url ? (

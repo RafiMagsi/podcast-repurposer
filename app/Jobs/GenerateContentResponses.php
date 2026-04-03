@@ -2,24 +2,33 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\ProcessingCancelledException;
+use App\Jobs\PrepareVideoPreviewAssets;
 use App\Models\ContentRequest;
 use App\Models\ContentResponse;
 use App\Services\OpenAIContentService;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class GenerateContentResponses implements ShouldQueue
+class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
     public int $tries = 3;
     public int $timeout = 600;
+    public int $uniqueFor = 3600;
 
     public function __construct(
         public int $contentRequestId
     ) {
+    }
+
+    public function uniqueId(): string
+    {
+        return 'generate:' . $this->contentRequestId;
     }
 
     public function handle(OpenAIContentService $openAIContentService): void
@@ -37,13 +46,15 @@ class GenerateContentResponses implements ShouldQueue
             return;
         }
 
+        $this->abortIfCancelled($contentRequest);
+
         if (! $contentRequest->transcript) {
             Log::error('GenerateContentResponses missing transcript', [
                 'content_request_id' => $contentRequest->id,
             ]);
 
             $contentRequest->update([
-                'status' => 'failed',
+                'status' => ContentRequest::STATUS_FAILED,
                 'error_message' => 'Transcript is missing.',
             ]);
 
@@ -51,12 +62,14 @@ class GenerateContentResponses implements ShouldQueue
         }
 
         $contentRequest->update([
-            'status' => 'generating',
+            'status' => ContentRequest::STATUS_GENERATING,
             'error_message' => null,
         ]);
 
         try {
             $outputs = $openAIContentService->generate($contentRequest->transcript, $contentRequest->tone);
+            $contentRequest->refresh();
+            $this->abortIfCancelled($contentRequest);
 
             Log::info('VoicePost outputs generated', [
                 'content_request_id' => $contentRequest->id,
@@ -94,9 +107,26 @@ class GenerateContentResponses implements ShouldQueue
 
             $contentRequest->update([
                 'summary' => $outputs['summary'],
-                'status' => 'completed',
+                'status' => ContentRequest::STATUS_COMPLETED,
             ]);
+        } catch (ProcessingCancelledException $e) {
+            Log::info('GenerateContentResponses cancelled', [
+                'content_request_id' => $contentRequest->id,
+            ]);
+
+            return;
         } catch (Throwable $e) {
+            $contentRequest->refresh();
+
+            if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+                Log::info('GenerateContentResponses error ignored after cancellation', [
+                    'content_request_id' => $contentRequest->id,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return;
+            }
+
             report($e);
 
             Log::error('GenerateContentResponses failed', [
@@ -105,11 +135,29 @@ class GenerateContentResponses implements ShouldQueue
             ]);
 
             $contentRequest->update([
-                'status' => 'failed',
+                'status' => ContentRequest::STATUS_FAILED,
                 'error_message' => $e->getMessage(),
             ]);
 
             throw $e;
+        } finally {
+            $contentRequest->refresh();
+
+            if (
+                $contentRequest->media_kind === 'video' &&
+                empty($contentRequest->preview_path)
+            ) {
+                PrepareVideoPreviewAssets::dispatch($contentRequest->id);
+            }
+        }
+    }
+
+    private function abortIfCancelled(ContentRequest $contentRequest): void
+    {
+        $contentRequest->refresh();
+
+        if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+            throw new ProcessingCancelledException('Processing was cancelled.');
         }
     }
 }

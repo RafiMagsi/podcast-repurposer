@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 
 const sourceOptions = [
@@ -57,16 +58,22 @@ export default function CreateContent({
     const toneOptions = tones.length > 0 ? tones : defaultTones;
     const resolvedUploadLimits = uploadLimits ?? {
         video: { bytes: 300 * 1024 * 1024, label: '300 MB' },
-        audio: { bytes: 5 * 1024 * 1024, label: '5 MB' },
+        audio: { bytes: 25 * 1024 * 1024, label: '5 MB' },
     };
 
-    const { data, setData, post, processing, progress, errors, setError, clearErrors } = useForm({
+    const { data, setData, post, processing, progress, errors, clearErrors, setError, cancel } = useForm({
         title: '',
         tone: toneOptions[0]?.value || 'professional',
         source_type: 'recording',
         source_file: null,
         source_text: '',
     });
+
+    const uploadFinishTimeoutRef = useRef(null);
+    const [uploadProgress, setUploadProgress] = useState(null);
+    const [showUploadProgress, setShowUploadProgress] = useState(false);
+    const [isIndeterminateUpload, setIsIndeterminateUpload] = useState(false);
+    const [isWaitingForServer, setIsWaitingForServer] = useState(false);
 
     const isTextSource = data.source_type === 'text';
     const textLength = data.source_text.length;
@@ -133,6 +140,33 @@ export default function CreateContent({
         }
     };
 
+    useEffect(() => {
+        if (progress?.percentage != null) {
+            setShowUploadProgress(true);
+            setUploadProgress(progress.percentage);
+            setIsIndeterminateUpload(false);
+        }
+    }, [progress?.percentage]);
+
+    useEffect(() => {
+        return () => {
+            if (uploadFinishTimeoutRef.current) {
+                window.clearTimeout(uploadFinishTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const cancelUpload = () => {
+        cancel();
+        if (uploadFinishTimeoutRef.current) {
+            window.clearTimeout(uploadFinishTimeoutRef.current);
+        }
+        setShowUploadProgress(false);
+        setUploadProgress(null);
+        setIsIndeterminateUpload(false);
+        setIsWaitingForServer(false);
+    };
+
     const submit = (e) => {
         e.preventDefault();
 
@@ -140,11 +174,63 @@ export default function CreateContent({
             return;
         }
 
+        if (!isTextSource) {
+            setShowUploadProgress(true);
+            setUploadProgress(1);
+            setIsIndeterminateUpload(true);
+            setIsWaitingForServer(false);
+        }
+
         post(route('content-requests.store'), {
             forceFormData: true,
-            preserveScroll,
+            preserveScroll: true,
+            onStart: () => {
+                if (!isTextSource) {
+                    setShowUploadProgress(true);
+                    setUploadProgress((current) => current ?? 1);
+                    setIsIndeterminateUpload(true);
+                }
+            },
+            onProgress: (event) => {
+                if (typeof event?.percentage === 'number') {
+                    setShowUploadProgress(true);
+                    setUploadProgress(event.percentage);
+                    setIsIndeterminateUpload(false);
+
+                    if (event.percentage >= 100) {
+                        setIsWaitingForServer(true);
+                    }
+                }
+            },
+            onSuccess: () => {
+                setIsWaitingForServer(false);
+            },
+            onFinish: () => {
+                if (isTextSource) {
+                    setShowUploadProgress(false);
+                    setUploadProgress(null);
+                    setIsWaitingForServer(false);
+                    return;
+                }
+
+                uploadFinishTimeoutRef.current = window.setTimeout(() => {
+                    setShowUploadProgress(false);
+                    setUploadProgress(null);
+                    setIsIndeterminateUpload(false);
+                    setIsWaitingForServer(false);
+                }, 250);
+            },
         });
     };
+
+    const uploadStatusMessage =
+        uploadProgress != null && uploadProgress >= 100 && processing
+            ? isWaitingForServer
+                ? 'Upload sent. Finalizing request and redirecting...'
+                : 'Upload complete.'
+            : uploadProgress != null
+            ? `Uploading ${Math.round(uploadProgress)}%`
+            : 'Preparing upload...';
 
     return (
         <div className={`app-card overflow-hidden ${className}`}>
@@ -266,14 +352,37 @@ export default function CreateContent({
                             </div>
                         </div>
 
-                        {progress ? (
-                            <div className="app-card-soft p-4">
-                                <div className="mb-2 flex items-center justify-between text-sm text-[rgb(var(--color-text-muted))]">
-                                    <span>Uploading source</span>
-                                    <span>{progress.percentage}%</span>
+                        {showUploadProgress && data.source_type !== 'text' ? (
+                            <div className="mt-4 rounded-[18px] border border-[rgb(var(--color-border))] bg-white p-4">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                            Uploading source
+                                        </div>
+                                        <div className="mt-1 text-sm text-[rgb(var(--color-text-muted))]">
+                                            {uploadStatusMessage}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                            {uploadProgress != null ? `${Math.round(uploadProgress)}%` : '...'}
+                                        </div>
+                                        {processing ? (
+                                            <button type="button" onClick={cancelUpload} className="btn-secondary">
+                                                Cancel
+                                            </button>
+                                        ) : null}
+                                    </div>
                                 </div>
-                                <div className="progress-track">
-                                    <div className="progress-fill" style={{ width: `${progress.percentage}%` }} />
+
+                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgb(var(--color-border))]">
+                                    <div
+                                        className={`h-full rounded-full bg-[#4B5563] transition-all duration-200 ${
+                                            isIndeterminateUpload ? 'upload-progress-indeterminate' : ''
+                                        }`}
+                                        style={{ width: isIndeterminateUpload ? '35%' : `${uploadProgress ?? 0}%` }}
+                                    />
                                 </div>
                             </div>
                         ) : null}

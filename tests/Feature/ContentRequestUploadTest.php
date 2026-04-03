@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\Queue;
 it('uploads audio and creates a content request', function () {
     $user = User::factory()->create();
     Queue::fake();
+    $beforeLatestId = ContentRequest::max('id') ?? 0;
 
     $fakeDisk = \Mockery::mock(Filesystem::class);
-    $fakeDisk->shouldReceive('putFileAs')->once()->andReturn('content-requests/2026/04/test.mp3');
+    $fakeDisk->shouldReceive('put')->once()->andReturn(true);
 
     $factory = \Mockery::mock(S3DiskFactory::class);
     $factory->shouldReceive('make')->once()->andReturn($fakeDisk);
@@ -32,12 +33,53 @@ it('uploads audio and creates a content request', function () {
 
     $response->assertRedirect();
 
-    $contentRequest = ContentRequest::first();
+    $contentRequest = ContentRequest::query()
+        ->where('id', '>', $beforeLatestId)
+        ->latest('id')
+        ->first();
 
     expect($contentRequest)->not->toBeNull();
     expect($contentRequest->title)->toBe('My Test Content Request');
     expect($contentRequest->status)->toBe('uploaded');
-    expect($contentRequest->file_path)->toBe('content-requests/2026/04/test.mp3');
+    expect($contentRequest->file_path)->toStartWith('content-requests/');
+    expect($contentRequest->file_path)->toEndWith('.mp3');
+
+    Queue::assertPushed(TranscribeContentRequest::class, function ($job) use ($contentRequest) {
+        return $job->contentRequestId === $contentRequest->id;
+    });
+});
+
+it('uploads video and queues transcription without blocking on preview preparation', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+    $beforeLatestId = ContentRequest::max('id') ?? 0;
+
+    $fakeDisk = \Mockery::mock(Filesystem::class);
+    $fakeDisk->shouldReceive('put')->once()->andReturn(true);
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldReceive('make')->once()->andReturn($fakeDisk);
+
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $file = UploadedFile::fake()->create('sample.mp4', 1000, 'video/mp4');
+
+    $response = $this->actingAs($user)->post(route('content-requests.store'), [
+        'title' => 'My Test Video Request',
+        'tone' => 'professional',
+        'source_type' => 'video',
+        'source_file' => $file,
+    ]);
+
+    $response->assertRedirect();
+
+    $contentRequest = ContentRequest::query()
+        ->where('id', '>', $beforeLatestId)
+        ->latest('id')
+        ->first();
+
+    expect($contentRequest)->not->toBeNull();
+    expect($contentRequest->media_kind)->toBe('video');
 
     Queue::assertPushed(TranscribeContentRequest::class, function ($job) use ($contentRequest) {
         return $job->contentRequestId === $contentRequest->id;
