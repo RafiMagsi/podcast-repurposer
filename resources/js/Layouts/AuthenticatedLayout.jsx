@@ -29,6 +29,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
     const page = usePage();
     const url = page.url || '';
     const authUser = passedUser || page.props?.auth?.user || null;
+    const isAdmin = Boolean(authUser?.is_admin);
     const usageLimits = page.props?.usageLimits || null;
     const breadcrumb = buildBreadcrumb(url);
 
@@ -107,6 +108,15 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             <span className="sidebar-icon">P</span>
                             Pipeline
                         </a>
+                        {isAdmin ? (
+                            <a
+                                href={route('admin.runs.index')}
+                                className={`sidebar-link ${isActive(url, '/admin/runs') ? 'sidebar-link-active' : ''}`}
+                            >
+                                <span className="sidebar-icon">A</span>
+                                Admin Runs
+                            </a>
+                        ) : null}
                         <a
                             href={route('settings.index')}
                             className={`sidebar-link ${isActive(url, '/settings') ? 'sidebar-link-active' : ''}`}
@@ -173,6 +183,11 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 <a href={route('pipeline.index')} className="topbar-action">
                                     Pipeline
                                 </a>
+                                {isAdmin ? (
+                                    <a href={route('admin.runs.index')} className="topbar-action">
+                                        Admin Runs
+                                    </a>
+                                ) : null}
                                 <a href={route('settings.index')} className="btn-secondary">
                                     Settings
                                 </a>

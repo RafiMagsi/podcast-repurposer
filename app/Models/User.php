@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'run_limit',
         'plan_price_usd',
+        'is_admin',
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'run_limit' => 'integer',
             'plan_price_usd' => 'decimal:2',
+            'is_admin' => 'boolean',
         ];
     }
     

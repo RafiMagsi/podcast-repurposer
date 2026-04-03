@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PipelineController;
+use App\Http\Controllers\AdminRunController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/pipeline', PipelineController::class)->name('pipeline.index');
     Route::get('/pipeline/status', [PipelineController::class, 'status'])->name('pipeline.status');
+    Route::get('/admin/runs', AdminRunController::class)
+        ->middleware('admin')
+        ->name('admin.runs.index');
 
     Route::get('/content-requests', [ContentRequestController::class, 'index'])->name('content-requests.index');
     Route::get('/content-requests/create', [ContentRequestController::class, 'create'])->name('content-requests.create');

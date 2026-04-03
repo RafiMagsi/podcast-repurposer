@@ -207,7 +207,7 @@ Before going live, verify:
 - Show partial completion status clearly in UI.
 - Add clear retry actions for incomplete runs.
 
-### 11. Add admin run monitoring
+### 11. Add admin run monitoring - done
 - Create a basic admin run list page.
 - Show user, source type, status, and created time.
 - Add filters for failed and processing runs.
