@@ -17,6 +17,21 @@ function statusClass(status) {
 }
 
 export default function ProcessingStatusCard({ contentRequest, isProcessing, liveStatusLabel }) {
+    const isCompressionActive =
+        contentRequest.status === 'transcribing' && contentRequest.compression_status === 'started';
+
+    const progressWidth = isCompressionActive
+        ? '35%'
+        : contentRequest.status === 'uploaded'
+        ? '15%'
+        : contentRequest.status === 'transcribing'
+        ? '55%'
+        : contentRequest.status === 'transcribed'
+        ? '72%'
+        : contentRequest.status === 'generating'
+        ? '90%'
+        : '100%';
+
     return (
         <div
             className={`app-card relative overflow-hidden p-5 ${
@@ -68,6 +83,11 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
 
                 <div className="flex items-center gap-3">
                     <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
+                    {contentRequest.compression_status ? (
+                        <span className="rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700 backdrop-blur-sm">
+                            Media prep {contentRequest.compression_status}
+                        </span>
+                    ) : null}
                     {isProcessing ? (
                         <div className="flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-sm" aria-hidden="true">
                             <span className="relative flex h-3 w-3 items-center justify-center">
@@ -85,24 +105,17 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                     <div className="progress-track">
                         <div
                             className="progress-fill"
-                            style={{
-                                width:
-                                    contentRequest.status === 'uploaded'
-                                        ? '20%'
-                                        : contentRequest.status === 'transcribing'
-                                        ? '45%'
-                                        : contentRequest.status === 'transcribed'
-                                        ? '70%'
-                                        : contentRequest.status === 'generating'
-                                        ? '90%'
-                                        : '100%',
-                            }}
+                            style={{ width: progressWidth }}
                         />
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[rgb(var(--color-text-faint))]">
                         <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
                             Source received
+                        </span>
+                        <span className="text-blue-300">→</span>
+                        <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">
+                            Media preparation
                         </span>
                         <span className="text-blue-300">→</span>
                         <span className="rounded-full border border-white/70 bg-white/75 px-2.5 py-1 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] backdrop-blur-sm">

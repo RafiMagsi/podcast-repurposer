@@ -5,7 +5,9 @@ use App\Models\User;
 use App\Services\S3DiskFactory;
 use App\Jobs\TranscribeContentRequest;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Queue;
 
 it('uploads audio and creates a content request', function () {
@@ -40,4 +42,22 @@ it('uploads audio and creates a content request', function () {
     Queue::assertPushed(TranscribeContentRequest::class, function ($job) use ($contentRequest) {
         return $job->contentRequestId === $contentRequest->id;
     });
+});
+
+it('redirects back with a simple upload error when the post body is too large', function () {
+    $user = User::factory()->create();
+
+    Route::middleware(['web', 'auth'])->post('/test-post-too-large', function () {
+        throw new PostTooLargeException('The POST data is too large.');
+    });
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post('/test-post-too-large');
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors([
+        'source_file' => 'This upload is too large for this server. Choose a smaller file and try again.',
+    ]);
 });

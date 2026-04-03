@@ -54,13 +54,6 @@ class TranscribeContentRequest implements ShouldQueue
                 's3_path' => $contentRequest->file_path,
             ]);
 
-            $transcript = $whisperService->transcribe($contentRequest);
-
-            Log::info('WhisperService returned transcript', [
-                'content_request_id' => $contentRequest->id,
-                'transcript_length' => strlen($transcript),
-            ]);
-
             $transcript = trim((string) $whisperService->transcribe($contentRequest));
 
             if ($transcript === '') {
@@ -76,6 +69,11 @@ class TranscribeContentRequest implements ShouldQueue
 
                 return;
             }
+
+            Log::info('WhisperService returned transcript', [
+                'content_request_id' => $contentRequest->id,
+                'transcript_length' => strlen($transcript),
+            ]);
 
             $contentRequest->update([
                 'transcript' => $transcript,

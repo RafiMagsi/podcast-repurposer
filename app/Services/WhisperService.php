@@ -29,66 +29,58 @@ class WhisperService
             FILTER_VALIDATE_BOOL
         );
 
-        if ($shouldBypass) {
-            Log::info('WhisperService bypassed OpenAI transcription for testing', [
-                'content_request_id' => $contentRequest->id ?? null,
-                'public_id' => $contentRequest->public_id ?? null,
-            ]);
-
-            return 'This is a mock transcript generated in testing mode. VoicePost AI bypassed the OpenAI transcription call and returned a local transcript placeholder so you can test the workflow without API usage.';
-        }
-
-        $apiKey = $this->settings->get('openai_api_key');
-
-        if (! $apiKey) {
-            throw new RuntimeException('Missing openai_api_key');
-        }
-
-        $this->assertMediaWithinDurationLimit($contentRequest, 60);
-
-        Log::info('Media duration validated successfully', [
-            'content_request_id' => $contentRequest->id,
-            'input_type' => $contentRequest->input_type,
-            'media_kind' => $contentRequest->media_kind,
-            'mime_type' => $contentRequest->mime_type,
-        ]);
-
-        if (
-            ($contentRequest->input_type === 'video' || $contentRequest->media_kind === 'video' || str_starts_with((string) $contentRequest->mime_type, 'video/'))
-            && empty($contentRequest->thumbnail_path)
-        ) {
-            $thumbnailPath = $this->generateVideoThumbnail($contentRequest);
-
-            if ($thumbnailPath) {
-                try {
-                    $contentRequest->update([
-                        'thumbnail_path' => $thumbnailPath,
-                    ]);
-
-                    Log::info('Video thumbnail generated successfully', [
-                        'content_request_id' => $contentRequest->id,
-                        'thumbnail_path' => $thumbnailPath,
-                    ]);
-                } catch (\Throwable $thumbnailException) {
-                    Log::warning('Video thumbnail generated but could not be saved', [
-                        'content_request_id' => $contentRequest->id,
-                        'thumbnail_path' => $thumbnailPath,
-                        'message' => $thumbnailException->getMessage(),
-                    ]);
-                }
-            }
-        }
-
-        $contentRequest->update([
-            'compression_status' => 'started',
-            'compression_error' => null,
-        ]);
-
         $sourcePath = null;
         $compressedPath = null;
 
         try {
-            [$sourcePath, $compressedPath] = $this->prepareCompressedAudio($contentRequest);
+            $sourcePath = $this->downloadSourceToTempFile($contentRequest);
+
+            $duration = $this->assertMediaWithinDurationLimit($sourcePath, 60);
+
+            $contentRequest->update([
+                'duration_seconds' => (int) ceil($duration),
+            ]);
+
+            Log::info('Media duration validated successfully', [
+                'content_request_id' => $contentRequest->id,
+                'duration_seconds' => $duration,
+                'input_type' => $contentRequest->input_type,
+                'media_kind' => $contentRequest->media_kind,
+                'mime_type' => $contentRequest->mime_type,
+            ]);
+
+            if (
+                ($contentRequest->input_type === 'video' || $contentRequest->media_kind === 'video' || str_starts_with((string) $contentRequest->mime_type, 'video/'))
+                && empty($contentRequest->thumbnail_path)
+            ) {
+                $thumbnailPath = $this->generateVideoThumbnail($contentRequest, $sourcePath);
+
+                if ($thumbnailPath) {
+                    try {
+                        $contentRequest->update([
+                            'thumbnail_path' => $thumbnailPath,
+                        ]);
+
+                        Log::info('Video thumbnail generated successfully', [
+                            'content_request_id' => $contentRequest->id,
+                            'thumbnail_path' => $thumbnailPath,
+                        ]);
+                    } catch (\Throwable $thumbnailException) {
+                        Log::warning('Video thumbnail generated but could not be saved', [
+                            'content_request_id' => $contentRequest->id,
+                            'thumbnail_path' => $thumbnailPath,
+                            'message' => $thumbnailException->getMessage(),
+                        ]);
+                    }
+                }
+            }
+
+            $contentRequest->update([
+                'compression_status' => 'started',
+                'compression_error' => null,
+            ]);
+
+            $compressedPath = $this->prepareCompressedAudio($sourcePath);
 
             $compressedSize = file_exists($compressedPath) ? filesize($compressedPath) : null;
 
@@ -109,6 +101,23 @@ class WhisperService
 
             if (($compressedSize ?? 0) > (25 * 1024 * 1024)) {
                 throw new RuntimeException('Compressed audio is still larger than 25MB.');
+            }
+
+            if ($shouldBypass) {
+                Log::info('WhisperService bypassed OpenAI transcription for testing after local media preparation', [
+                    'content_request_id' => $contentRequest->id,
+                    'public_id' => $contentRequest->public_id,
+                    'thumbnail_path' => $contentRequest->thumbnail_path,
+                    'compressed_size' => $compressedSize,
+                ]);
+
+                return 'This is a mock transcript generated in testing mode. VoicePost AI bypassed the OpenAI transcription call and returned a local transcript placeholder so you can test the workflow without API usage.';
+            }
+
+            $apiKey = $this->settings->get('openai_api_key');
+
+            if (! $apiKey) {
+                throw new RuntimeException('Missing openai_api_key');
             }
 
             Log::info('Sending file to OpenAI transcription API', [
@@ -204,7 +213,7 @@ class WhisperService
         }
     }
 
-    public function assertMediaWithinDurationLimit(ContentRequest $contentRequest, int $maxSeconds = 60): void
+    private function downloadSourceToTempFile(ContentRequest $contentRequest): string
     {
         $disk = $this->s3DiskFactory->make();
 
@@ -218,20 +227,45 @@ class WhisperService
             throw new \RuntimeException('Unable to create temporary file for duration check.');
         }
 
-        file_put_contents($tmpSource, $disk->get($contentRequest->file_path));
+        $readStream = $disk->readStream($contentRequest->file_path);
+
+        if (! is_resource($readStream)) {
+            @unlink($tmpSource);
+            throw new \RuntimeException('Unable to read source file from storage.');
+        }
+
+        $writeStream = fopen($tmpSource, 'w+b');
+
+        if (! is_resource($writeStream)) {
+            fclose($readStream);
+            @unlink($tmpSource);
+            throw new \RuntimeException('Unable to open local temp file for media processing.');
+        }
+
+        stream_copy_to_stream($readStream, $writeStream);
+
+        fclose($readStream);
+        fclose($writeStream);
+
+        return $tmpSource;
+    }
+
+    public function assertMediaWithinDurationLimit(string $sourcePath, int $maxSeconds = 60): float
+    {
+        if (! file_exists($sourcePath)) {
+            throw new \RuntimeException('Source temp file is missing for duration validation.');
+        }
 
         $process = new \Symfony\Component\Process\Process([
             'ffprobe',
             '-v', 'error',
             '-show_entries', 'format=duration',
             '-of', 'default=noprint_wrappers=1:nokey=1',
-            $tmpSource,
+            $sourcePath,
         ]);
 
         $process->setTimeout(120);
         $process->run();
-
-        @unlink($tmpSource);
 
         if (! $process->isSuccessful()) {
             throw new \RuntimeException('Unable to determine media duration.');
@@ -246,23 +280,15 @@ class WhisperService
         if ($duration > $maxSeconds) {
             throw new \RuntimeException('Media must be 1 minute or less.');
         }
+
+        return $duration;
     }
 
-    private function prepareCompressedAudio(ContentRequest $contentRequest): array
+    private function prepareCompressedAudio(string $sourcePath): string
     {
-        $disk = $this->s3DiskFactory->make();
-
-        if (! $disk->exists($contentRequest->file_path)) {
-            throw new \RuntimeException('Source file was not found in storage.');
+        if (! file_exists($sourcePath)) {
+            throw new \RuntimeException('Source temp file is missing for compression.');
         }
-
-        $sourcePath = tempnam(sys_get_temp_dir(), 'cr_src_');
-
-        if ($sourcePath === false) {
-            throw new \RuntimeException('Unable to create source temp file.');
-        }
-
-        file_put_contents($sourcePath, $disk->get($contentRequest->file_path));
 
         $outputPath = sys_get_temp_dir() . '/' . uniqid('cr_audio_', true) . '.m4a';
 
@@ -282,16 +308,15 @@ class WhisperService
         $process->run();
 
         if (! $process->isSuccessful() || ! file_exists($outputPath)) {
-            @unlink($sourcePath);
             @unlink($outputPath);
 
             throw new \RuntimeException('Unable to extract and compress audio from source.');
         }
 
-        return [$sourcePath, $outputPath];
+        return $outputPath;
     }
 
-    private function generateVideoThumbnail(ContentRequest $contentRequest): ?string
+    private function generateVideoThumbnail(ContentRequest $contentRequest, string $sourcePath): ?string
     {
         if (
             $contentRequest->input_type !== 'video' &&
@@ -301,18 +326,9 @@ class WhisperService
             return null;
         }
 
-        $disk = $this->s3DiskFactory->make();
-
-        if (! $disk->exists($contentRequest->file_path)) {
+        if (! file_exists($sourcePath)) {
             return null;
         }
-
-        $sourcePath = tempnam(sys_get_temp_dir(), 'cr_vid_');
-        if ($sourcePath === false) {
-            return null;
-        }
-
-        file_put_contents($sourcePath, $disk->get($contentRequest->file_path));
 
         $thumbPath = sys_get_temp_dir() . '/' . uniqid('cr_thumb_', true) . '.jpg';
 
@@ -329,16 +345,15 @@ class WhisperService
         $process->run();
 
         if (! $process->isSuccessful() || ! file_exists($thumbPath)) {
-            @unlink($sourcePath);
             @unlink($thumbPath);
             return null;
         }
 
         $storedThumbPath = 'content-request-thumbnails/' . now()->format('Y/m') . '/' . uniqid('thumb_', true) . '.jpg';
 
+        $disk = $this->s3DiskFactory->make();
         $disk->put($storedThumbPath, file_get_contents($thumbPath));
 
-        @unlink($sourcePath);
         @unlink($thumbPath);
 
         return $storedThumbPath;

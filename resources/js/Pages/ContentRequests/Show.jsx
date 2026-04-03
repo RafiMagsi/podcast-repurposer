@@ -134,6 +134,14 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             case 'uploaded':
                 return 'Upload received. Waiting to start processing.';
             case 'transcribing':
+                if (contentRequest.compression_status === 'started') {
+                    return 'Preparing media, extracting audio, and compressing for transcription...';
+                }
+
+                if (contentRequest.compression_status === 'completed') {
+                    return 'Media prep is complete. Transcribing source into text...';
+                }
+
                 return 'Transcribing source into text...';
             case 'transcribed':
                 return 'Transcript ready. Generating content...';
@@ -142,11 +150,15 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             case 'completed':
                 return 'Content is ready.';
             case 'failed':
+                if (contentRequest.compression_status === 'failed') {
+                    return 'Media preparation failed. Review the compression issue and retry if needed.';
+                }
+
                 return 'Processing failed. Review the error and retry if needed.';
             default:
                 return 'Status updated.';
         }
-    }, [contentRequest.status]);
+    }, [contentRequest.compression_status, contentRequest.status]);
 
     useEffect(() => {
         if (!isProcessing) return;
@@ -174,19 +186,6 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             window.removeEventListener('focus', onFocus);
         };
     }, [isProcessing]);
-
-    function sourceLabel(sourceType) {
-        switch (sourceType) {
-            case 'video':
-                return 'Video';
-            case 'text':
-                return 'Text note';
-            case 'audio':
-                return 'Audio';
-            default:
-                return 'Recording';
-        }
-    }
 
     return (
         <AuthenticatedLayout

@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CreateContent from '@/Components/create-content/CreateContent';
 import { Head } from '@inertiajs/react';
 
-export default function ContentRequestsCreate({ auth, tones = [] }) {
+export default function ContentRequestsCreate({ auth, tones = [], uploadLimits = null }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -53,7 +53,13 @@ export default function ContentRequestsCreate({ auth, tones = [] }) {
         >
             <Head title="Create Content" />
 
-            <CreateContent tones={tones} showCardHeader={false} showCancelButton titlePlaceholder="e.g. 3 lessons from one client call" />
+            <CreateContent
+                tones={tones}
+                uploadLimits={uploadLimits}
+                showCardHeader={false}
+                showCancelButton
+                titlePlaceholder="e.g. 3 lessons from one client call"
+            />
         </AuthenticatedLayout>
     );
 }

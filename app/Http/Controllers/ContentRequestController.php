@@ -49,11 +49,14 @@ class ContentRequestController extends Controller
                 ['label' => 'Engaging', 'value' => 'engaging'],
                 ['label' => 'Concise', 'value' => 'concise'],
             ],
+            'uploadLimits' => $this->uploadLimits(),
         ]);
     }
 
     public function store(Request $request, S3DiskFactory $s3DiskFactory): RedirectResponse
     {
+        $uploadLimits = $this->uploadLimits();
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'tone' => ['required', 'in:professional,engaging,concise'],
@@ -67,6 +70,7 @@ class ContentRequestController extends Controller
             'source_file' => [
                 'nullable',
                 'file',
+                'mimes:mp3,wav,m4a,mp4,mov,webm',
                 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,video/mp4,video/quicktime,video/webm',
                 Rule::requiredIf(fn () => $request->input('source_type') !== 'text' && ! filled($request->input('source_text')) && ! $request->hasFile('audio')),
             ],
@@ -74,21 +78,29 @@ class ContentRequestController extends Controller
                 'nullable',
                 'file',
                 'mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a',
-                'max:5120',
+                'max:' . (int) ceil($uploadLimits['audio']['bytes'] / 1024),
             ],
         ]);
 
         $file = $request->file('source_file') ?? $request->file('audio');
-                if ($request->hasFile('source_file')) {
+
+        Log::info('Uploaded source debug', [
+            'original_name' => $file?->getClientOriginalName(),
+            'extension' => $file?->getClientOriginalExtension(),
+            'mime_type' => $file?->getMimeType(),
+            'size' => $file?->getSize(),
+        ]);
+
+        if ($request->hasFile('source_file')) {
             $uploadedMime = (string) ($file?->getMimeType() ?? '');
             $isVideoUpload = str_starts_with($uploadedMime, 'video/');
-            $maxBytes = $isVideoUpload ? 300 * 1024 * 1024 : 15 * 1024 * 1024;
+            $maxBytes = $isVideoUpload ? $uploadLimits['video']['bytes'] : $uploadLimits['audio']['bytes'];
 
             if (($file?->getSize() ?? 0) > $maxBytes) {
                 return back()->withErrors([
                     'source_file' => $isVideoUpload
-                        ? 'Video uploads must be 300 MB or less.'
-                        : 'Audio uploads must be 5 MB or less.',
+                        ? sprintf('Video uploads must be %s or less.', $uploadLimits['video']['label'])
+                        : sprintf('Audio uploads must be %s or less.', $uploadLimits['audio']['label']),
                 ])->withInput();
             }
         }
@@ -137,12 +149,26 @@ class ContentRequestController extends Controller
 
             $folder = 'content-requests/' . now()->format('Y/m');
             $filename = uniqid('content_request_', true) . '.' . $file->getClientOriginalExtension();
-            $path = $disk->putFileAs($folder, $file, $filename);
+            $path = $folder . '/' . $filename;
 
-            if (! $path) {
+            $stream = fopen($file->getRealPath(), 'r');
+
+            if (! $stream) {
+                throw new \RuntimeException('Unable to open uploaded file stream.');
+            }
+
+            try {
+                $uploaded = $disk->put($path, $stream);
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            if (! $uploaded) {
                 return back()->withErrors([
                     'source_file' => 'Source upload failed. Please check storage settings and try again.',
-                ]);
+                ])->withInput();
             }
 
             $mimeType = (string) $file->getMimeType();
@@ -170,9 +196,17 @@ class ContentRequestController extends Controller
         } catch (Throwable $e) {
             report($e);
 
+            \Log::error('ContentRequest upload failed', [
+                'message' => $e->getMessage(),
+                'source_type' => $sourceType ?? null,
+                'file_name' => $file?->getClientOriginalName(),
+                'mime_type' => $file?->getMimeType(),
+                'size' => $file?->getSize(),
+            ]);
+
             return back()->withErrors([
                 'source_file' => 'Unable to upload this source right now. Check storage settings and try again.',
-            ]);
+            ])->withInput();
         }
     }
 
@@ -367,6 +401,81 @@ class ContentRequestController extends Controller
         }
 
         return 'recording';
+    }
+
+    private function uploadLimits(): array
+    {
+        $phpLimitBytes = $this->phpUploadLimitBytes();
+        $videoLimitBytes = 300 * 1024 * 1024;
+        $audioLimitBytes = 5 * 1024 * 1024;
+
+        if ($phpLimitBytes !== null) {
+            $safePhpLimitBytes = max(1024, $phpLimitBytes - (1024 * 1024));
+
+            $videoLimitBytes = min($videoLimitBytes, $safePhpLimitBytes);
+            $audioLimitBytes = min($audioLimitBytes, $safePhpLimitBytes);
+        }
+
+        return [
+            'video' => [
+                'bytes' => $videoLimitBytes,
+                'label' => $this->formatBytes($videoLimitBytes),
+            ],
+            'audio' => [
+                'bytes' => $audioLimitBytes,
+                'label' => $this->formatBytes($audioLimitBytes),
+            ],
+        ];
+    }
+
+    private function phpUploadLimitBytes(): ?int
+    {
+        $limits = array_filter([
+            $this->iniSizeToBytes(ini_get('post_max_size')),
+            $this->iniSizeToBytes(ini_get('upload_max_filesize')),
+        ], fn (?int $value) => $value !== null && $value > 0);
+
+        if ($limits === []) {
+            return null;
+        }
+
+        return min($limits);
+    }
+
+    private function iniSizeToBytes(string|false $size): ?int
+    {
+        if (! is_string($size) || trim($size) === '') {
+            return null;
+        }
+
+        $normalized = trim($size);
+        $unit = strtolower(substr($normalized, -1));
+        $value = (float) $normalized;
+
+        return match ($unit) {
+            'g' => (int) round($value * 1024 * 1024 * 1024),
+            'm' => (int) round($value * 1024 * 1024),
+            'k' => (int) round($value * 1024),
+            default => (int) round($value),
+        };
+    }
+
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes >= 1024 * 1024) {
+            $megabytes = $bytes / (1024 * 1024);
+            $formatted = fmod($megabytes, 1.0) === 0.0
+                ? number_format($megabytes, 0)
+                : number_format($megabytes, 1);
+
+            return sprintf('%s MB', $formatted);
+        }
+
+        if ($bytes >= 1024) {
+            return sprintf('%s KB', number_format($bytes / 1024, 0));
+        }
+
+        return sprintf('%d bytes', $bytes);
     }
     
     public function preview(Request $request, ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)

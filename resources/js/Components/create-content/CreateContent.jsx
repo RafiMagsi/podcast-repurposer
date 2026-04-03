@@ -45,17 +45,22 @@ const handoffSteps = [
 
 export default function CreateContent({
     tones = [],
+    uploadLimits = null,
     showCardHeader = true,
     showCancelButton = false,
     preserveScroll = false,
     titlePlaceholder = 'e.g. Founder lesson on pricing after one sales call',
     submitLabel = 'Create content',
-    fileHelpText = 'Supported formats: MP3, WAV, M4A, MP4, MOV, WebM. Keep uploads under 5 MB and around one minute for the fastest turnaround.',
+    fileHelpText = null,
     className = '',
 }) {
     const toneOptions = tones.length > 0 ? tones : defaultTones;
+    const resolvedUploadLimits = uploadLimits ?? {
+        video: { bytes: 300 * 1024 * 1024, label: '300 MB' },
+        audio: { bytes: 5 * 1024 * 1024, label: '5 MB' },
+    };
 
-    const { data, setData, post, processing, progress, errors } = useForm({
+    const { data, setData, post, processing, progress, errors, setError, clearErrors } = useForm({
         title: '',
         tone: toneOptions[0]?.value || 'professional',
         source_type: 'recording',
@@ -66,9 +71,74 @@ export default function CreateContent({
     const isTextSource = data.source_type === 'text';
     const textLength = data.source_text.length;
     const fileError = errors.source_file || errors.audio;
+    const resolvedFileHelpText =
+        fileHelpText ??
+        `Supported formats: MP3, WAV, M4A, MP4, MOV, WebM. Audio and recordings must be ${resolvedUploadLimits.audio.label} or less. Video uploads must be ${resolvedUploadLimits.video.label} or less.`;
+
+    const fileLimitForSourceType = (sourceType) =>
+        sourceType === 'video' ? resolvedUploadLimits.video : resolvedUploadLimits.audio;
+
+    const fileLimitMessage = (sourceType) =>
+        sourceType === 'video'
+            ? `Video uploads must be ${resolvedUploadLimits.video.label} or less.`
+            : `Audio uploads must be ${resolvedUploadLimits.audio.label} or less.`;
+
+    const validateSourceFile = (file, sourceType = data.source_type) => {
+        if (!file) {
+            clearErrors('source_file');
+            return true;
+        }
+
+        const limit = fileLimitForSourceType(sourceType);
+
+        if (file.size > limit.bytes) {
+            setError('source_file', fileLimitMessage(sourceType));
+            return false;
+        }
+
+        clearErrors('source_file');
+
+        return true;
+    };
+
+    const handleSourceTypeChange = (sourceType) => {
+        setData('source_type', sourceType);
+
+        if (sourceType === 'text') {
+            setData('source_file', null);
+            clearErrors('source_file');
+            return;
+        }
+
+        if (data.source_file) {
+            validateSourceFile(data.source_file, sourceType);
+            return;
+        }
+
+        clearErrors('source_file');
+    };
+
+    const handleFileChange = (event) => {
+        const nextFile = event.target.files[0] || null;
+        setData('source_file', nextFile);
+
+        if (!nextFile) {
+            clearErrors('source_file');
+            return;
+        }
+
+        if (!validateSourceFile(nextFile)) {
+            setData('source_file', null);
+            event.target.value = '';
+        }
+    };
 
     const submit = (e) => {
         e.preventDefault();
+
+        if (!isTextSource && data.source_file && !validateSourceFile(data.source_file)) {
+            return;
+        }
 
         post(route('content-requests.store'), {
             forceFormData: true,
@@ -103,7 +173,7 @@ export default function CreateContent({
                             <button
                                 key={option.value}
                                 type="button"
-                                onClick={() => setData('source_type', option.value)}
+                                onClick={() => handleSourceTypeChange(option.value)}
                                 className={`profile-card min-h-[unset] px-5 py-5 text-left ${data.source_type === option.value ? 'profile-card-active' : ''}`}
                             >
                                 <div className="flex items-start gap-4">
@@ -168,11 +238,11 @@ export default function CreateContent({
                                             <input
                                                 type="file"
                                                 accept="audio/*,video/mp4,video/quicktime,video/webm"
-                                                onChange={(e) => setData('source_file', e.target.files[0] || null)}
+                                                onChange={handleFileChange}
                                                 className="block w-full text-sm text-[rgb(var(--color-text-muted))] file:mr-4 file:rounded-full file:border-0 file:bg-[rgb(var(--color-primary))] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[rgb(var(--color-primary-hover))]"
                                             />
                                             <div className="mt-4 max-w-sm text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                                {fileHelpText}
+                                                {resolvedFileHelpText}
                                             </div>
                                         </div>
                                         {fileError && <p className="form-error">{fileError}</p>}
@@ -193,17 +263,6 @@ export default function CreateContent({
                                         </option>
                                     ))}
                                 </select>
-
-                                <div className="mt-4 rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                        Limits
-                                    </div>
-                                    <div className="mt-3 space-y-3 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                        <p>Video, audio, or recording: 1 minute</p>
-                                        <p>Text note: 200 characters</p>
-                                        <p>Outputs: summary, LinkedIn post, X post, Instagram caption, and newsletter from one idea.</p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -242,6 +301,17 @@ export default function CreateContent({
                             </div>
                         </div>
                     </form>
+                </div>
+
+                <div className="mt-4 rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
+                    <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                        Limits
+                    </div>
+                    <div className="mt-3 space-y-3 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                        <p>Video, audio, or recording: 1 minute</p>
+                        <p>Text note: 200 characters</p>
+                        <p>Outputs: summary, LinkedIn post, X post, Instagram caption, and newsletter from one idea.</p>
+                    </div>
                 </div>
 
                 <div className="rounded-[28px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 xl:sticky xl:top-24">
