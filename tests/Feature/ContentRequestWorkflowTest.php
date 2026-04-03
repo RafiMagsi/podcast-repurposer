@@ -1,0 +1,181 @@
+<?php
+
+use App\Jobs\GenerateContentResponses;
+use App\Jobs\TranscribeContentRequest;
+use App\Models\ContentRequest;
+use App\Models\ContentResponse;
+use App\Models\User;
+use Illuminate\Support\Facades\Queue;
+
+it('creates a text content request and queues content generation', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $response = $this->actingAs($user)->post(route('content-requests.store'), [
+        'title' => 'One-line idea',
+        'tone' => 'professional',
+        'source_type' => 'text',
+        'source_text' => 'Turn this short idea into reusable content.',
+    ]);
+
+    $response->assertRedirect();
+
+    $contentRequest = ContentRequest::query()->latest('id')->first();
+
+    expect($contentRequest)->not->toBeNull();
+    expect($contentRequest->input_type)->toBe('text');
+    expect($contentRequest->status)->toBe(ContentRequest::STATUS_TRANSCRIBED);
+    expect($contentRequest->transcript)->toBe('Turn this short idea into reusable content.');
+
+    Queue::assertPushed(GenerateContentResponses::class, function ($job) use ($contentRequest) {
+        return $job->contentRequestId === $contentRequest->id;
+    });
+});
+
+it('retries transcription by clearing transcript state and queueing a new transcription job', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Retry me',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'Old transcript',
+        'summary' => 'Old summary',
+        'status' => ContentRequest::STATUS_FAILED,
+        'compression_status' => 'failed',
+        'compression_error' => 'Old compression error',
+    ]);
+
+    ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'summary',
+        'title' => 'Summary',
+        'body' => 'Old response',
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.show', $contentRequest))
+        ->post(route('content-requests.retry-transcription', $contentRequest));
+
+    $response->assertRedirect(route('content-requests.show', $contentRequest));
+    $response->assertSessionHas('success', 'Transcription retry started.');
+
+    $contentRequest->refresh();
+
+    expect($contentRequest->status)->toBe(ContentRequest::STATUS_UPLOADED);
+    expect($contentRequest->transcript)->toBeNull();
+    expect($contentRequest->summary)->toBeNull();
+    expect($contentRequest->compression_status)->toBeNull();
+    expect($contentRequest->compression_error)->toBeNull();
+    expect($contentRequest->contentResponses()->count())->toBe(0);
+
+    Queue::assertPushed(TranscribeContentRequest::class, function ($job) use ($contentRequest) {
+        return $job->contentRequestId === $contentRequest->id;
+    });
+});
+
+it('regenerates content by clearing old responses and queueing generation again', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Regenerate me',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'Ready transcript',
+        'summary' => 'Old summary',
+        'status' => ContentRequest::STATUS_COMPLETED,
+    ]);
+
+    ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'linkedin_post',
+        'title' => 'LinkedIn Post',
+        'body' => 'Old LinkedIn response',
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.show', $contentRequest))
+        ->post(route('content-requests.regenerate-content', $contentRequest));
+
+    $response->assertRedirect(route('content-requests.show', $contentRequest));
+    $response->assertSessionHas('success', 'Content regeneration started.');
+
+    $contentRequest->refresh();
+
+    expect($contentRequest->status)->toBe(ContentRequest::STATUS_TRANSCRIBED);
+    expect($contentRequest->summary)->toBeNull();
+    expect($contentRequest->contentResponses()->count())->toBe(0);
+
+    Queue::assertPushed(GenerateContentResponses::class, function ($job) use ($contentRequest) {
+        return $job->contentRequestId === $contentRequest->id;
+    });
+});
+
+it('rejects unsupported source files with a validation error', function () {
+    $user = User::factory()->create();
+
+    $file = Illuminate\Http\UploadedFile::fake()->create('notes.pdf', 100, 'application/pdf');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post(route('content-requests.store'), [
+            'title' => 'Invalid upload',
+            'tone' => 'professional',
+            'source_type' => 'audio',
+            'source_file' => $file,
+        ]);
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors('source_file');
+});
+
+it('returns live status payload while processing is active', function () {
+    $user = User::factory()->create();
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Live status',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'status' => ContentRequest::STATUS_TRANSCRIBING,
+        'compression_status' => 'started',
+        'transcript' => null,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->get(route('content-requests.status', $contentRequest));
+
+    $response->assertOk()
+        ->assertJsonPath('contentRequest.status', ContentRequest::STATUS_TRANSCRIBING)
+        ->assertJsonPath('contentRequest.compression_status', 'started')
+        ->assertJsonStructure([
+            'contentRequest' => [
+                'public_id',
+                'status',
+                'compression_status',
+                'content_responses',
+            ],
+        ]);
+});

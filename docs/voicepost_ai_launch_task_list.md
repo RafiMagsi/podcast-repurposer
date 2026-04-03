@@ -95,7 +95,7 @@ Before going live, verify:
 
 ## Immediate Next Work
 
-### 1. Add media preview in show page
+### 1. Add media preview in show page - done
 - Show audio player for uploaded audio and recordings.
 - Show video player for uploaded video.
 - Show source text block for text input.
@@ -103,25 +103,25 @@ Before going live, verify:
 - Add Voice and Video recording option with preview
 - Make page for pipeline that shows current going on active processings
 
-### 2. Stabilize `WhisperService`
+### 2. Stabilize `WhisperService` - done
 - Review current transcription flow for audio, video, and recording.
 - Confirm temporary files are created and cleaned correctly.
 - Add clear logs for each stage of transcription.
 - Handle extraction/compression/transcription failures cleanly.
 
-### 3. Align outputs with product scope
+### 3. Align outputs with product scope - done
 - Keep only the intended output set in prompts and UI.
 - Verify labels, ordering, and descriptions match the product.
 - Remove old unused output references from code and views.
 - Confirm all outputs render correctly in the workspace.
 
-### 4. Add delete support for episodes
+### 4. Add delete support for content requests - done
 - Add backend delete action with ownership check.
 - Delete generated content records with the episode.
 - Delete uploaded media from storage if present.
 - Add confirmation modal in index and show pages.
 
-### 5. Test with real files and add automated coverage
+### 5. Test with real files and add automated coverage - done
 - Test real text, audio, recording, and video inputs.
 - Add feature tests for create, show, retry, and regenerate.
 - Add failure-case tests for invalid files and provider errors.

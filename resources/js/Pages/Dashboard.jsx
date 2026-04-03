@@ -56,7 +56,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
 
                     <div className="flex flex-wrap items-center gap-2">
                         <Link href={route('content-requests.create')} className="btn-primary-rect">
-                            Video transcript
+                            New recording
                         </Link>
                     </div>
                 </div>

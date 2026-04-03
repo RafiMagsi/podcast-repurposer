@@ -11,7 +11,7 @@ const features = [
     },
     {
         title: 'Reuse faster',
-        description: 'Turn one source into newsletter copy, LinkedIn posts, blog drafts, and short-form content.',
+        description: 'Turn one source into a summary, LinkedIn post, X post, Instagram caption, and newsletter draft.',
     },
     {
         title: 'Stay in control',
@@ -19,7 +19,7 @@ const features = [
     },
 ];
 
-const outputs = ['Transcript', 'Summary', 'Blog Draft', 'LinkedIn Post', 'X Thread', 'Content Ideas'];
+const outputs = ['Transcript', 'Summary', 'LinkedIn Post', 'X Post', 'Instagram Caption', 'Newsletter'];
 
 const tabs = ['Transcript', 'AI Content', 'Magic Chat'];
 

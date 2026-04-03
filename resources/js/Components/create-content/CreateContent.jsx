@@ -46,7 +46,7 @@ const defaultTones = [
 const handoffSteps = [
     ['1', 'Redirect immediately', 'The app sends you to the recording workspace as soon as the request is accepted.'],
     ['2', 'Track live progress', 'Processing status, transcript generation, and retries happen there instead of on the dashboard.'],
-    ['3', 'Review real outputs', 'Summary, LinkedIn, X, newsletter, and the rest are reviewed where the actual data exists.'],
+    ['3', 'Review real outputs', 'Summary, LinkedIn post, X post, Instagram caption, and newsletter are reviewed where the actual data exists.'],
 ];
 
 export default function CreateContent({
