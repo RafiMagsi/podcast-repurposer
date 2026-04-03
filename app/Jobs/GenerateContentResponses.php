@@ -7,6 +7,7 @@ use App\Jobs\PrepareVideoPreviewAssets;
 use App\Models\ContentRequest;
 use App\Models\ContentResponse;
 use App\Services\OpenAIContentService;
+use App\Services\OperationalAnalyticsService;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -31,8 +32,10 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
         return 'generate:' . $this->contentRequestId;
     }
 
-    public function handle(OpenAIContentService $openAIContentService): void
+    public function handle(OpenAIContentService $openAIContentService, ?OperationalAnalyticsService $analytics = null): void
     {
+        $analytics ??= app(OperationalAnalyticsService::class);
+
         Log::info('GenerateContentResponses started', [
             'content_request_id' => $this->contentRequestId,
         ]);
@@ -109,6 +112,13 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
                 );
 
                 $savedOutputTypes[] = $contentType;
+                $analytics->record('output_generated', [
+                    'user_id' => $contentRequest->user_id,
+                    'content_request_id' => $contentRequest->id,
+                    'source_type' => $contentRequest->input_type,
+                    'content_type' => $contentType,
+                    'status' => $contentRequest->status,
+                ]);
             }
 
             $missingOutputTypes = array_values(array_diff(ContentRequest::EXPECTED_OUTPUT_TYPES, $savedOutputTypes));

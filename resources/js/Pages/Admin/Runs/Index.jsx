@@ -32,8 +32,12 @@ function sourceLabel(sourceType) {
     }
 }
 
-export default function AdminRunsIndex({ auth, runs, filters }) {
+export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
     const items = runs.data || [];
+    const sourceTypeUsage = analytics?.source_type_usage || { video: 0, audio: 0, text: 0 };
+    const runOutcomes = analytics?.run_outcomes || { total: 0, completed: 0, failed: 0, partial: 0, completion_rate: 0, failure_rate: 0 };
+    const actions = analytics?.actions || { retry_transcription: 0, regenerate_content: 0 };
+    const outputUsage = analytics?.most_used_output_types || [];
 
     return (
         <AuthenticatedLayout
@@ -55,6 +59,53 @@ export default function AdminRunsIndex({ auth, runs, filters }) {
             <Head title="Admin Runs" />
 
             <div className="space-y-6">
+                <div className="grid gap-4 lg:grid-cols-4">
+                    <div className="stat-card">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Source usage
+                        </div>
+                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                            <div>Video: {sourceTypeUsage.video}</div>
+                            <div>Audio: {sourceTypeUsage.audio}</div>
+                            <div>Text: {sourceTypeUsage.text}</div>
+                        </div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Run outcomes
+                        </div>
+                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                            <div>Total: {runOutcomes.total}</div>
+                            <div>Completed: {runOutcomes.completed} ({runOutcomes.completion_rate}%)</div>
+                            <div>Failed: {runOutcomes.failed} ({runOutcomes.failure_rate}%)</div>
+                            <div>Partial: {runOutcomes.partial}</div>
+                        </div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Recovery usage
+                        </div>
+                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                            <div>Retry transcription: {actions.retry_transcription}</div>
+                            <div>Regenerate content: {actions.regenerate_content}</div>
+                        </div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Top outputs
+                        </div>
+                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                            {outputUsage.length === 0 ? (
+                                <div className="text-[rgb(var(--color-text-muted))]">No output activity yet.</div>
+                            ) : outputUsage.slice(0, 5).map((item) => (
+                                <div key={item.content_type}>
+                                    {item.content_type.replace('_', ' ')}: {item.count}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex flex-wrap gap-2">
                     {filters.items.map((item) => (
                         <Link

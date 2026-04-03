@@ -52,7 +52,7 @@ Handle cases where transcript succeeds but content generation fails, or only som
 ### 11. Add admin run monitoring
 Create an admin view to inspect recent runs, statuses, failures, and users so support and debugging are manageable after launch.
 
-### 12. Add operational analytics
+### 12. Add operational analytics - done
 Track usage patterns such as source type usage, completion rate, failure rate, retry rate, and most-used outputs.
 
 ## Nice to Have
@@ -213,7 +213,7 @@ Before going live, verify:
 - Add filters for failed and processing runs.
 - Add quick links to inspect a run.
 
-### 12. Add operational analytics
+### 12. Add operational analytics - done
 - Track source type usage.
 - Track completion and failure rates.
 - Track retry and regenerate usage.

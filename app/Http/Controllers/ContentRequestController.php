@@ -6,6 +6,7 @@ use App\Jobs\GenerateContentResponses;
 use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
 use App\Services\ContentSuggestionService;
+use App\Services\OperationalAnalyticsService;
 use App\Services\S3DiskFactory;
 use App\Services\UsageLimitService;
 use App\Services\WhisperService;
@@ -81,7 +82,8 @@ class ContentRequestController extends Controller
         Request $request,
         S3DiskFactory $s3DiskFactory,
         WhisperService $whisperService,
-        UsageLimitService $usageLimitService
+        UsageLimitService $usageLimitService,
+        OperationalAnalyticsService $analytics
     ): RedirectResponse
     {
         $userId = $request->user()->id;
@@ -200,6 +202,12 @@ class ContentRequestController extends Controller
                 ]);
 
                 GenerateContentResponses::dispatch($contentRequest->id);
+                $analytics->record('run_created', [
+                    'user_id' => $userId,
+                    'content_request_id' => $contentRequest->id,
+                    'source_type' => 'text',
+                    'status' => $contentRequest->status,
+                ]);
 
                 return redirect()
                     ->route('content-requests.show', $contentRequest);
@@ -252,6 +260,13 @@ class ContentRequestController extends Controller
                 'compression_status' => $mediaKind === 'video' ? 'started' : null,
             ]);
 
+            $analytics->record('run_created', [
+                'user_id' => $userId,
+                'content_request_id' => $contentRequest->id,
+                'source_type' => $sourceType,
+                'status' => $contentRequest->status,
+            ]);
+
             TranscribeContentRequest::dispatch($contentRequest->id);
 
             return redirect()
@@ -295,7 +310,7 @@ class ContentRequestController extends Controller
         ]);
     }
 
-    public function retryTranscription(Request $request, ContentRequest $contentRequest): RedirectResponse
+    public function retryTranscription(Request $request, ContentRequest $contentRequest, OperationalAnalyticsService $analytics): RedirectResponse
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
@@ -322,13 +337,19 @@ class ContentRequestController extends Controller
         ]);
 
         $contentRequest->contentResponses()->delete();
+        $analytics->record('retry_transcription', [
+            'user_id' => $request->user()->id,
+            'content_request_id' => $contentRequest->id,
+            'source_type' => $contentRequest->input_type,
+            'status' => $contentRequest->status,
+        ]);
 
         TranscribeContentRequest::dispatch($contentRequest->id);
 
         return back()->with('success', 'Transcription retry started.');
     }
 
-    public function regenerateContent(Request $request, ContentRequest $contentRequest): RedirectResponse
+    public function regenerateContent(Request $request, ContentRequest $contentRequest, OperationalAnalyticsService $analytics): RedirectResponse
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
@@ -352,6 +373,12 @@ class ContentRequestController extends Controller
         ]);
 
         $contentRequest->contentResponses()->delete();
+        $analytics->record('regenerate_content', [
+            'user_id' => $request->user()->id,
+            'content_request_id' => $contentRequest->id,
+            'source_type' => $contentRequest->input_type,
+            'status' => $contentRequest->status,
+        ]);
 
         GenerateContentResponses::dispatch($contentRequest->id);
 

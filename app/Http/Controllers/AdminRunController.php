@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContentRequest;
+use App\Services\OperationalAnalyticsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AdminRunController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, OperationalAnalyticsService $analytics): Response
     {
         $filter = (string) $request->query('filter', 'all');
 
@@ -41,6 +42,7 @@ class AdminRunController extends Controller
 
         return Inertia::render('Admin/Runs/Index', [
             'runs' => $runs,
+            'analytics' => $analytics->summary(),
             'filters' => [
                 'current' => $filter,
                 'items' => [
