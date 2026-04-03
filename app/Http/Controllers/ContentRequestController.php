@@ -76,7 +76,7 @@ class ContentRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request, S3DiskFactory $s3DiskFactory): RedirectResponse
+    public function store(Request $request, S3DiskFactory $s3DiskFactory, WhisperService $whisperService): RedirectResponse
     {
         $userId = $request->user()->id;
         $uploadLimits = $this->uploadLimits();
@@ -115,22 +115,9 @@ class ContentRequestController extends Controller
             'size' => $file?->getSize(),
         ]);
 
-        if ($request->hasFile('source_file')) {
-            $uploadedMime = (string) ($file?->getMimeType() ?? '');
-            $isVideoUpload = str_starts_with($uploadedMime, 'video/');
-            $maxBytes = $isVideoUpload ? $uploadLimits['video']['bytes'] : $uploadLimits['audio']['bytes'];
-
-            if (($file?->getSize() ?? 0) > $maxBytes) {
-                return back()->withErrors([
-                    'source_file' => $isVideoUpload
-                        ? sprintf('Video uploads must be %s or less.', $uploadLimits['video']['label'])
-                        : sprintf('Audio uploads must be %s or less.', $uploadLimits['audio']['label']),
-                ])->withInput();
-            }
-        }
-
         $sourceType = $validated['source_type'] ?? null;
         $sourceText = trim((string) ($validated['source_text'] ?? ''));
+        $requestedSourceType = $sourceType;
 
         if ($sourceType === 'recording') {
             $sourceType = 'audio';
@@ -148,6 +135,34 @@ class ContentRequestController extends Controller
         }
 
         $isTextSource = $sourceType === 'text' || ($sourceText !== '' && ! $file);
+
+        if (! $isTextSource && $file) {
+            $sizeValidationMessage = $this->validateUploadedMediaFileSize(
+                $file,
+                $sourceType,
+                $requestedSourceType,
+                $uploadLimits
+            );
+
+            if ($sizeValidationMessage) {
+                return back()->withErrors([
+                    'source_file' => $sizeValidationMessage,
+                ])->withInput();
+            }
+
+            $durationValidationMessage = $this->validateUploadedMediaDuration(
+                $file->getRealPath(),
+                $sourceType,
+                $requestedSourceType,
+                $whisperService
+            );
+
+            if ($durationValidationMessage) {
+                return back()->withErrors([
+                    'source_file' => $durationValidationMessage,
+                ])->withInput();
+            }
+        }
 
         if ($request->hasSession()) {
             $request->session()->save();
@@ -573,6 +588,55 @@ class ContentRequestController extends Controller
         }
 
         return sprintf('%d bytes', $bytes);
+    }
+
+    private function validateUploadedMediaFileSize($file, ?string $sourceType, ?string $requestedSourceType, array $uploadLimits): ?string
+    {
+        $isVideo = $sourceType === 'video';
+        $maxBytes = $isVideo ? $uploadLimits['video']['bytes'] : $uploadLimits['audio']['bytes'];
+
+        if (($file?->getSize() ?? 0) <= $maxBytes) {
+            return null;
+        }
+
+        if ($isVideo) {
+            return sprintf('Video uploads must be %s or less.', $uploadLimits['video']['label']);
+        }
+
+        return $requestedSourceType === 'recording'
+            ? sprintf('Audio recordings must be %s or less.', $uploadLimits['audio']['label'])
+            : sprintf('Audio uploads must be %s or less.', $uploadLimits['audio']['label']);
+    }
+
+    private function validateUploadedMediaDuration(
+        string|false $realPath,
+        ?string $sourceType,
+        ?string $requestedSourceType,
+        WhisperService $whisperService
+    ): ?string {
+        if (! is_string($realPath) || $realPath === '') {
+            return 'Unable to inspect this media file. Choose a valid file and try again.';
+        }
+
+        try {
+            $whisperService->assertMediaWithinDurationLimit($realPath, 60);
+
+            return null;
+        } catch (Throwable $e) {
+            if ($e->getMessage() === 'Media must be 1 minute or less.') {
+                if ($sourceType === 'video') {
+                    return 'Video uploads must be 1 minute or less.';
+                }
+
+                return $requestedSourceType === 'recording'
+                    ? 'Audio recordings must be 1 minute or less.'
+                    : 'Audio uploads must be 1 minute or less.';
+            }
+
+            return $sourceType === 'video'
+                ? 'Unable to read video duration. Upload a valid video that is 1 minute or less.'
+                : 'Unable to read audio duration. Upload a valid audio file or recording that is 1 minute or less.';
+        }
     }
     
     public function preview(Request $request, ContentRequest $contentRequest, S3DiskFactory $s3DiskFactory)

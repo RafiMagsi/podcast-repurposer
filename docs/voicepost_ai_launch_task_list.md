@@ -20,7 +20,7 @@ Recommended order from here:
 Make video uploads truly production-ready by extracting audio from video reliably before transcription. Handle unsupported codecs, extraction failures, and invalid files cleanly.
 show video preview
 
-### 2. Enforce backend duration validation
+### 2. Enforce backend duration validation - done
 Validate the 1-minute limit on the server for audio, video, and recordings. Do not rely only on client-side checks.
 
 ### 3. Add usage limits per user
@@ -147,7 +147,7 @@ Before going live, verify:
 - Add clear error messages for extraction failure.
 - Show video preview in the workspace.
 
-### 2. Enforce backend duration validation
+### 2. Enforce backend duration validation - done
 - Validate duration on the server for audio inputs.
 - Validate duration on the server for video inputs.
 - Validate duration on the server for recordings.

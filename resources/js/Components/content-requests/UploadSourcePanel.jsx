@@ -14,7 +14,7 @@ export default function UploadSourcePanel({
     const label = isVideo ? 'Video file' : 'Audio file';
     const helpText = isVideo
         ? 'Supported formats: MP4, MOV, WebM. Keep video uploads under 300 MB and within 1 minute.'
-        : 'Supported formats: MP3, WAV, M4A, WebM. Keep audio uploads under 5 MB and within 1 minute.';
+        : 'Supported formats: MP3, WAV, M4A, WebM. Keep audio uploads under 25 MB and within 1 minute.';
 
     return (
         <div className="mt-5 rounded-[24px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-5">

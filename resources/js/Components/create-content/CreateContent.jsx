@@ -64,7 +64,7 @@ export default function CreateContent({
     const toneOptions = tones.length > 0 ? tones : defaultTones;
     const resolvedUploadLimits = uploadLimits ?? {
         video: { bytes: 300 * 1024 * 1024, label: '300 MB' },
-        audio: { bytes: 25 * 1024 * 1024, label: '5 MB' },
+        audio: { bytes: 25 * 1024 * 1024, label: '25 MB' },
     };
 
     const { data, setData, post, processing, progress, errors, clearErrors, setError, cancel, transform } = useForm({

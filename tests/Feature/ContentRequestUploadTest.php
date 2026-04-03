@@ -3,6 +3,7 @@
 use App\Models\ContentRequest;
 use App\Models\User;
 use App\Services\S3DiskFactory;
+use App\Services\WhisperService;
 use App\Jobs\TranscribeContentRequest;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Exceptions\PostTooLargeException;
@@ -22,6 +23,10 @@ it('uploads audio and creates a content request', function () {
     $factory->shouldReceive('make')->once()->andReturn($fakeDisk);
 
     $this->app->instance(S3DiskFactory::class, $factory);
+
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldReceive('assertMediaWithinDurationLimit')->once()->andReturn(42.0);
+    $this->app->instance(WhisperService::class, $whisper);
 
     $file = UploadedFile::fake()->create('sample.mp3', 1000, 'audio/mpeg');
 
@@ -62,6 +67,10 @@ it('uploads video and queues transcription without blocking on preview preparati
 
     $this->app->instance(S3DiskFactory::class, $factory);
 
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldReceive('assertMediaWithinDurationLimit')->once()->andReturn(42.0);
+    $this->app->instance(WhisperService::class, $whisper);
+
     $file = UploadedFile::fake()->create('sample.mp4', 1000, 'video/mp4');
 
     $response = $this->actingAs($user)->post(route('content-requests.store'), [
@@ -99,6 +108,10 @@ it('stores recorded webm audio as audio media instead of video', function () {
 
     $this->app->instance(S3DiskFactory::class, $factory);
 
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldReceive('assertMediaWithinDurationLimit')->once()->andReturn(10.0);
+    $this->app->instance(WhisperService::class, $whisper);
+
     $file = UploadedFile::fake()->create('audio-recording.webm', 1000, 'video/webm');
 
     $response = $this->actingAs($user)->post(route('content-requests.store'), [
@@ -118,6 +131,111 @@ it('stores recorded webm audio as audio media instead of video', function () {
     expect($contentRequest)->not->toBeNull();
     expect($contentRequest->media_kind)->toBe('audio');
     expect($contentRequest->input_type)->toBe('audio');
+});
+
+it('rejects audio uploads longer than 1 minute before storage', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $fakeDisk = \Mockery::mock(Filesystem::class);
+    $fakeDisk->shouldNotReceive('put');
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldNotReceive('make');
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldReceive('assertMediaWithinDurationLimit')
+        ->once()
+        ->andThrow(new RuntimeException('Media must be 1 minute or less.'));
+    $this->app->instance(WhisperService::class, $whisper);
+
+    $file = UploadedFile::fake()->create('long.mp3', 1000, 'audio/mpeg');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post(route('content-requests.store'), [
+            'title' => 'Long audio',
+            'tone' => 'professional',
+            'source_type' => 'audio',
+            'source_file' => $file,
+        ]);
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors([
+        'source_file' => 'Audio uploads must be 1 minute or less.',
+    ]);
+
+    Queue::assertNothingPushed();
+});
+
+it('rejects video uploads longer than 1 minute before storage', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldNotReceive('make');
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldReceive('assertMediaWithinDurationLimit')
+        ->once()
+        ->andThrow(new RuntimeException('Media must be 1 minute or less.'));
+    $this->app->instance(WhisperService::class, $whisper);
+
+    $file = UploadedFile::fake()->create('long.mp4', 1000, 'video/mp4');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post(route('content-requests.store'), [
+            'title' => 'Long video',
+            'tone' => 'professional',
+            'source_type' => 'video',
+            'source_file' => $file,
+        ]);
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors([
+        'source_file' => 'Video uploads must be 1 minute or less.',
+    ]);
+
+    Queue::assertNothingPushed();
+});
+
+it('rejects recordings longer than 1 minute before storage', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $factory = \Mockery::mock(S3DiskFactory::class);
+    $factory->shouldNotReceive('make');
+    $this->app->instance(S3DiskFactory::class, $factory);
+
+    $whisper = \Mockery::mock(WhisperService::class);
+    $whisper->shouldReceive('assertMediaWithinDurationLimit')
+        ->once()
+        ->andThrow(new RuntimeException('Media must be 1 minute or less.'));
+    $this->app->instance(WhisperService::class, $whisper);
+
+    $file = UploadedFile::fake()->create('recording.mp3', 1000, 'audio/mpeg');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.create'))
+        ->post(route('content-requests.store'), [
+            'title' => 'Long recording',
+            'tone' => 'professional',
+            'source_type' => 'recording',
+            'audio' => $file,
+        ]);
+
+    $response->assertRedirect(route('content-requests.create'));
+    $response->assertSessionHasErrors([
+        'source_file' => 'Audio recordings must be 1 minute or less.',
+    ]);
+
+    Queue::assertNothingPushed();
 });
 
 it('redirects back with a simple upload error when the post body is too large', function () {
