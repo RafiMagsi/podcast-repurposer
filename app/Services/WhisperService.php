@@ -19,6 +19,9 @@ class WhisperService
 
     public function transcribe(ContentRequest $contentRequest): string
     {
+        $startedAt = microtime(true);
+        $stage = 'initializing';
+
         Log::info('WhisperService transcribe started', [
             'content_request_id' => $contentRequest->id,
             'public_id' => $contentRequest->public_id,
@@ -32,19 +35,27 @@ class WhisperService
 
         $sourcePath = null;
         $compressedPath = null;
+        $uploadStream = null;
 
         try {
             $this->abortIfCancelled($contentRequest);
-            $sourcePath = $this->downloadSourceToTempFile($contentRequest);
 
+            $stage = 'download_source';
+            $stageStartedAt = microtime(true);
+            $sourcePath = $this->downloadSourceToTempFile($contentRequest);
+            $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, [
+                'source_temp_path' => $sourcePath,
+                'source_size' => file_exists($sourcePath) ? filesize($sourcePath) : null,
+            ]);
+
+            $stage = 'validate_duration';
+            $stageStartedAt = microtime(true);
             $duration = $this->assertMediaWithinDurationLimit($sourcePath, 60);
 
             $contentRequest->update([
                 'duration_seconds' => (int) ceil($duration),
             ]);
-
-            Log::info('Media duration validated successfully', [
-                'content_request_id' => $contentRequest->id,
+            $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, [
                 'duration_seconds' => $duration,
                 'input_type' => $contentRequest->input_type,
                 'media_kind' => $contentRequest->media_kind,
@@ -57,6 +68,8 @@ class WhisperService
                 ($contentRequest->input_type === 'video' || $contentRequest->media_kind === 'video' || str_starts_with((string) $contentRequest->mime_type, 'video/'))
                 && empty($contentRequest->thumbnail_path)
             ) {
+                $stage = 'generate_thumbnail';
+                $stageStartedAt = microtime(true);
                 $thumbnailPath = $this->generateVideoThumbnail($contentRequest, $sourcePath);
 
                 if ($thumbnailPath) {
@@ -64,9 +77,7 @@ class WhisperService
                         $contentRequest->update([
                             'thumbnail_path' => $thumbnailPath,
                         ]);
-
-                        Log::info('Video thumbnail generated successfully', [
-                            'content_request_id' => $contentRequest->id,
+                        $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, [
                             'thumbnail_path' => $thumbnailPath,
                         ]);
                     } catch (\Throwable $thumbnailException) {
@@ -76,11 +87,18 @@ class WhisperService
                             'message' => $thumbnailException->getMessage(),
                         ]);
                     }
+                } else {
+                    Log::info('WhisperService thumbnail generation skipped or returned no file', [
+                        'content_request_id' => $contentRequest->id,
+                        'public_id' => $contentRequest->public_id,
+                    ]);
                 }
             }
 
             $this->abortIfCancelled($contentRequest);
 
+            $stage = 'prepare_audio';
+            $stageStartedAt = microtime(true);
             $contentRequest->update([
                 'compression_status' => 'started',
                 'compression_error' => null,
@@ -95,9 +113,7 @@ class WhisperService
                 'compression_status' => 'completed',
                 'compression_error' => null,
             ]);
-
-            Log::info('Prepared compressed audio for transcription', [
-                'content_request_id' => $contentRequest->id,
+            $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, [
                 'input_type' => $contentRequest->input_type,
                 'mime_type' => $contentRequest->mime_type,
                 'source_temp_path' => $sourcePath,
@@ -130,26 +146,35 @@ class WhisperService
                 throw new RuntimeException('Missing openai_api_key');
             }
 
-            Log::info('Sending file to OpenAI transcription API', [
+            $stage = 'openai_transcription';
+            $stageStartedAt = microtime(true);
+
+            Log::info('WhisperService sending file to OpenAI transcription API', [
                 'content_request_id' => $contentRequest->id,
                 'compressed_path' => $compressedPath,
                 'filename' => basename($compressedPath),
             ]);
+            $uploadStream = fopen($compressedPath, 'r');
+
+            if (! is_resource($uploadStream)) {
+                throw new RuntimeException('Unable to open compressed audio for transcription upload.');
+            }
+
             $response = Http::withToken($apiKey)
                 ->timeout(120)
                 ->connectTimeout(15)
                 ->attach(
                     'file',
-                    fopen($compressedPath, 'r'),
+                    $uploadStream,
                     basename($compressedPath)
                 )
                 ->post('https://api.openai.com/v1/audio/transcriptions', [
                     'model' => 'gpt-4o-mini-transcribe',
                     'response_format' => 'json',
                 ]);
-
-            Log::info('OpenAI transcription response received', [
-                'content_request_id' => $contentRequest->id,
+            fclose($uploadStream);
+            $uploadStream = null;
+            $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, [
                 'status' => $response->status(),
                 'body' => $response->failed() ? $response->body() : null,
             ]);
@@ -160,6 +185,8 @@ class WhisperService
                 throw new RuntimeException('OpenAI transcription failed: ' . $response->body());
             }
 
+            $stage = 'extract_transcript_text';
+            $stageStartedAt = microtime(true);
             $payload = $response->json();
 
             $text = data_get($payload, 'full_response.text')           // ✅ your actual structure
@@ -168,22 +195,21 @@ class WhisperService
                 ?? data_get($payload, 'output_text')                   // another fallback
                 ?? data_get($payload, 'results.0.alternatives.0.transcript'); // just in case
 
-            Log::info('OpenAI transcription text extraction resolved', [
-                'content_request_id' => $contentRequest->id,
-                'status' => $response->status(),
-                'has_text' => is_string($text) && trim($text) !== '',
-            ]);
-
             if (! is_string($text) || trim($text) === '') {
                 throw new RuntimeException('OpenAI transcription returned empty text. Payload: ' . json_encode($payload));
             }
 
             $text = trim($text);
 
-
-            Log::info('OpenAI transcription text extracted successfully', [
-                'content_request_id' => $contentRequest->id,
+            $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, [
+                'status' => $response->status(),
                 'text_length' => strlen($text),
+            ]);
+
+            Log::info('WhisperService transcribe completed', [
+                'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
             ]);
 
             return $text;
@@ -201,35 +227,28 @@ class WhisperService
 
             throw $e;
         } catch (\Throwable $e) {
-            $contentRequest->update([
-                'compression_status' => 'failed',
-                'compression_error' => $e->getMessage(),
-            ]);
+            if ($this->isMediaPreparationStage($stage)) {
+                $contentRequest->update([
+                    'compression_status' => 'failed',
+                    'compression_error' => $e->getMessage(),
+                ]);
+            }
 
             Log::error('WhisperService failed', [
                 'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'stage' => $stage,
                 'message' => $e->getMessage(),
             ]);
 
             throw $e;
         } finally {
-            if ($sourcePath && file_exists($sourcePath)) {
-                @unlink($sourcePath);
-
-                Log::info('Original temp file deleted', [
-                    'content_request_id' => $contentRequest->id,
-                    'temp_path' => $sourcePath,
-                ]);
+            if (is_resource($uploadStream)) {
+                fclose($uploadStream);
             }
 
-            if ($compressedPath && file_exists($compressedPath)) {
-                @unlink($compressedPath);
-
-                Log::info('Compressed temp file deleted', [
-                    'content_request_id' => $contentRequest->id,
-                    'compressed_path' => $compressedPath,
-                ]);
-            }
+            $this->cleanupTempFile($contentRequest, $sourcePath, 'source_temp_path');
+            $this->cleanupTempFile($contentRequest, $compressedPath, 'compressed_temp_path');
         }
     }
 
@@ -343,6 +362,41 @@ class WhisperService
         }
 
         return $outputPath;
+    }
+
+    private function logStageCompleted(ContentRequest $contentRequest, string $stage, float $startedAt, array $context = []): void
+    {
+        Log::info('WhisperService stage completed', array_merge([
+            'content_request_id' => $contentRequest->id,
+            'public_id' => $contentRequest->public_id,
+            'stage' => $stage,
+            'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+        ], $context));
+    }
+
+    private function isMediaPreparationStage(string $stage): bool
+    {
+        return in_array($stage, [
+            'download_source',
+            'validate_duration',
+            'generate_thumbnail',
+            'prepare_audio',
+        ], true);
+    }
+
+    private function cleanupTempFile(ContentRequest $contentRequest, ?string $path, string $key): void
+    {
+        if (! $path || ! file_exists($path)) {
+            return;
+        }
+
+        @unlink($path);
+
+        Log::info('WhisperService temp file deleted', [
+            'content_request_id' => $contentRequest->id,
+            'public_id' => $contentRequest->public_id,
+            $key => $path,
+        ]);
     }
 
     public function generateVideoThumbnail(ContentRequest $contentRequest, string $sourcePath): ?string
