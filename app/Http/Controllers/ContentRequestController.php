@@ -318,6 +318,7 @@ class ContentRequestController extends Controller
         $contentRequest->update([
             'status' => ContentRequest::STATUS_UPLOADED,
             'error_message' => null,
+            'failure_stage' => null,
             'transcript' => null,
             'summary' => null,
             'compression_status' => null,
@@ -350,6 +351,7 @@ class ContentRequestController extends Controller
         $contentRequest->update([
             'status' => ContentRequest::STATUS_TRANSCRIBED,
             'error_message' => null,
+            'failure_stage' => null,
             'summary' => null,
         ]);
 
@@ -515,6 +517,7 @@ class ContentRequestController extends Controller
             'transcript' => $contentRequest->transcript,
             'summary' => $contentRequest->summary,
             'error_message' => $contentRequest->error_message,
+            'failure_stage' => $contentRequest->failure_stage,
             'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
             'input_type' => $contentRequest->input_type,
             'media_kind' => $contentRequest->media_kind,

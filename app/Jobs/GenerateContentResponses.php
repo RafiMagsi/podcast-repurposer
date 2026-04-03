@@ -17,7 +17,7 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
-    public int $tries = 3;
+    public int $tries = 1;
     public int $timeout = 600;
     public int $uniqueFor = 3600;
 
@@ -55,7 +55,8 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
 
             $contentRequest->update([
                 'status' => ContentRequest::STATUS_FAILED,
-                'error_message' => 'Transcript is missing.',
+                'error_message' => 'Content generation failed: transcript is missing.',
+                'failure_stage' => 'generation',
             ]);
 
             return;
@@ -64,6 +65,7 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
         $contentRequest->update([
             'status' => ContentRequest::STATUS_GENERATING,
             'error_message' => null,
+            'failure_stage' => null,
         ]);
 
         try {
@@ -112,6 +114,7 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
             $contentRequest->update([
                 'summary' => $outputs['summary'],
                 'status' => ContentRequest::STATUS_COMPLETED,
+                'failure_stage' => null,
             ]);
         } catch (ProcessingCancelledException $e) {
             Log::info('GenerateContentResponses cancelled', [
@@ -140,7 +143,8 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
 
             $contentRequest->update([
                 'status' => ContentRequest::STATUS_FAILED,
-                'error_message' => $e->getMessage(),
+                'error_message' => $this->generationFailureMessage($e),
+                'failure_stage' => 'generation',
             ]);
 
             throw $e;
@@ -156,6 +160,25 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
         }
     }
 
+    public function failed(?Throwable $e): void
+    {
+        if (! $e) {
+            return;
+        }
+
+        $contentRequest = ContentRequest::find($this->contentRequestId);
+
+        if (! $contentRequest || $contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+            return;
+        }
+
+        $contentRequest->update([
+            'status' => ContentRequest::STATUS_FAILED,
+            'error_message' => $this->generationFailureMessage($e),
+            'failure_stage' => 'generation',
+        ]);
+    }
+
     private function abortIfCancelled(ContentRequest $contentRequest): void
     {
         $contentRequest->refresh();
@@ -163,5 +186,10 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
         if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
             throw new ProcessingCancelledException('Processing was cancelled.');
         }
+    }
+
+    private function generationFailureMessage(Throwable $e): string
+    {
+        return 'Content generation failed: ' . $e->getMessage();
     }
 }

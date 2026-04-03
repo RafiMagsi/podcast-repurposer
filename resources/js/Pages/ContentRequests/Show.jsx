@@ -411,7 +411,13 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
 
                     {liveContentRequest.error_message && (
                         <div className="app-card bg-[rgb(var(--color-danger-bg))] p-6 text-[rgb(var(--color-danger-text))]">
-                            <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">Processing issue</h2>
+                            <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">
+                                {liveContentRequest.failure_stage === 'transcription'
+                                    ? 'Transcription issue'
+                                    : liveContentRequest.failure_stage === 'generation'
+                                    ? 'Generation issue'
+                                    : 'Processing issue'}
+                            </h2>
                             <p className="mt-3 text-sm">{liveContentRequest.error_message}</p>
                         </div>
                     )}

@@ -15,7 +15,7 @@ class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
-    public int $tries = 3;
+    public int $tries = 1;
     public int $timeout = 1200;
     public int $uniqueFor = 3600;
 
@@ -49,6 +49,7 @@ class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
         $contentRequest->update([
             'status' => ContentRequest::STATUS_TRANSCRIBING,
             'error_message' => null,
+            'failure_stage' => null,
             'compression_error' => null,
         ]);
 
@@ -71,7 +72,8 @@ class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
             if ($transcript === '') {
                 $contentRequest->update([
                     'status' => ContentRequest::STATUS_FAILED,
-                    'error_message' => 'Transcription returned empty text.',
+                    'error_message' => 'Transcription failed: the provider returned empty text.',
+                    'failure_stage' => 'transcription',
                 ]);
 
                 Log::error('TranscribeContentRequest empty transcript', [
@@ -91,6 +93,7 @@ class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
                 'transcript' => $transcript,
                 'status' => ContentRequest::STATUS_TRANSCRIBED,
                 'error_message' => null,
+                'failure_stage' => null,
             ]);
 
             $contentRequest->refresh();
@@ -132,11 +135,31 @@ class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
 
             $contentRequest->update([
                 'status' => ContentRequest::STATUS_FAILED,
-                'error_message' => $e->getMessage(),
+                'error_message' => $this->transcriptionFailureMessage($e),
+                'failure_stage' => 'transcription',
             ]);
 
             throw $e;
         }
+    }
+
+    public function failed(?Throwable $e): void
+    {
+        if (! $e) {
+            return;
+        }
+
+        $contentRequest = ContentRequest::find($this->contentRequestId);
+
+        if (! $contentRequest || $contentRequest->status === ContentRequest::STATUS_CANCELLED) {
+            return;
+        }
+
+        $contentRequest->update([
+            'status' => ContentRequest::STATUS_FAILED,
+            'error_message' => $this->transcriptionFailureMessage($e),
+            'failure_stage' => 'transcription',
+        ]);
     }
 
     private function abortIfCancelled(ContentRequest $contentRequest): void
@@ -146,5 +169,10 @@ class TranscribeContentRequest implements ShouldQueue, ShouldBeUnique
         if ($contentRequest->status === ContentRequest::STATUS_CANCELLED) {
             throw new ProcessingCancelledException('Processing was cancelled.');
         }
+    }
+
+    private function transcriptionFailureMessage(Throwable $e): string
+    {
+        return 'Transcription failed: ' . $e->getMessage();
     }
 }

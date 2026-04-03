@@ -29,7 +29,7 @@ Track how many runs each user has used and block processing when the limit is re
 ### 4. Add rate limiting and abuse protection - done
 Protect upload, create, retry, and regenerate actions so users cannot spam jobs or overload storage and queues.
 
-### 5. Strengthen failed-job handling
+### 5. Strengthen failed-job handling - done
 Make sure failed jobs always update the content request status correctly, preserve useful error messages, and allow clean retry behavior.
 
 ### 6. Verify storage and media access security
@@ -165,7 +165,7 @@ Before going live, verify:
 - Prevent repeated spam submissions from the same user.
 - Add safe fallback error messages for blocked requests.
 
-### 5. Strengthen failed-job handling
+### 5. Strengthen failed-job handling - done
 - Ensure failed jobs always update request status.
 - Save a useful error message on failure.
 - Distinguish transcription failure from generation failure.

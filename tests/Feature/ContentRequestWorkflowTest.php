@@ -102,6 +102,7 @@ it('retries transcription by clearing transcript state and queueing a new transc
         'transcript' => 'Old transcript',
         'summary' => 'Old summary',
         'status' => ContentRequest::STATUS_FAILED,
+        'failure_stage' => 'transcription',
         'compression_status' => 'failed',
         'compression_error' => 'Old compression error',
     ]);
@@ -126,6 +127,7 @@ it('retries transcription by clearing transcript state and queueing a new transc
     expect($contentRequest->status)->toBe(ContentRequest::STATUS_UPLOADED);
     expect($contentRequest->transcript)->toBeNull();
     expect($contentRequest->summary)->toBeNull();
+    expect($contentRequest->failure_stage)->toBeNull();
     expect($contentRequest->compression_status)->toBeNull();
     expect($contentRequest->compression_error)->toBeNull();
     expect($contentRequest->contentResponses()->count())->toBe(0);
@@ -152,6 +154,7 @@ it('regenerates content by clearing old responses and queueing generation again'
         'transcript' => 'Ready transcript',
         'summary' => 'Old summary',
         'status' => ContentRequest::STATUS_COMPLETED,
+        'failure_stage' => 'generation',
     ]);
 
     ContentResponse::create([
@@ -173,6 +176,8 @@ it('regenerates content by clearing old responses and queueing generation again'
 
     expect($contentRequest->status)->toBe(ContentRequest::STATUS_TRANSCRIBED);
     expect($contentRequest->summary)->toBeNull();
+    expect($contentRequest->failure_stage)->toBeNull();
+    expect($contentRequest->transcript)->toBe('Ready transcript');
     expect($contentRequest->contentResponses()->count())->toBe(0);
 
     Queue::assertPushed(GenerateContentResponses::class, function ($job) use ($contentRequest) {

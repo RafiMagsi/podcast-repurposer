@@ -39,6 +39,7 @@ class ContentRequest extends Model
         'transcript',
         'summary',
         'error_message',
+        'failure_stage',
         'input_type',
         'media_kind',
         'source_text',

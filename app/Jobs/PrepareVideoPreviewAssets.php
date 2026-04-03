@@ -15,7 +15,7 @@ class PrepareVideoPreviewAssets implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
-    public int $tries = 2;
+    public int $tries = 1;
     public int $timeout = 1200;
     public int $uniqueFor = 3600;
 
