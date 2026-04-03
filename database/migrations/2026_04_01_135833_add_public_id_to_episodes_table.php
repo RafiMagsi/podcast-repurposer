@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Episode;
+use App\Models\ContentRequest;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +16,7 @@ return new class extends Migration
             });
         }
 
-        Episode::query()
+        ContentRequest::query()
             ->whereNull('public_id')
             ->chunkById(100, function ($episodes) {
                 foreach ($episodes as $episode) {

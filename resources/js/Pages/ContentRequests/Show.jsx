@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
 import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 import ProcessingStatusCard from '@/Components/ProcessingStatusCard';
-import GeneratedContentCard from '@/Components/generated-content/GeneratedContentCard';
+import ContentResponseCard from '@/Components/content-responses/ContentResponseCard';
 
 function formatContentType(value) {
     return value
@@ -39,7 +39,6 @@ function formatMb(bytes) {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
-
 function sourceLabel(sourceType) {
     switch (sourceType) {
         case 'video':
@@ -53,11 +52,11 @@ function sourceLabel(sourceType) {
     }
 }
 
-export default function EpisodesShow({ auth, episode }) {
+export default function ContentRequestsShow({ auth, contentRequest }) {
     const { flash, errors } = usePage().props;
-    const canRetryTranscription = episode.source_type !== 'text';
+    const canRetryTranscription = contentRequest.source_type !== 'text';
 
-    const orderedContent = [...(episode.generated_contents || [])].sort((a, b) => {
+    const orderedContentResponses = [...(contentRequest.content_responses || [])].sort((a, b) => {
         const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
         return order.indexOf(a.content_type) - order.indexOf(b.content_type);
     });
@@ -65,7 +64,7 @@ export default function EpisodesShow({ auth, episode }) {
     const retryTranscription = () => {
         setRetrying(true);
 
-        router.post(route('episodes.retry-transcription', episode.public_id), {}, {
+        router.post(route('content-requests.retry-transcription', contentRequest.public_id), {}, {
             onSuccess: () => {
                 setShowRetryModal(false);
             },
@@ -78,7 +77,7 @@ export default function EpisodesShow({ auth, episode }) {
     const regenerateContent = () => {
         setRegenerating(true);
 
-        router.post(route('episodes.regenerate-content', episode.public_id), {}, {
+        router.post(route('content-requests.regenerate-content', contentRequest.public_id), {}, {
             onSuccess: () => {
                 setShowRegenerateModal(false);
             },
@@ -88,25 +87,28 @@ export default function EpisodesShow({ auth, episode }) {
         });
     };
 
-
     const details = [
-        ['Source type', sourceLabel(episode.source_type)],
-        ['Original file', episode.original_file_name || 'Inline text note'],
-        ['Original size', formatMb(episode.file_size)],
-        ['Compressed size', formatMb(episode.compressed_file_size)],
-        ['Compression status', episode.compression_status || 'Not started'],
-        ['Tone', episode.tone || 'N/A'],
-        ['Created at', episode.created_at || 'N/A'],
-        ['Recording ID', episode.public_id || episode.id || 'N/A'],
+        ['Source type', sourceLabel(contentRequest.source_type)],
+        ['Original file', contentRequest.original_file_name || 'Inline text note'],
+        ['Original size', formatMb(contentRequest.file_size)],
+        ['Compressed size', formatMb(contentRequest.compressed_file_size)],
+        ['Compression status', contentRequest.compression_status || 'Not started'],
+        ['Tone', contentRequest.tone || 'N/A'],
+        ['Created at', contentRequest.created_at || 'N/A'],
+        ['Recording ID', contentRequest.public_id || contentRequest.id || 'N/A'],
     ];
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [showRetryModal, setShowRetryModal] = useState(false);
+    const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+    const [retrying, setRetrying] = useState(false);
+    const [regenerating, setRegenerating] = useState(false);
 
-    const deleteEpisode = () => {
+    const deleteContentRequest = () => {
         setDeleting(true);
 
-        router.delete(route('episodes.destroy', episode.public_id), {
+        router.delete(route('content-requests.destroy', contentRequest.public_id), {
             onSuccess: () => {
                 setDeleting(false);
                 setShowDeleteModal(false);
@@ -120,19 +122,14 @@ export default function EpisodesShow({ auth, episode }) {
         });
     };
 
-    const [showRetryModal, setShowRetryModal] = useState(false);
-    const [showRegenerateModal, setShowRegenerateModal] = useState(false);
-    const [retrying, setRetrying] = useState(false);
-    const [regenerating, setRegenerating] = useState(false);
-
     const processingStatuses = ['uploaded', 'transcribing', 'transcribed', 'generating'];
 
     const isProcessing = useMemo(() => {
-        return processingStatuses.includes(episode.status);
-    }, [episode.status]);
+        return processingStatuses.includes(contentRequest.status);
+    }, [contentRequest.status]);
 
     const liveStatusLabel = useMemo(() => {
-        switch (episode.status) {
+        switch (contentRequest.status) {
             case 'uploaded':
                 return 'Upload received. Waiting to start processing.';
             case 'transcribing':
@@ -148,14 +145,14 @@ export default function EpisodesShow({ auth, episode }) {
             default:
                 return 'Status updated.';
         }
-    }, [episode.status]);
+    }, [contentRequest.status]);
 
     useEffect(() => {
         if (!isProcessing) return;
 
         const interval = window.setInterval(() => {
             router.reload({
-                only: ['episode', 'flash', 'errors'],
+                only: ['contentRequest', 'flash', 'errors'],
                 preserveScroll: true,
                 preserveState: true,
             });
@@ -163,7 +160,7 @@ export default function EpisodesShow({ auth, episode }) {
 
         const onFocus = () => {
             router.reload({
-                only: ['episode', 'flash', 'errors'],
+                only: ['contentRequest', 'flash', 'errors'],
                 preserveScroll: true,
                 preserveState: true,
             });
@@ -184,13 +181,13 @@ export default function EpisodesShow({ auth, episode }) {
                 <div className="grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
                     <div>
                         <div className="app-badge mb-4">Recording workspace</div>
-                        <h1 className="app-heading">{episode.title}</h1>
+                        <h1 className="app-heading">{contentRequest.title}</h1>
                         <p className="app-subheading mt-5 max-w-2xl">
                             Inspired by the screenshots, this page now leans into a clearer recording
                             workspace: dark text, lighter panels, and more structured transcript and output review.
                         </p>
                         <div className="mt-6 flex flex-wrap items-center gap-3">
-                            <span className={statusClass(episode.status)}>{episode.status}</span>
+                            <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
                             {isProcessing ? (
                                 <span className="app-badge-neutral">Auto updating</span>
                             ) : null}
@@ -208,7 +205,7 @@ export default function EpisodesShow({ auth, episode }) {
                                 type="button"
                                 onClick={() => setShowRegenerateModal(true)}
                                 className="btn-primary"
-                                disabled={!episode.transcript}
+                                disabled={!contentRequest.transcript}
                             >
                                 Regenerate Content
                             </button>
@@ -224,9 +221,9 @@ export default function EpisodesShow({ auth, episode }) {
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-3">
                             {[
-                                ['Summary', episode.summary ? 'Ready' : 'Pending'],
-                                ['Transcript', episode.transcript ? 'Ready' : 'Pending'],
-                                ['Assets', `${orderedContent.length} generated`],
+                                ['Summary', contentRequest.summary ? 'Ready' : 'Pending'],
+                                ['Transcript', contentRequest.transcript ? 'Ready' : 'Pending'],
+                                ['Responses', `${orderedContentResponses.length} generated`],
                             ].map(([label, value]) => (
                                 <div
                                     key={label}
@@ -245,7 +242,7 @@ export default function EpisodesShow({ auth, episode }) {
                 </div>
             }
         >
-            <Head title={episode.title} />
+            <Head title={contentRequest.title} />
 
             {flash?.success && (
                 <div className="app-card bg-[rgb(var(--color-success-bg))] p-4 text-sm text-[rgb(var(--color-success-text))]">
@@ -253,16 +250,15 @@ export default function EpisodesShow({ auth, episode }) {
                 </div>
             )}
 
-            
             <ProcessingStatusCard
-                episode={episode}
+                contentRequest={contentRequest}
                 isProcessing={isProcessing}
                 liveStatusLabel={liveStatusLabel}
             />
-            
-            {errors?.episode && (
+
+            {errors?.contentRequest && (
                 <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-sm text-[rgb(var(--color-danger-text))]">
-                    {errors.episode}
+                    {errors.contentRequest}
                 </div>
             )}
 
@@ -287,17 +283,17 @@ export default function EpisodesShow({ auth, episode }) {
                         </div>
                     </div>
 
-                    {episode.compression_error && (
+                    {contentRequest.compression_error && (
                         <div className="app-card bg-[rgb(var(--color-warning-bg))] p-6 text-[rgb(var(--color-warning-text))]">
                             <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Compression issue</h2>
-                            <p className="mt-3 text-sm">{episode.compression_error}</p>
+                            <p className="mt-3 text-sm">{contentRequest.compression_error}</p>
                         </div>
                     )}
 
-                    {episode.error_message && (
+                    {contentRequest.error_message && (
                         <div className="app-card bg-[rgb(var(--color-danger-bg))] p-6 text-[rgb(var(--color-danger-text))]">
                             <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">Processing issue</h2>
-                            <p className="mt-3 text-sm">{episode.error_message}</p>
+                            <p className="mt-3 text-sm">{contentRequest.error_message}</p>
                         </div>
                     )}
 
@@ -306,17 +302,17 @@ export default function EpisodesShow({ auth, episode }) {
                         <div className="mt-5 flex flex-col gap-3">
                             <button
                                 type="button"
-                                onClick={() => copyToClipboard(episode.transcript || '')}
+                                onClick={() => copyToClipboard(contentRequest.transcript || '')}
                                 className="btn-outline w-full"
-                                disabled={!episode.transcript}
+                                disabled={!contentRequest.transcript}
                             >
                                 Copy transcript
                             </button>
                             <button
                                 type="button"
-                                onClick={() => copyToClipboard(episode.summary || '')}
+                                onClick={() => copyToClipboard(contentRequest.summary || '')}
                                 className="btn-outline w-full"
-                                disabled={!episode.summary}
+                                disabled={!contentRequest.summary}
                             >
                                 Copy summary
                             </button>
@@ -333,7 +329,7 @@ export default function EpisodesShow({ auth, episode }) {
                                 type="button"
                                 onClick={() => setShowRegenerateModal(true)}
                                 className="btn-primary w-full"
-                                disabled={!episode.transcript}
+                                disabled={!contentRequest.transcript}
                             >
                                 Regenerate content
                             </button>
@@ -357,10 +353,10 @@ export default function EpisodesShow({ auth, episode }) {
                                     Condensed context before you review the full transcript.
                                 </p>
                             </div>
-                            {episode.summary ? (
+                            {contentRequest.summary ? (
                                 <button
                                     type="button"
-                                    onClick={() => copyToClipboard(episode.summary)}
+                                    onClick={() => copyToClipboard(contentRequest.summary)}
                                     className="btn-copy"
                                 >
                                     Copy
@@ -368,7 +364,7 @@ export default function EpisodesShow({ auth, episode }) {
                             ) : null}
                         </div>
                         <div className="mt-5 rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {episode.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
+                            {contentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
                         </div>
                     </div>
 
@@ -380,10 +376,10 @@ export default function EpisodesShow({ auth, episode }) {
                                     The full text source used by the generation pipeline.
                                 </p>
                             </div>
-                            {episode.transcript ? (
+                            {contentRequest.transcript ? (
                                 <button
                                     type="button"
-                                    onClick={() => copyToClipboard(episode.transcript)}
+                                    onClick={() => copyToClipboard(contentRequest.transcript)}
                                     className="btn-copy"
                                 >
                                     Copy
@@ -391,29 +387,30 @@ export default function EpisodesShow({ auth, episode }) {
                             ) : null}
                         </div>
                         <div className="mt-5 max-h-[500px] overflow-y-auto rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {episode.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
+                            {contentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
                         </div>
                     </div>
 
                     <div className="app-card p-6">
                         <div>
-                            <h2 className="app-section-title">Generated content</h2>
+                            <h2 className="app-section-title">Content responses</h2>
                             <p className="app-muted mt-2">
                                 AI-generated assets created from the transcript and recording tone.
                             </p>
                         </div>
 
-                        {orderedContent.length === 0 ? (
+                        {orderedContentResponses.length === 0 ? (
                             <div className="mt-5 text-sm text-slate-400">
-                                {isProcessing ? 'Generated content will appear here automatically once ready.' : 'No generated content yet.'}
+                                {isProcessing ? 'Content responses will appear here automatically once ready.' : 'No content responses yet.'}
                             </div>
                         ) : (
                             <div className="mt-5 space-y-5">
-                                {orderedContent.map((content) => (
-                                    <GeneratedContentCard
-                                        key={content.id}
-                                        content={content}
+                                {orderedContentResponses.map((contentResponse) => (
+                                    <ContentResponseCard
+                                        key={contentResponse.id}
+                                        contentResponse={contentResponse}
                                         onCopy={copyToClipboard}
+                                        fallbackLabel={formatContentType(contentResponse.content_type)}
                                     />
                                 ))}
                             </div>
@@ -424,10 +421,10 @@ export default function EpisodesShow({ auth, episode }) {
             <DeleteConfirmationModal
                 show={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
-                onConfirm={deleteEpisode}
+                onConfirm={deleteContentRequest}
                 processing={deleting}
                 title="Delete recording?"
-                message={`This will permanently remove the source file, transcript, summary, and generated content for "${episode.title}".`}
+                message={`This will permanently remove the source file, transcript, summary, and content responses for "${contentRequest.title}".`}
             />
 
             <ActionConfirmationModal
@@ -437,7 +434,7 @@ export default function EpisodesShow({ auth, episode }) {
                 processing={retrying}
                 variant="warning"
                 title="Retry transcription?"
-                message="This will clear the current transcript, summary, and generated content, then run transcription again from the original uploaded file."
+                message="This will clear the current transcript, summary, and content responses, then run transcription again from the original uploaded file."
                 confirmText="Retry Transcription"
             />
 
@@ -448,7 +445,7 @@ export default function EpisodesShow({ auth, episode }) {
                 processing={regenerating}
                 variant="warning"
                 title="Regenerate content?"
-                message="This will keep the transcript, remove the current generated content, and create fresh outputs again."
+                message="This will keep the transcript, remove the current content responses, and create fresh outputs again."
                 confirmText="Regenerate Content"
             />
         </AuthenticatedLayout>

@@ -27,18 +27,16 @@ const outputCards = [
         title: 'Newsletter',
         description: 'A subject line and email-ready body for a quick newsletter draft.',
     },
-
 ];
 
-
-export default function Dashboard({ auth, episodes = [] }) {
+export default function Dashboard({ auth, contentRequests = [] }) {
     const { flash } = usePage().props;
-    const completedCount = episodes.filter((episode) => episode.status === 'completed').length;
-    const processingCount = episodes.filter((episode) =>
-        ['uploaded', 'transcribing', 'transcribed', 'generating'].includes(episode.status),
+    const completedCount = contentRequests.filter((contentRequest) => contentRequest.status === 'completed').length;
+    const processingCount = contentRequests.filter((contentRequest) =>
+        ['uploaded', 'transcribing', 'transcribed', 'generating'].includes(contentRequest.status),
     ).length;
-    const failedCount = episodes.filter((episode) => episode.status === 'failed').length;
-    const activeEpisode = episodes[0] || null;
+    const failedCount = contentRequests.filter((contentRequest) => contentRequest.status === 'failed').length;
+    const activeContentRequest = contentRequests[0] || null;
 
     return (
         <AuthenticatedLayout
@@ -57,13 +55,13 @@ export default function Dashboard({ auth, episodes = [] }) {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                        <Link href={route('episodes.index')} className="topbar-action">
+                        <Link href={route('content-requests.index')} className="topbar-action">
                             Library
                         </Link>
                         <Link href={route('settings.index')} className="topbar-action">
                             Settings
                         </Link>
-                        <Link href={route('episodes.create')} className="btn-primary-rect">
+                        <Link href={route('content-requests.create')} className="btn-primary-rect">
                             Full upload page
                         </Link>
                     </div>
@@ -79,19 +77,24 @@ export default function Dashboard({ auth, episodes = [] }) {
                     </div>
                 )}
 
-                <StatsCard episodes={episodes} completedCount={completedCount} processingCount={processingCount} failedCount={failedCount} />
+                <StatsCard
+                    contentRequests={contentRequests}
+                    completedCount={completedCount}
+                    processingCount={processingCount}
+                    failedCount={failedCount}
+                />
 
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
                     <div className="space-y-6">
                         <RecordingInfoCard />
 
-                        <RecentRecordingsCard episodes={episodes} />
+                        <RecentRecordingsCard contentRequests={contentRequests} />
 
                         <RecurringOutputsCard items={outputCards} />
                     </div>
 
                     <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
-                        <CurrentFocusCard activeEpisode={activeEpisode} />
+                        <CurrentFocusCard activeContentRequest={activeContentRequest} />
 
                         <div className="app-card p-6">
                             <div className="app-badge-neutral">Best Practices</div>

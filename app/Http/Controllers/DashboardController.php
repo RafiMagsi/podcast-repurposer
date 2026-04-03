@@ -10,25 +10,25 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $episodes = $request->user()
-            ->episodes()
+        $contentRequests = $request->user()
+            ->contentRequests()
             ->latest()
             ->take(10)
             ->get()
-            ->map(fn ($episode) => [
-                'id' => $episode->id,
-                'public_id' => $episode->public_id,
-                'title' => $episode->title,
-                'status' => $episode->status,
-                'tone' => $episode->tone,
-                'original_file_name' => $episode->original_file_name,
-                'mime_type' => $episode->mime_type,
-                'source_type' => $this->detectSourceType($episode->mime_type, $episode->file_path),
-                'created_at' => optional($episode->created_at)->toDateTimeString(),
+            ->map(fn ($contentRequest) => [
+                'id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'title' => $contentRequest->title,
+                'status' => $contentRequest->status,
+                'tone' => $contentRequest->tone,
+                'original_file_name' => $contentRequest->original_file_name,
+                'mime_type' => $contentRequest->mime_type,
+                'source_type' => $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
+                'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
             ]);
 
         return Inertia::render('Dashboard', [
-            'episodes' => $episodes,
+            'contentRequests' => $contentRequests,
         ]);
     }
 

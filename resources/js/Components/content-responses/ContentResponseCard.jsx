@@ -2,14 +2,14 @@ import React from 'react';
 import { contentTypeMeta } from './contentTypeMeta.jsx';
 import { newsletterParts } from './newsletterParts.jsx';
 
-export default function GeneratedContentCard({
-    content,
+export default function ContentResponseCard({
+    contentResponse,
     onCopy,
     fallbackLabel,
 }) {
-    const meta = contentTypeMeta(content.content_type, fallbackLabel);
-    const isNewsletter = content.content_type === 'newsletter';
-    const { subject, content: newsletterBody } = newsletterParts(content.body);
+    const meta = contentTypeMeta(contentResponse.content_type, fallbackLabel);
+    const isNewsletter = contentResponse.content_type === 'newsletter';
+    const { subject, content: newsletterBody } = newsletterParts(contentResponse.body);
 
     return (
         <div className={`rounded-[26px] border p-5 ${meta.sectionClass}`}>
@@ -38,7 +38,7 @@ export default function GeneratedContentCard({
 
                     <button
                         type="button"
-                        onClick={() => onCopy(content.body)}
+                        onClick={() => onCopy(contentResponse.body)}
                         className="btn-copy"
                     >
                         Copy content
@@ -46,9 +46,9 @@ export default function GeneratedContentCard({
                 </div>
             </div>
 
-            {content.title ? (
+            {contentResponse.title ? (
                 <div className="mt-4 text-sm font-medium text-[rgb(var(--color-text-muted))]">
-                    {content.title}
+                    {contentResponse.title}
                 </div>
             ) : null}
 
@@ -71,7 +71,7 @@ export default function GeneratedContentCard({
                 </div>
             ) : (
                 <div className="whitespace-pre-wrap mt-4 rounded-[20px] border border-white/70 bg-white/80 p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
-                    {content.body}
+                    {contentResponse.body}
                 </div>
             )}
         </div>

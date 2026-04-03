@@ -2,47 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\TranscribeEpisode;
-use App\Models\Episode;
+use App\Jobs\GenerateContentResponses;
+use App\Jobs\TranscribeContentRequest;
+use App\Models\ContentRequest;
 use App\Services\S3DiskFactory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
-use App\Jobs\GenerateEpisodeContent;
-use Illuminate\Support\Facades\Log;
 
 
-class EpisodeController extends Controller
+class ContentRequestController extends Controller
 {
     public function index(Request $request): Response
     {
-        $episodes = $request->user()
-            ->episodes()
+        $contentRequests = $request->user()
+            ->contentRequests()
             ->latest()
             ->paginate(10)
-            ->through(fn ($episode) => [
-                'id' => $episode->id,
-                'public_id' => $episode->public_id,
-                'title' => $episode->title,
-                'status' => $episode->status,
-                'tone' => $episode->tone,
-                'original_file_name' => $episode->original_file_name,
-                'mime_type' => $episode->mime_type,
-                'source_type' => $this->detectSourceType($episode->mime_type, $episode->file_path),
-                'created_at' => optional($episode->created_at)->toDateTimeString(),
+            ->through(fn ($contentRequest) => [
+                'id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'title' => $contentRequest->title,
+                'status' => $contentRequest->status,
+                'tone' => $contentRequest->tone,
+                'original_file_name' => $contentRequest->original_file_name,
+                'mime_type' => $contentRequest->mime_type,
+                'source_type' => $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
+                'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
             ]);
 
-        return Inertia::render('Episodes/Index', [
-            'episodes' => $episodes,
+        return Inertia::render('ContentRequests/Index', [
+            'contentRequests' => $contentRequests,
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Episodes/Create', [
+        return Inertia::render('ContentRequests/Create', [
             'tones' => [
                 ['label' => 'Professional', 'value' => 'professional'],
                 ['label' => 'Engaging', 'value' => 'engaging'],
@@ -84,7 +84,7 @@ class EpisodeController extends Controller
 
         try {
             if ($isTextSource) {
-                $episode = Episode::create([
+                $contentRequest = ContentRequest::create([
                     'user_id' => $request->user()->id,
                     'title' => $validated['title'],
                     'tone' => $validated['tone'],
@@ -96,17 +96,17 @@ class EpisodeController extends Controller
                     'transcript' => $sourceText,
                 ]);
 
-                GenerateEpisodeContent::dispatch($episode->id);
+                GenerateContentResponses::dispatch($contentRequest->id);
 
                 return redirect()
-                    ->route('episodes.show', $episode)
+                    ->route('content-requests.show', $contentRequest)
                     ->with('success', 'Text note saved successfully. Content generation has been queued.');
             }
 
             $disk = $s3DiskFactory->make();
 
-            $folder = 'episodes/' . now()->format('Y/m');
-            $filename = uniqid('episode_', true) . '.' . $file->getClientOriginalExtension();
+            $folder = 'content-requests/' . now()->format('Y/m');
+            $filename = uniqid('content_request_', true) . '.' . $file->getClientOriginalExtension();
             $path = $disk->putFileAs($folder, $file, $filename);
 
             if (! $path) {
@@ -115,7 +115,7 @@ class EpisodeController extends Controller
                 ]);
             }
 
-            $episode = Episode::create([
+            $contentRequest = ContentRequest::create([
                 'user_id' => $request->user()->id,
                 'title' => $validated['title'],
                 'tone' => $validated['tone'],
@@ -126,10 +126,10 @@ class EpisodeController extends Controller
                 'status' => 'uploaded',
             ]);
 
-            TranscribeEpisode::dispatch($episode->id);
+            TranscribeContentRequest::dispatch($contentRequest->id);
 
             return redirect()
-                ->route('episodes.show', $episode)
+                ->route('content-requests.show', $contentRequest)
                 ->with('success', 'Source uploaded successfully. Transcription has been queued.');
         } catch (Throwable $e) {
             report($e);
@@ -140,132 +140,131 @@ class EpisodeController extends Controller
         }
     }
 
-    public function show(Request $request, Episode $episode): Response
+    public function show(Request $request, ContentRequest $contentRequest): Response
     {
-        abort_unless($episode->user_id === $request->user()->id, 403);
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        $episode->load('generatedContents');
+        $contentRequest->load('contentResponses');
 
-        return Inertia::render('Episodes/Show', [
-            'episode' => [
-                'id' => $episode->id,
-                'public_id' => $episode->public_id,
-                'title' => $episode->title,
-                'status' => $episode->status,
-                'tone' => $episode->tone,
-                'original_file_name' => $episode->original_file_name,
-                'mime_type' => $episode->mime_type,
-                'source_type' => $this->detectSourceType($episode->mime_type, $episode->file_path),
-                'file_size' => $episode->file_size,
-                'compressed_file_size' => $episode->compressed_file_size,
-                'compression_status' => $episode->compression_status,
-                'compression_error' => $episode->compression_error,
-                'transcript' => $episode->transcript,
-                'summary' => $episode->summary,
-                'error_message' => $episode->error_message,
-                'created_at' => optional($episode->created_at)->toDateTimeString(),
-                'generated_contents' => $episode->generatedContents->map(fn ($content) => [
-                    'id' => $content->id,
-                    'content_type' => $content->content_type,
-                    'title' => $content->title,
-                    'body' => $content->body,
-                    'meta' => $content->meta,
+        return Inertia::render('ContentRequests/Show', [
+            'contentRequest' => [
+                'id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
+                'title' => $contentRequest->title,
+                'status' => $contentRequest->status,
+                'tone' => $contentRequest->tone,
+                'original_file_name' => $contentRequest->original_file_name,
+                'mime_type' => $contentRequest->mime_type,
+                'source_type' => $this->detectSourceType($contentRequest->mime_type, $contentRequest->file_path),
+                'file_size' => $contentRequest->file_size,
+                'compressed_file_size' => $contentRequest->compressed_file_size,
+                'compression_status' => $contentRequest->compression_status,
+                'compression_error' => $contentRequest->compression_error,
+                'transcript' => $contentRequest->transcript,
+                'summary' => $contentRequest->summary,
+                'error_message' => $contentRequest->error_message,
+                'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
+                'content_responses' => $contentRequest->contentResponses->map(fn ($contentResponse) => [
+                    'id' => $contentResponse->id,
+                    'content_type' => $contentResponse->content_type,
+                    'title' => $contentResponse->title,
+                    'body' => $contentResponse->body,
+                    'meta' => $contentResponse->meta,
                 ])->values(),
             ],
         ]);
     }
-    public function retryTranscription(Request $request, Episode $episode): RedirectResponse
-    {
-        abort_unless($episode->user_id === $request->user()->id, 403);
 
-        if (! $episode->file_path) {
+    public function retryTranscription(Request $request, ContentRequest $contentRequest): RedirectResponse
+    {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        if (! $contentRequest->file_path) {
             return back()->withErrors([
-                'episode' => 'This item was created from text, so transcription cannot be retried.',
+                'contentRequest' => 'This item was created from text, so transcription cannot be retried.',
             ]);
         }
 
-        $episode->update([
+        $contentRequest->update([
             'status' => 'uploaded',
             'error_message' => null,
             'transcript' => null,
             'summary' => null,
         ]);
 
-        $episode->generatedContents()->delete();
+        $contentRequest->contentResponses()->delete();
 
-        TranscribeEpisode::dispatch($episode->id);
+        TranscribeContentRequest::dispatch($contentRequest->id);
 
         return back()->with('success', 'Transcription retry started.');
     }
 
-    public function regenerateContent(Request $request, Episode $episode): RedirectResponse
+    public function regenerateContent(Request $request, ContentRequest $contentRequest): RedirectResponse
     {
-        abort_unless($episode->user_id === $request->user()->id, 403);
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        if (! $episode->transcript) {
+        if (! $contentRequest->transcript) {
             return back()->withErrors([
-                'episode' => 'Transcript is missing. Retry transcription first.',
+                'contentRequest' => 'Transcript is missing. Retry transcription first.',
             ]);
         }
 
-        $episode->update([
+        $contentRequest->update([
             'status' => 'transcribed',
             'error_message' => null,
             'summary' => null,
         ]);
 
-        $episode->generatedContents()->delete();
+        $contentRequest->contentResponses()->delete();
 
-        GenerateEpisodeContent::dispatch($episode->id);
+        GenerateContentResponses::dispatch($contentRequest->id);
 
         return back()->with('success', 'Content regeneration started.');
     }
-    public function destroy(Request $request, Episode $episode): RedirectResponse
+
+    public function destroy(Request $request, ContentRequest $contentRequest): RedirectResponse
     {
-        abort_unless($episode->user_id === $request->user()->id, 403);
-        
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
         try {
-            Log::info('Deleting episode', [
-                'episode_id' => $episode->id,
-                'public_id' => $episode->public_id,
+            Log::info('Deleting content request', [
+                'content_request_id' => $contentRequest->id,
+                'public_id' => $contentRequest->public_id,
                 'user_id' => $request->user()->id,
             ]);
 
-            // delete generated contents first
-            $episode->generatedContents()->delete();
+            $contentRequest->contentResponses()->delete();
 
-            // optional: delete audio file from S3
             try {
-                if ($episode->file_path) {
+                if ($contentRequest->file_path) {
                     $disk = app(\App\Services\S3DiskFactory::class)->make();
-                    $disk->delete($episode->file_path);
+                    $disk->delete($contentRequest->file_path);
 
-                    Log::info('Episode file deleted from storage', [
-                        'episode_id' => $episode->id,
-                        'file_path' => $episode->file_path,
+                    Log::info('Content request file deleted from storage', [
+                        'content_request_id' => $contentRequest->id,
+                        'file_path' => $contentRequest->file_path,
                     ]);
                 }
             } catch (Throwable $storageException) {
                 report($storageException);
 
-                Log::warning('Episode file delete failed, continuing DB delete', [
-                    'episode_id' => $episode->id,
-                    'file_path' => $episode->file_path,
+                Log::warning('Content request file delete failed, continuing DB delete', [
+                    'content_request_id' => $contentRequest->id,
+                    'file_path' => $contentRequest->file_path,
                     'message' => $storageException->getMessage(),
                 ]);
             }
 
-            $episode->delete();
+            $contentRequest->delete();
 
             return redirect()
-                ->route('episodes.index')
+                ->route('content-requests.index')
                 ->with('success', 'Recording deleted successfully.');
         } catch (Throwable $e) {
             report($e);
 
             return back()->withErrors([
-                'episode' => 'Unable to delete this recording right now.',
+                'contentRequest' => 'Unable to delete this recording right now.',
             ]);
         }
     }

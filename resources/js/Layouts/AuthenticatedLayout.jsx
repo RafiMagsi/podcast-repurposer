@@ -6,7 +6,7 @@ function isActive(url, target) {
 }
 
 function buildBreadcrumb(url) {
-    if (isActive(url, '/episodes')) {
+    if (isActive(url, '/content-requests')) {
         return ['Workspace', 'Recordings'];
     }
 
@@ -76,8 +76,8 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             Dashboard
                         </Link>
                         <Link
-                            href={route('episodes.index')}
-                            className={`sidebar-link ${isActive(url, '/episodes') ? 'sidebar-link-active' : ''}`}
+                            href={route('content-requests.index')}
+                            className={`sidebar-link ${isActive(url, '/content-requests') ? 'sidebar-link-active' : ''}`}
                         >
                             <span className="sidebar-icon">R</span>
                             Content Library
@@ -115,7 +115,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                                 Upload one recording and let VoicePost AI draft the rest.
                             </div>
-                            <Link href={route('episodes.create')} className="btn-primary mt-4 w-full">
+                            <Link href={route('content-requests.create')} className="btn-primary mt-4 w-full">
                                 New recording
                             </Link>
                         </div>
@@ -142,13 +142,13 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 <Link href={route('dashboard')} className="topbar-action">
                                     Dashboard
                                 </Link>
-                                <Link href={route('episodes.index')} className="topbar-action">
+                                <Link href={route('content-requests.index')} className="topbar-action">
                                     Library
                                 </Link>
                                 <Link href={route('settings.index')} className="btn-secondary">
                                     Settings
                                 </Link>
-                                <Link href={route('episodes.create')} className="btn-primary-rect">
+                                <Link href={route('content-requests.create')} className="btn-primary-rect">
                                     New recording
                                 </Link>
                                 <Link href={route('logout')} method="post" as="button" className="btn-outline">

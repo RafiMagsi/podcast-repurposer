@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CreateContent from '@/Components/create-content/CreateContent';
 import { Head } from '@inertiajs/react';
 
-export default function EpisodesCreate({ auth, tones = [] }) {
+export default function ContentRequestsCreate({ auth, tones = [] }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -26,7 +26,7 @@ export default function EpisodesCreate({ auth, tones = [] }) {
                                 ['Summary', 'Fast overview for review and approvals.'],
                                 ['LinkedIn Post', 'Professional social copy from the same source.'],
                                 ['X Post', 'Short-form draft for quick posting.'],
-                                ['Workspace', 'Transcript plus generated content in one place.'],
+                                ['Workspace', 'Transcript plus content responses in one place.'],
                             ].map(([title, description], index) => (
                                 <div key={title} className="profile-card">
                                     <div

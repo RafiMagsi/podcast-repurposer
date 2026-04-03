@@ -16,15 +16,15 @@ function statusClass(status) {
     }
 }
 
-export default function ProcessingStatusCard({ episode, isProcessing, liveStatusLabel }) {
+export default function ProcessingStatusCard({ contentRequest, isProcessing, liveStatusLabel }) {
     return (
         <div
             className={`app-card relative overflow-hidden p-5 ${
                 isProcessing
                     ? 'border-blue-200 bg-blue-50'
-                    : episode.status === 'completed'
+                    : contentRequest.status === 'completed'
                     ? 'border-emerald-200 bg-emerald-50'
-                    : episode.status === 'failed'
+                    : contentRequest.status === 'failed'
                     ? 'border-red-200 bg-red-50'
                     : ''
             }`}
@@ -38,9 +38,9 @@ export default function ProcessingStatusCard({ episode, isProcessing, liveStatus
                         <div className="absolute right-12 top-14 text-[11px] text-sky-500/70 animate-pulse [animation-delay:400ms]">✦</div>
                         <div className="absolute right-28 bottom-7 text-[12px] text-indigo-400/70 animate-pulse [animation-delay:900ms]">✦</div>
                     </>
-                ) : episode.status === 'completed' ? (
+                ) : contentRequest.status === 'completed' ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-200/30 blur-3xl" />
-                ) : episode.status === 'failed' ? (
+                ) : contentRequest.status === 'failed' ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-red-200/30 blur-3xl" />
                 ) : null}
             </div>
@@ -67,7 +67,7 @@ export default function ProcessingStatusCard({ episode, isProcessing, liveStatus
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className={statusClass(episode.status)}>{episode.status}</span>
+                    <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
                     {isProcessing ? (
                         <div className="flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-sm" aria-hidden="true">
                             <span className="relative flex h-3 w-3 items-center justify-center">
@@ -87,13 +87,13 @@ export default function ProcessingStatusCard({ episode, isProcessing, liveStatus
                             className="progress-fill"
                             style={{
                                 width:
-                                    episode.status === 'uploaded'
+                                    contentRequest.status === 'uploaded'
                                         ? '20%'
-                                        : episode.status === 'transcribing'
+                                        : contentRequest.status === 'transcribing'
                                         ? '45%'
-                                        : episode.status === 'transcribed'
+                                        : contentRequest.status === 'transcribed'
                                         ? '70%'
-                                        : episode.status === 'generating'
+                                        : contentRequest.status === 'generating'
                                         ? '90%'
                                         : '100%',
                             }}

@@ -2,15 +2,15 @@
 
 namespace App\Jobs;
 
-use App\Models\Episode;
-use App\Models\GeneratedContent;
+use App\Models\ContentRequest;
+use App\Models\ContentResponse;
 use App\Services\OpenAIContentService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class GenerateEpisodeContent implements ShouldQueue
+class GenerateContentResponses implements ShouldQueue
 {
     use Queueable;
 
@@ -18,31 +18,31 @@ class GenerateEpisodeContent implements ShouldQueue
     public int $timeout = 600;
 
     public function __construct(
-        public int $episodeId
+        public int $contentRequestId
     ) {
     }
 
     public function handle(OpenAIContentService $openAIContentService): void
     {
-        Log::info('GenerateEpisodeContent started', [
-            'episode_id' => $this->episodeId,
+        Log::info('GenerateContentResponses started', [
+            'content_request_id' => $this->contentRequestId,
         ]);
 
-        $episode = Episode::find($this->episodeId);
+        $contentRequest = ContentRequest::find($this->contentRequestId);
 
-        if (! $episode) {
-            Log::warning('GenerateEpisodeContent episode not found', [
-                'episode_id' => $this->episodeId,
+        if (! $contentRequest) {
+            Log::warning('GenerateContentResponses content request not found', [
+                'content_request_id' => $this->contentRequestId,
             ]);
             return;
         }
 
-        if (! $episode->transcript) {
-            Log::error('GenerateEpisodeContent missing transcript', [
-                'episode_id' => $episode->id,
+        if (! $contentRequest->transcript) {
+            Log::error('GenerateContentResponses missing transcript', [
+                'content_request_id' => $contentRequest->id,
             ]);
 
-            $episode->update([
+            $contentRequest->update([
                 'status' => 'failed',
                 'error_message' => 'Transcript is missing.',
             ]);
@@ -50,61 +50,61 @@ class GenerateEpisodeContent implements ShouldQueue
             return;
         }
 
-        $episode->update([
+        $contentRequest->update([
             'status' => 'generating',
             'error_message' => null,
         ]);
 
         try {
-            $outputs = $openAIContentService->generate($episode->transcript, $episode->tone);
+            $outputs = $openAIContentService->generate($contentRequest->transcript, $contentRequest->tone);
 
             Log::info('VoicePost outputs generated', [
-                'episode_id' => $episode->id,
+                'content_request_id' => $contentRequest->id,
                 'summary_length' => strlen($outputs['summary'] ?? ''),
                 'linkedin_post_length' => strlen($outputs['linkedin_post'] ?? ''),
                 'x_post_length' => strlen($outputs['x_post'] ?? ''),
                 'instagram_caption_length' => strlen($outputs['instagram_caption'] ?? ''),
                 'newsletter_length' => strlen($outputs['newsletter'] ?? ''),
-            ]);;
+            ]);
 
-            GeneratedContent::updateOrCreate(
-                ['episode_id' => $episode->id, 'content_type' => 'summary'],
+            ContentResponse::updateOrCreate(
+                ['episode_id' => $contentRequest->id, 'content_type' => 'summary'],
                 ['title' => 'Summary', 'body' => $outputs['summary'], 'meta' => null]
             );
 
-            GeneratedContent::updateOrCreate(
-                ['episode_id' => $episode->id, 'content_type' => 'linkedin_post'],
+            ContentResponse::updateOrCreate(
+                ['episode_id' => $contentRequest->id, 'content_type' => 'linkedin_post'],
                 ['title' => 'LinkedIn Post', 'body' => $outputs['linkedin_post'], 'meta' => null]
             );
 
-            GeneratedContent::updateOrCreate(
-                ['episode_id' => $episode->id, 'content_type' => 'x_post'],
+            ContentResponse::updateOrCreate(
+                ['episode_id' => $contentRequest->id, 'content_type' => 'x_post'],
                 ['title' => 'X Post', 'body' => $outputs['x_post'], 'meta' => null]
             );
 
-            GeneratedContent::updateOrCreate(
-                ['episode_id' => $episode->id, 'content_type' => 'instagram_caption'],
+            ContentResponse::updateOrCreate(
+                ['episode_id' => $contentRequest->id, 'content_type' => 'instagram_caption'],
                 ['title' => 'Instagram Caption', 'body' => $outputs['instagram_caption'], 'meta' => null]
             );
 
-            GeneratedContent::updateOrCreate(
-                ['episode_id' => $episode->id, 'content_type' => 'newsletter'],
+            ContentResponse::updateOrCreate(
+                ['episode_id' => $contentRequest->id, 'content_type' => 'newsletter'],
                 ['title' => 'Newsletter', 'body' => $outputs['newsletter'], 'meta' => null]
             );
-            
-            $episode->update([
+
+            $contentRequest->update([
                 'summary' => $outputs['summary'],
                 'status' => 'completed',
             ]);
         } catch (Throwable $e) {
             report($e);
 
-            Log::error('GenerateEpisodeContent failed', [
-                'episode_id' => $episode->id,
+            Log::error('GenerateContentResponses failed', [
+                'content_request_id' => $contentRequest->id,
                 'message' => $e->getMessage(),
             ]);
 
-            $episode->update([
+            $contentRequest->update([
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
             ]);

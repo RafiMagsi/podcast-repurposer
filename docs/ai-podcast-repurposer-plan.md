@@ -41,12 +41,12 @@ Scope:
 - login
 - password reset
 - email verification
-- keep episode history separated per user
+- keep content request history separated per user
 
 Current implementation:
 - auth flows exist
 - profile management exists
-- episode access is scoped to the authenticated user
+- content request access is scoped to the authenticated user
 
 Key files:
 - `routes/auth.php`
@@ -60,20 +60,20 @@ Key files:
 
 Scope:
 - users
-- episodes
-- generated contents
+- content requests
+- content responses
 - settings
 
 Current implementation:
-- `Episode` model exists
-- `GeneratedContent` model exists
-- user-to-episode relationship exists
+- `ContentRequest` model exists
+- `ContentResponse` model exists
+- user-to-content-request relationship exists
 - settings storage exists for API and storage credentials
 
 Key files:
 - `app/Models/User.php`
-- `app/Models/Episode.php`
-- `app/Models/GeneratedContent.php`
+- `app/Models/ContentRequest.php`
+- `app/Models/ContentResponse.php`
 - `app/Services/SettingService.php`
 
 ---
@@ -121,16 +121,16 @@ Key files:
 
 Scope:
 - S3-compatible storage
-- per-episode file path persistence
+- per-content-request file path persistence
 
 Current implementation:
 - S3 disk factory exists
 - uploaded audio is stored through the storage factory
-- file metadata is saved on the episode
+- file metadata is saved on the content request
 
 Key files:
 - `app/Services/S3DiskFactory.php`
-- `app/Http/Controllers/EpisodeController.php`
+- `app/Http/Controllers/ContentRequestController.php`
 
 ---
 
@@ -140,7 +140,7 @@ Scope:
 - avoid long-running work inside the request cycle
 - dispatch transcription job
 - dispatch content generation job
-- update episode statuses
+- update content request statuses
 
 Current implementation:
 - queue jobs exist
@@ -149,9 +149,9 @@ Current implementation:
 - statuses include `uploaded`, `transcribing`, `transcribed`, `generating`, `completed`, `failed`
 
 Key files:
-- `app/Jobs/TranscribeEpisode.php`
-- `app/Jobs/GenerateEpisodeContent.php`
-- `app/Http/Controllers/EpisodeController.php`
+- `app/Jobs/TranscribeContentRequest.php`
+- `app/Jobs/GenerateContentResponses.php`
+- `app/Http/Controllers/ContentRequestController.php`
 
 ---
 
@@ -160,7 +160,7 @@ Key files:
 Original intent:
 - send uploaded audio to Whisper
 - save transcript
-- move episode to `transcribed`
+- move content request to `transcribed`
 
 Current state:
 - `WhisperService` exists
@@ -175,7 +175,7 @@ Why this is not marked done:
 Key files:
 - `app/Services/WhisperService.php`
 - `app/Services/AudioCompressionService.php`
-- `app/Jobs/TranscribeEpisode.php`
+- `app/Jobs/TranscribeContentRequest.php`
 
 ---
 
@@ -234,13 +234,13 @@ Current implementation:
 - result page exists
 - transcript section exists
 - summary section exists
-- generated content sections exist
+- content response sections exist
 - copy buttons exist
 - retry/regenerate actions exist
 
 Key files:
-- `resources/js/Pages/Episodes/Show.jsx`
-- `app/Http/Controllers/EpisodeController.php`
+- `resources/js/Pages/ContentRequests/Show.jsx`
+- `app/Http/Controllers/ContentRequestController.php`
 
 ---
 
@@ -256,8 +256,8 @@ Current implementation:
 - related UI buttons exist
 
 Key files:
-- `app/Http/Controllers/EpisodeController.php`
-- `resources/js/Pages/Episodes/Show.jsx`
+- `app/Http/Controllers/ContentRequestController.php`
+- `resources/js/Pages/ContentRequests/Show.jsx`
 
 ---
 
@@ -270,13 +270,13 @@ Scope:
 
 Current implementation:
 - tone selector exists
-- tone is stored on the episode
+- tone is stored on the content request
 - generation uses the tone value
 
 Key files:
-- `app/Http/Controllers/EpisodeController.php`
+- `app/Http/Controllers/ContentRequestController.php`
 - `app/Services/OpenAIContentService.php`
-- `resources/js/Pages/Episodes/Create.jsx`
+- `resources/js/Pages/ContentRequests/Create.jsx`
 
 ---
 
@@ -325,10 +325,10 @@ Key files:
 
 ---
 
-## Task 16: Add episode delete support
+## Task 16: Add content request delete support
 
 Original enhancement:
-- basic delete action for episodes
+- basic delete action for content requests
 
 Current state:
 - not implemented yet
@@ -398,7 +398,7 @@ V1 should be treated as complete when all of these are true:
 3. The transcription pipeline runs reliably without debug stops
 4. The generation pipeline creates the intended outputs reliably
 5. The user can open past recordings
-6. The user can copy the generated content
+6. The user can copy the content responses
 7. Retry and regenerate flows work cleanly
 
 ---
@@ -409,7 +409,7 @@ Recommended order from here:
 
 1. Finish Task 08: stabilize `WhisperService`
 2. Finish Task 10: align outputs with the intended product scope
-3. Finish Task 16: add delete support for episodes
+3. Finish Task 16: add delete support for content requests
 4. Finish Task 17: test with real files and add automated coverage
 5. Give 3 suggestions based on entered source in popup modal, user selects it and then generates the content
 6. Make a prompt for generating ideas, 3 ideas will be given, "Idea hint"

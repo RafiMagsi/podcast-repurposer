@@ -1,18 +1,18 @@
 import { Link } from '@inertiajs/react';
 
-export default function CurrentFocusCard({ activeEpisode }) {
+export default function CurrentFocusCard({ activeContentRequest }) {
     return (
         <div className="app-card p-6">
             <div className="app-badge-neutral">Current Focus</div>
 
             <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
-                {activeEpisode ? activeEpisode.title : 'Build your first content run'}
+                {activeContentRequest ? activeContentRequest.title : 'Build your first content run'}
             </h2>
 
             <p className="mt-3 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                {activeEpisode
-                    ? 'Open the latest run to review its transcript, outputs, and status in the workspace.'
-                    : 'Use the create panel to start with a 1-minute file or one short sentence.'}
+                {activeContentRequest
+                    ? 'Open the latest run to review its transcript, content responses, and status in the workspace.'
+                    : 'Use the create page to start with a 1-minute file or one short sentence.'}
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
@@ -45,12 +45,12 @@ export default function CurrentFocusCard({ activeEpisode }) {
             </div>
 
             <div className="mt-5 flex flex-col gap-3">
-                {activeEpisode ? (
-                    <Link href={route('episodes.show', activeEpisode.public_id)} className="btn-primary w-full">
+                {activeContentRequest ? (
+                    <Link href={route('content-requests.show', activeContentRequest.public_id)} className="btn-primary w-full">
                         Open latest workspace
                     </Link>
                 ) : (
-                    <Link href={route('episodes.create')} className="btn-primary w-full">
+                    <Link href={route('content-requests.create')} className="btn-primary w-full">
                         Open full upload page
                     </Link>
                 )}

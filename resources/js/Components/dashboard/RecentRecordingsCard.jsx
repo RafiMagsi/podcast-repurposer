@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
 
-export default function RecentRecordingsCard({episodes }){
-
+export default function RecentRecordingsCard({ contentRequests }) {
     function sourcePillClass(sourceType) {
         switch (sourceType) {
             case 'video':
@@ -43,22 +42,22 @@ export default function RecentRecordingsCard({episodes }){
                 return 'status-badge status-uploaded';
         }
     }
-    
+
     function formatRelative(dateString) {
         if (!dateString) return 'Unknown';
-    
+
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now - date;
         const diffMinutes = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMinutes / 60);
         const diffDays = Math.floor(diffHours / 24);
-    
+
         if (diffMinutes < 1) return 'Just now';
         if (diffMinutes < 60) return `${diffMinutes}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
-    
+
         return date.toLocaleDateString();
     }
 
@@ -72,39 +71,39 @@ export default function RecentRecordingsCard({episodes }){
                     </p>
                 </div>
 
-                <Link href={route('episodes.index')} className="btn-secondary">
+                <Link href={route('content-requests.index')} className="btn-secondary">
                     Open library
                 </Link>
             </div>
 
-            {episodes.length === 0 ? (
+            {contentRequests.length === 0 ? (
                 <div className="p-6 text-sm text-[rgb(var(--color-text-muted))]">
                     No recordings yet. Create your first short source above.
                 </div>
             ) : (
                 <div className="divide-y divide-[rgb(var(--color-border))]">
-                    {episodes.map((episode) => (
+                    {contentRequests.map((contentRequest) => (
                         <div
-                            key={episode.public_id || episode.id}
+                            key={contentRequest.public_id || contentRequest.id}
                             className="flex flex-col gap-4 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
                         >
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-3">
                                     <div className="truncate text-base font-semibold text-[rgb(var(--color-text-strong))]">
-                                        {episode.title}
+                                        {contentRequest.title}
                                     </div>
-                                    <span className={sourcePillClass(episode.source_type)}>
-                                        {sourceLabel(episode.source_type)}
+                                    <span className={sourcePillClass(contentRequest.source_type)}>
+                                        {sourceLabel(contentRequest.source_type)}
                                     </span>
-                                    <span className={statusClass(episode.status)}>{episode.status}</span>
+                                    <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
                                 </div>
                                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                    <span>{episode.original_file_name || 'Inline text note'}</span>
-                                    <span>{formatRelative(episode.created_at)}</span>
+                                    <span>{contentRequest.original_file_name || 'Inline text note'}</span>
+                                    <span>{formatRelative(contentRequest.created_at)}</span>
                                 </div>
                             </div>
 
-                            <Link href={route('episodes.show', episode.public_id)} className="btn-secondary">
+                            <Link href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary">
                                 Open workspace
                             </Link>
                         </div>

@@ -70,7 +70,7 @@ export default function CreateContent({
     const submit = (e) => {
         e.preventDefault();
 
-        post(route('episodes.store'), {
+        post(route('content-requests.store'), {
             forceFormData: true,
             preserveScroll,
         });
@@ -251,7 +251,7 @@ export default function CreateContent({
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                         The dashboard is only for starting the run. Once submitted, the real transcript,
-                        processing states, and generated content live on the recording page.
+                        processing states, and content responses live on the recording page.
                     </p>
 
                     <div className="mt-5 space-y-3">

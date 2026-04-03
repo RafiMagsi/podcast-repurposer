@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 
-export default function(){
+export default function RecordingInfoCard() {
     return (
         <div className="app-card p-6 sm:p-8">
             <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
@@ -16,10 +16,10 @@ export default function(){
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <Link href={route('episodes.create')} className="btn-primary">
+                    <Link href={route('content-requests.create')} className="btn-primary">
                         Create content
                     </Link>
-                    <Link href={route('episodes.index')} className="btn-secondary">
+                    <Link href={route('content-requests.index')} className="btn-secondary">
                         Browse recordings
                     </Link>
                 </div>

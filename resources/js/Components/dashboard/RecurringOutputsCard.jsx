@@ -1,8 +1,6 @@
 import { Link } from '@inertiajs/react';
 
-
 export default function RecurringOutputsCard({ items }) {
-
     return (
         <div className="app-card p-6">
             <div className="flex flex-col gap-4 border-b border-[rgb(var(--color-border))] pb-5 sm:flex-row sm:items-center sm:justify-between">
@@ -13,7 +11,7 @@ export default function RecurringOutputsCard({ items }) {
                     </h2>
                 </div>
 
-                <Link href={route('episodes.index')} className="btn-outline">
+                <Link href={route('content-requests.index')} className="btn-outline">
                     View library
                 </Link>
             </div>

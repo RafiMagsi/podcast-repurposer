@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Episode extends Model
+class ContentRequest extends Model
 {
     use HasFactory;
+
+    protected $table = 'episodes';
 
     protected $fillable = [
         'public_id',
@@ -33,9 +35,9 @@ class Episode extends Model
 
     protected static function booted(): void
     {
-        static::creating(function ($episode) {
-            if (! $episode->public_id) {
-                $episode->public_id = (string) Str::ulid();
+        static::creating(function ($contentRequest) {
+            if (! $contentRequest->public_id) {
+                $contentRequest->public_id = (string) Str::ulid();
             }
         });
     }
@@ -50,8 +52,8 @@ class Episode extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function generatedContents(): HasMany
+    public function contentResponses(): HasMany
     {
-        return $this->hasMany(GeneratedContent::class);
+        return $this->hasMany(ContentResponse::class, 'episode_id');
     }
 }

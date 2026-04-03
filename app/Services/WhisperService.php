@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Episode;
+use App\Models\ContentRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -16,12 +16,12 @@ class WhisperService
     ) {
     }
 
-    public function transcribe(Episode $episode): string
+    public function transcribe(ContentRequest $contentRequest): string
     {
         Log::info('WhisperService transcribe started', [
-            'episode_id' => $episode->id,
-            'public_id' => $episode->public_id,
-            's3_path' => $episode->file_path,
+            'content_request_id' => $contentRequest->id,
+            'public_id' => $contentRequest->public_id,
+            's3_path' => $contentRequest->file_path,
         ]);
 
         $shouldBypass = filter_var(
@@ -31,8 +31,8 @@ class WhisperService
 
         if ($shouldBypass) {
             Log::info('WhisperService bypassed OpenAI transcription for testing', [
-                'episode_id' => $episode->id ?? null,
-                'public_id' => $episode->public_id ?? null,
+                'content_request_id' => $contentRequest->id ?? null,
+                'public_id' => $contentRequest->public_id ?? null,
             ]);
 
             return 'This is a mock transcript generated in testing mode. VoicePost AI bypassed the OpenAI transcription call and returned a local transcript placeholder so you can test the workflow without API usage.';
@@ -46,7 +46,7 @@ class WhisperService
 
         $disk = $this->s3DiskFactory->make();
 
-        $stream = $disk->readStream($episode->file_path);
+        $stream = $disk->readStream($contentRequest->file_path);
 
         if (! $stream) {
             throw new RuntimeException('Unable to read audio file from S3.');
@@ -73,7 +73,7 @@ class WhisperService
         }
 
         Log::info('Copying S3 stream into temporary file', [
-            'episode_id' => $episode->id,
+            'content_request_id' => $contentRequest->id,
             'temp_path' => $tempPath,
         ]);
 
@@ -85,12 +85,12 @@ class WhisperService
         $originalSize = file_exists($tempPath) ? filesize($tempPath) : null;
 
         Log::info('Original temp audio file ready', [
-            'episode_id' => $episode->id,
+            'content_request_id' => $contentRequest->id,
             'temp_path' => $tempPath,
             'original_size' => $originalSize,
         ]);
 
-        $episode->update([
+        $contentRequest->update([
             'compression_status' => 'started',
             'compression_error' => null,
         ]);
@@ -103,14 +103,14 @@ class WhisperService
             $compressedPath = $compressionResult['path'];
             $compressedSize = $compressionResult['size'];
 
-            $episode->update([
+            $contentRequest->update([
                 'compressed_file_size' => $compressedSize,
                 'compression_status' => 'completed',
                 'compression_error' => null,
             ]);
 
             Log::info('Compressed file ready for transcription', [
-                'episode_id' => $episode->id,
+                'content_request_id' => $contentRequest->id,
                 'compressed_path' => $compressedPath,
                 'compressed_size' => $compressedSize,
             ]);
@@ -120,7 +120,7 @@ class WhisperService
             }
 
             Log::info('Sending file to OpenAI transcription API', [
-                'episode_id' => $episode->id,
+                'content_request_id' => $contentRequest->id,
                 'compressed_path' => $compressedPath,
                 'filename' => basename($compressedPath),
             ]);
@@ -138,7 +138,7 @@ class WhisperService
                 ]);
 
             Log::info('OpenAI transcription response received', [
-                'episode_id' => $episode->id,
+                'content_request_id' => $contentRequest->id,
                 'status' => $response->status(),
                 'body' => $response->failed() ? $response->body() : null,
             ]);
@@ -163,19 +163,19 @@ class WhisperService
             ]);
 
             Log::info('OpenAI transcription text extracted successfully', [
-                'episode_id' => $episode->id,
+                'content_request_id' => $contentRequest->id,
                 'text_length' => strlen($text),
             ]);
 
             return trim($text);
         } catch (\Throwable $e) {
-            $episode->update([
+            $contentRequest->update([
                 'compression_status' => 'failed',
                 'compression_error' => $e->getMessage(),
             ]);
 
             Log::error('WhisperService failed', [
-                'episode_id' => $episode->id,
+                'content_request_id' => $contentRequest->id,
                 'message' => $e->getMessage(),
             ]);
 
@@ -185,7 +185,7 @@ class WhisperService
                 @unlink($tempPath);
 
                 Log::info('Original temp file deleted', [
-                    'episode_id' => $episode->id,
+                    'content_request_id' => $contentRequest->id,
                     'temp_path' => $tempPath,
                 ]);
             }
@@ -194,7 +194,7 @@ class WhisperService
                 @unlink($compressedPath);
 
                 Log::info('Compressed temp file deleted', [
-                    'episode_id' => $episode->id,
+                    'content_request_id' => $contentRequest->id,
                     'compressed_path' => $compressedPath,
                 ]);
             }

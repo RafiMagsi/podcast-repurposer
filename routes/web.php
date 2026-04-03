@@ -4,11 +4,10 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\ContentRequestController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EpisodeController;
 use App\Http\Controllers\SettingsController;
 use App\Services\S3DiskFactory;
-use Illuminate\Support\Facades\Log;
 
 
 Route::get('/', function () {
@@ -31,17 +30,17 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    Route::get('/episodes', [EpisodeController::class, 'index'])->name('episodes.index');
-    Route::get('/episodes/create', [EpisodeController::class, 'create'])->name('episodes.create');
-    Route::post('/episodes', [EpisodeController::class, 'store'])->name('episodes.store');
-    Route::get('/episodes/{episode}', [EpisodeController::class, 'show'])
-        ->name('episodes.show');
-    Route::post('/episodes/{episode}/retry-transcription', [EpisodeController::class, 'retryTranscription'])
-        ->name('episodes.retry-transcription');
-    Route::post('/episodes/{episode}/regenerate-content', [EpisodeController::class, 'regenerateContent'])
-        ->name('episodes.regenerate-content');
-    Route::delete('/episodes/{episode}', [EpisodeController::class, 'destroy'])
-        ->name('episodes.destroy');
+    Route::get('/content-requests', [ContentRequestController::class, 'index'])->name('content-requests.index');
+    Route::get('/content-requests/create', [ContentRequestController::class, 'create'])->name('content-requests.create');
+    Route::post('/content-requests', [ContentRequestController::class, 'store'])->name('content-requests.store');
+    Route::get('/content-requests/{contentRequest}', [ContentRequestController::class, 'show'])
+        ->name('content-requests.show');
+    Route::post('/content-requests/{contentRequest}/retry-transcription', [ContentRequestController::class, 'retryTranscription'])
+        ->name('content-requests.retry-transcription');
+    Route::post('/content-requests/{contentRequest}/regenerate-content', [ContentRequestController::class, 'regenerateContent'])
+        ->name('content-requests.regenerate-content');
+    Route::delete('/content-requests/{contentRequest}', [ContentRequestController::class, 'destroy'])
+        ->name('content-requests.destroy');
 });
 
 

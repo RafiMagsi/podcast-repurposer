@@ -46,8 +46,8 @@ class User extends Authenticatable
         ];
     }
     
-    public function episodes()
+    public function contentRequests()
     {
-        return $this->hasMany(\App\Models\Episode::class);
+        return $this->hasMany(ContentRequest::class);
     }
 }
