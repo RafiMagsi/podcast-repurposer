@@ -48,6 +48,13 @@ class WhisperService
                 'source_size' => file_exists($sourcePath) ? filesize($sourcePath) : null,
             ]);
 
+            if ($this->isVideoSource($contentRequest)) {
+                $stage = 'validate_video_source';
+                $stageStartedAt = microtime(true);
+                $videoStreamMeta = $this->assertVideoSourceSupported($sourcePath);
+                $this->logStageCompleted($contentRequest, $stage, $stageStartedAt, $videoStreamMeta);
+            }
+
             $stage = 'validate_duration';
             $stageStartedAt = microtime(true);
             $duration = $this->assertMediaWithinDurationLimit($sourcePath, 60);
@@ -332,6 +339,70 @@ class WhisperService
         return $duration;
     }
 
+    public function assertVideoSourceSupported(string $sourcePath): array
+    {
+        if (! file_exists($sourcePath)) {
+            throw new RuntimeException('Video source is missing for validation.');
+        }
+
+        $process = new \Symfony\Component\Process\Process([
+            'ffprobe',
+            '-v', 'error',
+            '-show_entries', 'stream=codec_type,codec_name',
+            '-of', 'json',
+            $sourcePath,
+        ]);
+
+        $process->setTimeout(120);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            throw new RuntimeException('Invalid video file. The upload could not be read as a supported video source.');
+        }
+
+        $streams = data_get(json_decode($process->getOutput(), true), 'streams', []);
+
+        if (! is_array($streams) || $streams === []) {
+            throw new RuntimeException('Invalid video file. No readable streams were found.');
+        }
+
+        $videoCodec = null;
+        $audioCodec = null;
+
+        foreach ($streams as $stream) {
+            $codecType = data_get($stream, 'codec_type');
+            $codecName = strtolower((string) data_get($stream, 'codec_name', ''));
+
+            if ($codecType === 'video' && $videoCodec === null) {
+                $videoCodec = $codecName;
+            }
+
+            if ($codecType === 'audio' && $audioCodec === null) {
+                $audioCodec = $codecName;
+            }
+        }
+
+        if (! $videoCodec) {
+            throw new RuntimeException('Invalid video file. No video track was found.');
+        }
+
+        if (! in_array($videoCodec, $this->supportedVideoCodecs(), true)) {
+            throw new RuntimeException(sprintf(
+                'Unsupported video codec "%s". Use MP4, MOV, or WebM with a standard web video codec.',
+                $videoCodec
+            ));
+        }
+
+        if (! $audioCodec) {
+            throw new RuntimeException('This video has no audio track, so there is nothing to transcribe.');
+        }
+
+        return [
+            'video_codec' => $videoCodec,
+            'audio_codec' => $audioCodec,
+        ];
+    }
+
     private function prepareCompressedAudio(string $sourcePath): string
     {
         if (! file_exists($sourcePath)) {
@@ -357,8 +428,7 @@ class WhisperService
 
         if (! $process->isSuccessful() || ! file_exists($outputPath)) {
             @unlink($outputPath);
-
-            throw new \RuntimeException('Unable to extract and compress audio from source.');
+            throw new \RuntimeException($this->mediaPreparationFailureMessage($sourcePath, $process));
         }
 
         return $outputPath;
@@ -379,9 +449,68 @@ class WhisperService
         return in_array($stage, [
             'download_source',
             'validate_duration',
+            'validate_video_source',
             'generate_thumbnail',
             'prepare_audio',
         ], true);
+    }
+
+    private function isVideoSource(ContentRequest $contentRequest): bool
+    {
+        return $contentRequest->input_type === 'video'
+            || $contentRequest->media_kind === 'video'
+            || str_starts_with((string) $contentRequest->mime_type, 'video/');
+    }
+
+    private function supportedVideoCodecs(): array
+    {
+        return ['h264', 'hevc', 'vp8', 'vp9', 'av1', 'mpeg4'];
+    }
+
+    private function mediaPreparationFailureMessage(string $sourcePath, \Symfony\Component\Process\Process $process): string
+    {
+        $details = trim((string) ($process->getErrorOutput() ?: $process->getOutput()));
+        $details = preg_replace('/\s+/', ' ', $details ?? '');
+        $details = trim((string) $details);
+        $details = $details !== '' ? mb_substr($details, 0, 220) : null;
+
+        if ($this->looksLikeVideoSource($sourcePath)) {
+            return $details
+                ? 'Unable to extract audio from the uploaded video. ' . $details
+                : 'Unable to extract audio from the uploaded video. The video file may be invalid or use an unsupported stream layout.';
+        }
+
+        return $details
+            ? 'Unable to prepare audio for transcription. ' . $details
+            : 'Unable to prepare audio for transcription.';
+    }
+
+    private function looksLikeVideoSource(string $sourcePath): bool
+    {
+        $process = new \Symfony\Component\Process\Process([
+            'ffprobe',
+            '-v', 'error',
+            '-show_entries', 'stream=codec_type',
+            '-of', 'json',
+            $sourcePath,
+        ]);
+
+        $process->setTimeout(120);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return false;
+        }
+
+        $streams = data_get(json_decode($process->getOutput(), true), 'streams', []);
+
+        foreach ((array) $streams as $stream) {
+            if (data_get($stream, 'codec_type') === 'video') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function cleanupTempFile(ContentRequest $contentRequest, ?string $path, string $key): void

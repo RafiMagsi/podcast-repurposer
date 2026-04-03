@@ -16,7 +16,7 @@ Recommended order from here:
 
 ## Critical
 
-### 1. Finish video transcription pipeline
+### 1. Finish video transcription pipeline - done
 Make video uploads truly production-ready by extracting audio from video reliably before transcription. Handle unsupported codecs, extraction failures, and invalid files cleanly.
 show video preview
 
@@ -141,7 +141,7 @@ Before going live, verify:
 
 ## Critical
 
-### 1. Finish video transcription pipeline
+### 1. Finish video transcription pipeline - done
 - Extract audio from uploaded video before transcription.
 - Reject unsupported codecs and invalid video files.
 - Add clear error messages for extraction failure.
