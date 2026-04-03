@@ -78,6 +78,7 @@ function mergeStableMediaUrls(currentContentRequest, nextContentRequest) {
 export default function ContentRequestsShow({ auth, contentRequest }) {
     const { flash, errors } = usePage().props;
     const [liveContentRequest, setLiveContentRequest] = useState(contentRequest);
+    const [regeneratingOutputTypes, setRegeneratingOutputTypes] = useState({});
     const canRetryTranscription = liveContentRequest.source_type !== 'text';
 
     useEffect(() => {
@@ -86,7 +87,15 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         );
     }, [contentRequest]);
 
-    const orderedContentResponses = [...(liveContentRequest.content_responses || [])].sort((a, b) => {
+    const orderedContentResponses = [...(liveContentRequest.content_responses || [])]
+        .map((contentResponse) => ({
+            ...contentResponse,
+            meta: {
+                ...(contentResponse.meta || {}),
+                is_regenerating: Boolean(contentResponse.meta?.is_regenerating || regeneratingOutputTypes[contentResponse.content_type]),
+            },
+        }))
+        .sort((a, b) => {
         const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
         return order.indexOf(a.content_type) - order.indexOf(b.content_type);
     });
@@ -117,6 +126,27 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             },
             onFinish: () => {
                 setRegenerating(false);
+            },
+        });
+    };
+
+    const regenerateSingleOutput = (contentType) => {
+        setRegeneratingOutputTypes((current) => ({
+            ...current,
+            [contentType]: true,
+        }));
+
+        router.post(route('content-requests.regenerate-output', {
+            contentRequest: liveContentRequest.public_id,
+            contentType,
+        }), {}, {
+            preserveScroll: true,
+            onFinish: () => {
+                setRegeneratingOutputTypes((current) => {
+                    const next = { ...current };
+                    delete next[contentType];
+                    return next;
+                });
             },
         });
     };
@@ -582,6 +612,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                         key={contentResponse.id}
                                         contentResponse={contentResponse}
                                         onCopy={copyToClipboard}
+                                        onRegenerate={regenerateSingleOutput}
                                         fallbackLabel={formatContentType(contentResponse.content_type)}
                                     />
                                 ))}

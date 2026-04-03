@@ -57,7 +57,7 @@ Track usage patterns such as source type usage, completion rate, failure rate, r
 
 ## Nice to Have
 
-### 13. Add per-output regeneration
+### 13. Add per-output regeneration - done
 Allow users to regenerate only one output type, such as LinkedIn post or newsletter, instead of regenerating everything.
 
 ### 14. Improve dashboard and workspace polish
@@ -221,7 +221,7 @@ Before going live, verify:
 
 ## Nice to Have
 
-### 13. Add per-output regeneration
+### 13. Add per-output regeneration - done
 - Add backend action for single-output regeneration.
 - Add UI actions on each generated content card.
 - Preserve other outputs when one output is regenerated.

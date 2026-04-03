@@ -185,6 +185,63 @@ it('regenerates content by clearing old responses and queueing generation again'
     });
 });
 
+it('regenerates a single output without clearing the other outputs', function () {
+    $user = User::factory()->create();
+    Queue::fake();
+
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Regenerate one card',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'Ready transcript',
+        'summary' => 'Old summary',
+        'status' => ContentRequest::STATUS_COMPLETED,
+    ]);
+
+    $linkedin = ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'linkedin_post',
+        'title' => 'LinkedIn Post',
+        'body' => 'Old LinkedIn response',
+    ]);
+
+    ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'x_post',
+        'title' => 'X Post',
+        'body' => 'Old X response',
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('content-requests.show', $contentRequest))
+        ->post(route('content-requests.regenerate-output', [
+            'contentRequest' => $contentRequest,
+            'contentType' => 'linkedin_post',
+        ]));
+
+    $response->assertRedirect(route('content-requests.show', $contentRequest));
+    $response->assertSessionHas('success', 'LinkedIn Post regeneration started.');
+
+    $linkedin->refresh();
+    $contentRequest->refresh();
+
+    expect($contentRequest->summary)->toBe('Old summary');
+    expect($contentRequest->contentResponses()->count())->toBe(2);
+    expect($linkedin->meta['is_regenerating'])->toBeTrue();
+
+    Queue::assertPushed(GenerateContentResponses::class, function ($job) use ($contentRequest) {
+        return $job->contentRequestId === $contentRequest->id
+            && $job->contentType === 'linkedin_post';
+    });
+});
+
 it('passes the selected suggestion into content generation', function () {
     $user = User::factory()->create();
     $contentRequest = ContentRequest::create([
@@ -220,6 +277,56 @@ it('passes the selected suggestion into content generation', function () {
 
     expect($contentRequest->status)->toBe(ContentRequest::STATUS_COMPLETED);
     expect($contentRequest->summary)->toBe('Summary');
+});
+
+it('regenerates only the requested output in the job handler', function () {
+    $user = User::factory()->create();
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Single output job',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'Ready transcript',
+        'summary' => 'Keep this summary',
+        'status' => ContentRequest::STATUS_COMPLETED,
+    ]);
+
+    ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'linkedin_post',
+        'title' => 'LinkedIn Post',
+        'body' => 'Old LinkedIn response',
+        'meta' => ['is_regenerating' => true],
+    ]);
+
+    ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'x_post',
+        'title' => 'X Post',
+        'body' => 'Keep X response',
+    ]);
+
+    $openAI = Mockery::mock(OpenAIContentService::class);
+    $openAI->shouldReceive('generateSingleOutput')
+        ->once()
+        ->with('Ready transcript', 'linkedin_post', 'professional', null)
+        ->andReturn('Fresh LinkedIn response');
+
+    (new GenerateContentResponses($contentRequest->id, 'linkedin_post'))->handle($openAI);
+
+    $contentRequest->refresh();
+    $linkedin = $contentRequest->contentResponses()->where('content_type', 'linkedin_post')->first();
+    $xPost = $contentRequest->contentResponses()->where('content_type', 'x_post')->first();
+
+    expect($contentRequest->summary)->toBe('Keep this summary');
+    expect($linkedin->body)->toBe('Fresh LinkedIn response');
+    expect($linkedin->meta)->toBeNull();
+    expect($xPost->body)->toBe('Keep X response');
 });
 
 it('rejects unsupported source files with a validation error', function () {

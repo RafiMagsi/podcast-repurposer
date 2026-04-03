@@ -23,13 +23,14 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
     public int $uniqueFor = 3600;
 
     public function __construct(
-        public int $contentRequestId
+        public int $contentRequestId,
+        public ?string $contentType = null
     ) {
     }
 
     public function uniqueId(): string
     {
-        return 'generate:' . $this->contentRequestId;
+        return 'generate:' . $this->contentRequestId . ':' . ($this->contentType ?? 'all');
     }
 
     public function handle(OpenAIContentService $openAIContentService, ?OperationalAnalyticsService $analytics = null): void
@@ -65,13 +66,21 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
             return;
         }
 
-        $contentRequest->update([
-            'status' => ContentRequest::STATUS_GENERATING,
-            'error_message' => null,
-            'failure_stage' => null,
-        ]);
+        if (! $this->contentType) {
+            $contentRequest->update([
+                'status' => ContentRequest::STATUS_GENERATING,
+                'error_message' => null,
+                'failure_stage' => null,
+            ]);
+        }
 
         try {
+            if ($this->contentType) {
+                $this->generateSingleOutput($contentRequest, $openAIContentService, $analytics);
+
+                return;
+            }
+
             $outputs = $openAIContentService->generate(
                 $contentRequest->transcript,
                 $contentRequest->tone,
@@ -89,14 +98,6 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
                 'newsletter_length' => strlen($outputs['newsletter'] ?? ''),
             ]);
 
-            $outputTitles = [
-                'summary' => 'Summary',
-                'linkedin_post' => 'LinkedIn Post',
-                'x_post' => 'X Post',
-                'instagram_caption' => 'Instagram Caption',
-                'newsletter' => 'Newsletter',
-            ];
-
             $savedOutputTypes = [];
 
             foreach (ContentRequest::EXPECTED_OUTPUT_TYPES as $contentType) {
@@ -108,7 +109,7 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
 
                 ContentResponse::updateOrCreate(
                     ['episode_id' => $contentRequest->id, 'content_type' => $contentType],
-                    ['title' => $outputTitles[$contentType], 'body' => $body, 'meta' => null]
+                    ['title' => ContentRequest::OUTPUT_TITLES[$contentType], 'body' => $body, 'meta' => null]
                 );
 
                 $savedOutputTypes[] = $contentType;
@@ -157,6 +158,10 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
                 'message' => $e->getMessage(),
             ]);
 
+            if ($this->contentType) {
+                $this->markSingleOutputFailure($contentRequest, $e);
+            }
+
             $contentRequest->update($this->generationFailureState($contentRequest, $e));
 
             throw $e;
@@ -184,6 +189,10 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
             return;
         }
 
+        if ($this->contentType) {
+            $this->markSingleOutputFailure($contentRequest, $e);
+        }
+
         $contentRequest->update($this->generationFailureState($contentRequest, $e));
     }
 
@@ -198,6 +207,14 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
 
     private function generationFailureMessage(Throwable $e): string
     {
+        if ($this->contentType) {
+            return sprintf(
+                'Content generation failed for %s: %s',
+                str_replace('_', ' ', $this->contentType),
+                $e->getMessage()
+            );
+        }
+
         return 'Content generation failed: ' . $e->getMessage();
     }
 
@@ -213,5 +230,91 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
             'error_message' => $this->generationFailureMessage($e),
             'failure_stage' => 'generation',
         ];
+    }
+
+    private function generateSingleOutput(
+        ContentRequest $contentRequest,
+        OpenAIContentService $openAIContentService,
+        OperationalAnalyticsService $analytics
+    ): void {
+        $contentType = $this->contentType;
+
+        if (! $contentType || ! in_array($contentType, ContentRequest::EXPECTED_OUTPUT_TYPES, true)) {
+            throw new \RuntimeException('Unsupported output type requested for regeneration.');
+        }
+
+        $body = trim($openAIContentService->generateSingleOutput(
+            $contentRequest->transcript,
+            $contentType,
+            $contentRequest->tone,
+            $contentRequest->selected_suggestion
+        ));
+
+        if ($body === '') {
+            throw new \RuntimeException('Single-output regeneration returned empty content.');
+        }
+
+        $response = ContentResponse::updateOrCreate(
+            ['episode_id' => $contentRequest->id, 'content_type' => $contentType],
+            [
+                'title' => ContentRequest::OUTPUT_TITLES[$contentType],
+                'body' => $body,
+                'meta' => null,
+            ]
+        );
+
+        $analytics->record('output_generated', [
+            'user_id' => $contentRequest->user_id,
+            'content_request_id' => $contentRequest->id,
+            'source_type' => $contentRequest->input_type,
+            'content_type' => $contentType,
+            'status' => $contentRequest->status,
+        ]);
+
+        if ($contentType === 'summary') {
+            $contentRequest->summary = $body;
+        }
+
+        $missingOutputTypes = array_values(array_diff(
+            ContentRequest::EXPECTED_OUTPUT_TYPES,
+            $contentRequest->contentResponses()->pluck('content_type')->all()
+        ));
+
+        $contentRequest->update([
+            'summary' => $contentType === 'summary' ? $body : $contentRequest->summary,
+            'status' => $missingOutputTypes === [] ? ContentRequest::STATUS_COMPLETED : ContentRequest::STATUS_PARTIAL,
+            'error_message' => $missingOutputTypes === []
+                ? null
+                : 'Content generation finished with missing outputs: ' . implode(', ', $missingOutputTypes) . '.',
+            'failure_stage' => $missingOutputTypes === [] ? null : 'generation',
+        ]);
+
+        Log::info('VoicePost single output regenerated', [
+            'content_request_id' => $contentRequest->id,
+            'content_type' => $contentType,
+            'content_response_id' => $response->id,
+        ]);
+    }
+
+    private function markSingleOutputFailure(ContentRequest $contentRequest, Throwable $e): void
+    {
+        if (! $this->contentType) {
+            return;
+        }
+
+        $response = $contentRequest->contentResponses()
+            ->where('content_type', $this->contentType)
+            ->first();
+
+        if (! $response) {
+            return;
+        }
+
+        $response->update([
+            'meta' => array_merge($response->meta ?? [], [
+                'is_regenerating' => false,
+                'regeneration_error' => $e->getMessage(),
+            ]),
+        ]);
     }
 }

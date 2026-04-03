@@ -385,6 +385,60 @@ class ContentRequestController extends Controller
         return back()->with('success', 'Content regeneration started.');
     }
 
+    public function regenerateOutput(
+        Request $request,
+        ContentRequest $contentRequest,
+        string $contentType,
+        OperationalAnalyticsService $analytics
+    ): RedirectResponse {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        if (! in_array($contentType, ContentRequest::EXPECTED_OUTPUT_TYPES, true)) {
+            abort(404);
+        }
+
+        if (in_array($contentRequest->status, ContentRequest::processingStatuses(), true)) {
+            return back()->withErrors([
+                'contentRequest' => 'This recording is already processing. Wait for it to finish before regenerating a single output.',
+            ]);
+        }
+
+        if (! $contentRequest->transcript) {
+            return back()->withErrors([
+                'contentRequest' => 'Transcript is missing. Retry transcription first.',
+            ]);
+        }
+
+        $existingResponse = $contentRequest->contentResponses()
+            ->where('content_type', $contentType)
+            ->first();
+
+        if (! $existingResponse) {
+            return back()->withErrors([
+                'contentRequest' => 'Only existing content cards can be regenerated one at a time.',
+            ]);
+        }
+
+        $existingResponse->update([
+            'meta' => array_merge($existingResponse->meta ?? [], [
+                'is_regenerating' => true,
+            ]),
+        ]);
+
+        $analytics->record('regenerate_content', [
+            'user_id' => $request->user()->id,
+            'content_request_id' => $contentRequest->id,
+            'source_type' => $contentRequest->input_type,
+            'content_type' => $contentType,
+            'status' => $contentRequest->status,
+            'meta' => ['scope' => 'single_output'],
+        ]);
+
+        GenerateContentResponses::dispatch($contentRequest->id, $contentType);
+
+        return back()->with('success', ContentRequest::OUTPUT_TITLES[$contentType] . ' regeneration started.');
+    }
+
     public function cancelProcessing(Request $request, ContentRequest $contentRequest): RedirectResponse
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);

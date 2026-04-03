@@ -68,6 +68,41 @@ class OpenAIContentService
         return $this->generateOutputs($apiKey, $source, $tone, $selectedSuggestion);
     }
 
+    public function generateSingleOutput(
+        string $transcript,
+        string $outputType,
+        string $tone = 'professional',
+        ?string $selectedSuggestion = null
+    ): string {
+        if (! in_array($outputType, ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'], true)) {
+            throw new RuntimeException('Unsupported output type requested for regeneration.');
+        }
+
+        $shouldBypass = filter_var(
+            (string) $this->settings->get('bypass_openai_for_testing', 'false'),
+            FILTER_VALIDATE_BOOL
+        );
+
+        if ($shouldBypass) {
+            $outputs = $this->generate($transcript, $tone, $selectedSuggestion);
+
+            return (string) ($outputs[$outputType] ?? '');
+        }
+
+        $apiKey = $this->settings->get('openai_api_key');
+
+        if (! $apiKey) {
+            throw new RuntimeException('Missing openai_api_key');
+        }
+
+        $cleanTranscript = $this->cleanTranscript($transcript);
+        $source = strlen($cleanTranscript) > 12000
+            ? $this->createCompactNotes($apiKey, $cleanTranscript)
+            : $cleanTranscript;
+
+        return $this->generateSingleOutputFromSource($apiKey, $source, $tone, $outputType, $selectedSuggestion);
+    }
+
     protected function cleanTranscript(string $transcript): string
     {
         $text = trim($transcript);
@@ -221,6 +256,89 @@ PROMPT;
             'instagram_caption' => trim((string) ($decoded['instagram_caption'] ?? '')),
             'newsletter' => trim((string) ($decoded['newsletter'] ?? '')),
         ], $source);
+    }
+
+    protected function generateSingleOutputFromSource(
+        string $apiKey,
+        string $source,
+        string $tone,
+        string $outputType,
+        ?string $selectedSuggestion = null
+    ): string {
+        $selectedDirection = filled($selectedSuggestion)
+            ? "Preferred direction:\n{$selectedSuggestion}\n\nUse this direction as the main angle while staying faithful to the source.\n\n"
+            : '';
+
+        $outputRules = match ($outputType) {
+            'summary' => 'Return only the summary. Keep it concise, clear, and limited to 2 to 3 sentences.',
+            'linkedin_post' => 'Return only the LinkedIn post. Make it professional, value-driven, and around 150 words. Do not add hashtags unless they feel essential.',
+            'x_post' => 'Return only the X post. Keep it punchy, faithful to the source, and under 280 characters.',
+            'instagram_caption' => 'Return only the Instagram caption. Include a hook, body, and exactly 5 relevant hashtags.',
+            'newsletter' => 'Return only the newsletter. Start with a "Subject:" line and then include an email-ready body.',
+        };
+
+        $prompt = <<<PROMPT
+Create only one output for this source.
+
+Tone: {$tone}
+
+{$selectedDirection}
+
+Target output: {$outputType}
+
+Rules:
+- Stay faithful to the source
+- Do not invent unsupported facts
+- Return plain text only
+- Do not add markdown code fences
+- Do not add explanations or labels beyond what the output itself requires
+
+Specific instructions:
+{$outputRules}
+
+Source material:
+{$source}
+PROMPT;
+
+        $response = Http::withToken($apiKey)
+            ->timeout(60)
+            ->connectTimeout(15)
+            ->post('https://api.openai.com/v1/responses', [
+                'model' => 'gpt-4o-mini',
+                'max_output_tokens' => 400,
+                'input' => $prompt,
+            ]);
+
+        Log::info('VoicePost single output generation response', [
+            'status' => $response->status(),
+            'output_type' => $outputType,
+        ]);
+
+        if (! $response->successful()) {
+            throw new RuntimeException('OpenAI single-output generation failed: ' . $response->body());
+        }
+
+        $text = $this->extractTextFromResponse($response->json());
+
+        if (! $text) {
+            throw new RuntimeException('OpenAI single-output generation returned empty text.');
+        }
+
+        return $this->normalizeSingleOutput($outputType, trim($text), $source);
+    }
+
+    protected function normalizeSingleOutput(string $outputType, string $value, string $source): string
+    {
+        $summary = $this->normalizeSummary($value, $source);
+
+        return match ($outputType) {
+            'summary' => $summary,
+            'linkedin_post' => $this->normalizeLinkedInPost($value, $summary),
+            'x_post' => $this->normalizeXPost($value, $summary),
+            'instagram_caption' => $this->normalizeInstagramCaption($value, $summary . ' ' . $source),
+            'newsletter' => $this->normalizeNewsletter($value, $summary, $source),
+            default => throw new RuntimeException('Unsupported output type requested for normalization.'),
+        };
     }
 
     protected function normalizeOutputs(array $outputs, string $source): array

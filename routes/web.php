@@ -60,6 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/content-requests/{contentRequest}/regenerate-content', [ContentRequestController::class, 'regenerateContent'])
         ->middleware('content.rate:action')
         ->name('content-requests.regenerate-content');
+    Route::post('/content-requests/{contentRequest}/regenerate-output/{contentType}', [ContentRequestController::class, 'regenerateOutput'])
+        ->middleware('content.rate:action')
+        ->name('content-requests.regenerate-output');
     Route::post('/content-requests/{contentRequest}/cancel-processing', [ContentRequestController::class, 'cancelProcessing'])
         ->name('content-requests.cancel-processing');
     Route::delete('/content-requests/{contentRequest}', [ContentRequestController::class, 'destroy'])

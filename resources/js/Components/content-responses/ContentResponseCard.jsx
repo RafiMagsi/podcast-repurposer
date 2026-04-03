@@ -5,11 +5,14 @@ import { newsletterParts } from './newsletterParts.jsx';
 export default function ContentResponseCard({
     contentResponse,
     onCopy,
+    onRegenerate,
     fallbackLabel,
 }) {
     const meta = contentTypeMeta(contentResponse.content_type, fallbackLabel);
     const isNewsletter = contentResponse.content_type === 'newsletter';
     const { subject, content: newsletterBody } = newsletterParts(contentResponse.body);
+    const isRegenerating = Boolean(contentResponse.meta?.is_regenerating);
+    const regenerationError = contentResponse.meta?.regeneration_error;
 
     return (
         <div className={`rounded-[26px] border p-5 ${meta.sectionClass}`}>
@@ -38,13 +41,35 @@ export default function ContentResponseCard({
 
                     <button
                         type="button"
+                        onClick={() => onRegenerate?.(contentResponse.content_type)}
+                        className="btn-secondary"
+                        disabled={isRegenerating}
+                    >
+                        {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+
+                    <button
+                        type="button"
                         onClick={() => onCopy(contentResponse.body)}
                         className="btn-copy"
+                        disabled={isRegenerating}
                     >
                         Copy content
                     </button>
                 </div>
             </div>
+
+            {isRegenerating ? (
+                <div className="mt-4 rounded-[18px] border border-[rgb(var(--color-border-strong))] bg-white/80 px-4 py-3 text-sm text-[rgb(var(--color-text-muted))]">
+                    Regenerating this output. The rest of the content set stays unchanged.
+                </div>
+            ) : null}
+
+            {!isRegenerating && regenerationError ? (
+                <div className="mt-4 rounded-[18px] border border-[rgb(var(--color-danger-border))] bg-[rgb(var(--color-danger-bg))] px-4 py-3 text-sm text-[rgb(var(--color-danger-text))]">
+                    {regenerationError}
+                </div>
+            ) : null}
 
             {contentResponse.title ? (
                 <div className="mt-4 text-sm font-medium text-[rgb(var(--color-text-muted))]">

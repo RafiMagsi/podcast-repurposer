@@ -29,6 +29,14 @@ class ContentRequest extends Model
         'newsletter',
     ];
 
+    public const OUTPUT_TITLES = [
+        'summary' => 'Summary',
+        'linkedin_post' => 'LinkedIn Post',
+        'x_post' => 'X Post',
+        'instagram_caption' => 'Instagram Caption',
+        'newsletter' => 'Newsletter',
+    ];
+
     protected $table = 'episodes';
 
     protected $fillable = [
