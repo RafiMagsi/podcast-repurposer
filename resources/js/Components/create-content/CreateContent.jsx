@@ -40,7 +40,7 @@ const defaultTones = [
 const handoffSteps = [
     ['1', 'Redirect immediately', 'The app sends you to the recording workspace as soon as the request is accepted.'],
     ['2', 'Track live progress', 'Processing status, transcript generation, and retries happen there instead of on the dashboard.'],
-    ['3', 'Review real outputs', 'Summary, LinkedIn post, X post, Instagram caption, and newsletter are reviewed where the actual data exists.'],
+    ['3', 'Review five outputs', 'Summary, LinkedIn post, X post, Instagram caption, and newsletter are reviewed where the actual data exists.'],
 ];
 
 export default function CreateContent({
@@ -386,7 +386,7 @@ export default function CreateContent({
                         <div>
                             <div className="app-badge-neutral">Create Content</div>
                             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
-                                Start with one short source.
+                                Turn one short source into ready-to-post content.
                             </h2>
                         </div>
 
@@ -700,7 +700,7 @@ export default function CreateContent({
                         </div>
                         <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                             Source selection, limits, and expectation-setting before the handoff.
-                            The recording workspace handles the real content review.
+                            The workspace handles the real transcript and content review.
                         </div>
                     </div>
                 </div>

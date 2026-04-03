@@ -12,10 +12,9 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
                 <div className="grid gap-8 xl:grid-cols-[1.08fr_.92fr] xl:items-center">
                     <div>
                         <div className="app-badge mb-4">New source</div>
-                        <h1 className="app-heading">Turn one short source into content.</h1>
+                        <h1 className="app-heading">Turn one short source into ready-to-post content.</h1>
                         <p className="app-subheading mt-5 max-w-2xl">
-                            Upload a 1-minute video, audio clip, recording, or paste a sentence under
-                            200 characters, then jump straight into the recording workspace while VoicePost AI processes the run.
+                            Upload a 1-minute video, a 1-minute audio clip, or paste one short text idea. VoicePost AI takes you straight into the workspace while the transcript and outputs are prepared.
                         </p>
                         {usageLimits ? (
                             <div className="mt-4 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
@@ -30,10 +29,10 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
                             {[
-                                ['Summary', 'Fast overview for review and approvals.'],
-                                ['LinkedIn Post', 'Professional social copy from the same source.'],
-                                ['X Post', 'Short-form draft for quick posting.'],
-                                ['Workspace', 'Transcript plus content responses in one place.'],
+                                ['Summary', 'A clean overview of the source before deeper review.'],
+                                ['LinkedIn Post', 'A professional draft from the same source.'],
+                                ['X Post', 'A short publish-ready version for fast posting.'],
+                                ['Instagram + Newsletter', 'A caption and email-ready draft from the same run.'],
                             ].map(([title, description], index) => (
                                 <div key={title} className="profile-card">
                                     <div

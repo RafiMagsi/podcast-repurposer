@@ -10,11 +10,10 @@ export default function GuestLayout({ children }) {
                         <div className="app-panel overflow-hidden p-10">
                             <div className="app-badge mb-5">VoicePost AI</div>
                             <h1 className="app-heading max-w-lg">
-                                Turn 1-minute voice notes into content.
+                                Turn one short source into ready-to-post content.
                             </h1>
                             <p className="app-subheading mt-5 max-w-xl">
-                                Sign in to a lighter workspace for short recordings, transcripts,
-                                and reusable content outputs.
+                                Sign in to a lighter workspace for short video, audio, and text inputs, transcripts, and reusable content outputs.
                             </p>
 
                             <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -31,7 +30,7 @@ export default function GuestLayout({ children }) {
                                         Outputs
                                     </div>
                                     <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
-                                        Summary, Blog, LinkedIn, X
+                                        Summary, LinkedIn, X, Instagram, Newsletter
                                     </div>
                                 </div>
                             </div>

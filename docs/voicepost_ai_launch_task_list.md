@@ -63,7 +63,7 @@ Allow users to regenerate only one output type, such as LinkedIn post or newslet
 ### 14. Improve dashboard and workspace polish - done
 Refine layout consistency, output presentation, and workflow guidance so the app feels more premium and easier to trust.
 
-### 15. Prepare launch messaging
+### 15. Prepare launch messaging - done
 Align the product copy across landing page, dashboard, and create flow around one clear promise: turning a 1-minute idea into multi-platform content.
 
 ## Final Testing
@@ -233,7 +233,7 @@ Before going live, verify:
 - Improve mobile and tablet layout behavior.
 - Refine informative panels without adding clutter.
 
-### 15. Prepare launch messaging
+### 15. Prepare launch messaging - done
 - Define one product promise and use it everywhere.
 - Update landing page copy to match current scope.
 - Update dashboard and create page copy to match.

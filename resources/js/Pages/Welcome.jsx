@@ -2,8 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 
 const features = [
     {
-        title: 'Upload once',
-        description: 'Drop in a 1-minute voice note and let the workflow handle transcript and content generation.',
+        title: 'Start with one short source',
+        description: 'Use a 1-minute video, 1-minute audio clip, or one short text idea and let the workflow handle the rest.',
     },
     {
         title: 'Review clearly',
@@ -54,7 +54,7 @@ export default function Welcome({ auth }) {
                 <div className="mx-auto max-w-[1500px] p-3 sm:p-4">
                     <div className="overflow-hidden rounded-[36px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_30px_80px_rgba(17,24,39,0.08)]">
                         <div className="bg-[rgb(var(--color-surface-pink))] px-6 py-3 text-center text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                            VoicePost AI for fast voice-note-to-content workflows
+                            VoicePost AI for fast short-source-to-content workflows
                         </div>
 
                         <div className="relative">
@@ -94,11 +94,10 @@ export default function Welcome({ auth }) {
                                     <div className="text-center lg:text-left">
                                         <div className="app-badge mb-5">VoicePost AI</div>
                                         <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[0.98] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-6xl lg:mx-0 lg:text-7xl">
-                                            Turn 1-minute voice notes into content.
+                                            Turn one short source into ready-to-post content.
                                         </h1>
                                         <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[rgb(var(--color-text-muted))] lg:mx-0">
-                                            Upload a short voice note, generate the transcript, and turn it into reusable
-                                            written content from a lighter, cleaner workspace.
+                                            Upload a 1-minute video, a 1-minute audio clip, or paste one short text idea. VoicePost AI turns it into a transcript and five reusable content assets from one clean workspace.
                                         </p>
 
                                         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
@@ -190,12 +189,10 @@ export default function Welcome({ auth }) {
                                         <div className="app-card p-8">
                                             <div className="app-badge-neutral">What you get</div>
                                             <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
-                                                A voice-note workspace that feels focused, not bloated.
+                                                A short-source workspace that feels focused, not bloated.
                                             </h2>
                                             <p className="mt-4 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                                The screenshots point toward a product that is calm, structured,
-                                                and easy to scan. VoicePost AI now follows that direction with lighter
-                                                surfaces, dark readable text, clear states, and stronger page rhythm.
+                                                VoicePost AI is built around one promise: turn one short source into ready-to-post content. The experience stays calm, structured, and easy to scan while keeping the real workflow visible.
                                             </p>
 
                                             <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -221,9 +218,9 @@ export default function Welcome({ auth }) {
 
                                         <div className="space-y-4">
                                             {[
-                                                ['01', 'Upload your voice note', 'Add a recording and start a run in seconds.'],
-                                                ['02', 'Generate the transcript', 'Use the transcript as the source of truth for all downstream assets.'],
-                                                ['03', 'Review content assets', 'Open one workspace and copy what you need.'],
+                                                ['01', 'Add one short source', 'Upload a video, upload audio, or paste a short text idea.'],
+                                                ['02', 'Generate the transcript', 'Use the transcript as the source of truth for the writing pass.'],
+                                                ['03', 'Review five outputs', 'Copy the summary, LinkedIn post, X post, Instagram caption, and newsletter from one workspace.'],
                                             ].map(([step, title, description]) => (
                                                 <div key={step} className="app-card p-6">
                                                     <div className="flex items-start gap-4">

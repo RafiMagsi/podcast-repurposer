@@ -46,11 +46,10 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                     <div>
                         <div className="app-badge-neutral">VoicePost AI Studio</div>
                         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
-                            Create content from one short source.
+                            Turn one short source into ready-to-post content.
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                            Bring in a 1-minute video, audio clip, or one sentence under
-                            200 characters, submit the run, and jump straight into the recording workspace.
+                            Start with a 1-minute video, a 1-minute audio clip, or one short text idea. Submit the run here, then review the transcript and five outputs in the workspace.
                         </p>
                     </div>
 
