@@ -20,6 +20,8 @@ function statusClass(status) {
             return 'status-badge status-completed';
         case 'cancelled':
             return 'status-badge status-cancelled';
+        case 'partial':
+            return 'status-badge status-partial';
         case 'transcribing':
         case 'transcribed':
             return 'status-badge status-transcribing';
@@ -51,7 +53,7 @@ function sourceLabel(sourceType) {
         case 'audio':
             return 'Audio';
         default:
-            return 'Recording';
+            return 'Audio';
     }
 }
 
@@ -88,6 +90,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         const order = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
         return order.indexOf(a.content_type) - order.indexOf(b.content_type);
     });
+    const expectedOutputTypes = ['summary', 'linkedin_post', 'x_post', 'instagram_caption', 'newsletter'];
+    const missingOutputTypes = expectedOutputTypes.filter(
+        (contentType) => !orderedContentResponses.some((response) => response.content_type === contentType),
+    );
 
     const retryTranscription = () => {
         setRetrying(true);
@@ -153,7 +159,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     };
 
     const processingStatuses = ['uploaded', 'transcribing', 'transcribed', 'generating'];
-    const finalizedStatuses = ['completed', 'failed', 'cancelled'];
+    const finalizedStatuses = ['completed', 'partial', 'failed', 'cancelled'];
 
     const isProcessing = useMemo(() => {
         return processingStatuses.includes(liveContentRequest.status);
@@ -163,7 +169,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         return finalizedStatuses.includes(liveContentRequest.status);
     }, [liveContentRequest.status]);
 
-    const showRetryAction = canRetryTranscription && isFinalized;
+    const showRetryAction = canRetryTranscription && isFinalized && !liveContentRequest.transcript;
     const showRegenerateAction = isFinalized && Boolean(liveContentRequest.transcript);
 
     const liveStatusLabel = useMemo(() => {
@@ -205,6 +211,12 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 return 'VoicePost AI is writing the summary and final content outputs.';
             case 'completed':
                 return 'Content is ready.';
+            case 'partial':
+                if (missingOutputTypes.length > 0) {
+                    return `Part of the run succeeded, but ${missingOutputTypes.length} output ${missingOutputTypes.length === 1 ? 'is' : 'are'} still missing. Regenerate content to complete the set.`;
+                }
+
+                return 'Part of the run succeeded, but the content set is incomplete. Regenerate content to finish it.';
             case 'cancelled':
                 return 'Processing was cancelled. You can retry transcription or regenerate content when ready.';
             case 'failed':
@@ -216,7 +228,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             default:
                 return 'Status updated.';
         }
-    }, [liveContentRequest.compression_status, liveContentRequest.status]);
+    }, [liveContentRequest.compression_status, liveContentRequest.status, missingOutputTypes.length]);
 
     const cancelProcessing = () => {
         setCancelling(true);
@@ -342,7 +354,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                             {[
                                 ['Summary', liveContentRequest.summary ? 'Ready' : 'Pending'],
                                 ['Transcript', liveContentRequest.transcript ? 'Ready' : 'Pending'],
-                                ['Responses', `${orderedContentResponses.length} generated`],
+                                ['Responses', `${orderedContentResponses.length}/${liveContentRequest.expected_output_count || expectedOutputTypes.length} generated`],
                             ].map(([label, value]) => (
                                 <div
                                     key={label}
@@ -422,6 +434,20 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         </div>
                     )}
 
+                    {liveContentRequest.status === 'partial' ? (
+                        <div className="app-card bg-[rgb(var(--color-warning-bg))] p-6 text-[rgb(var(--color-warning-text))]">
+                            <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Partial completion</h2>
+                            <p className="mt-3 text-sm">
+                                The transcript is available, but this run did not finish every content output.
+                            </p>
+                            {missingOutputTypes.length > 0 ? (
+                                <p className="mt-2 text-sm">
+                                    Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}.
+                                </p>
+                            ) : null}
+                        </div>
+                    ) : null}
+
                     {isProcessing ? (
                         <div className="app-card bg-[rgb(var(--color-surface-soft))] p-6">
                             <h2 className="app-section-title">Content actions locked</h2>
@@ -474,7 +500,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     onClick={() => setShowRegenerateModal(true)}
                                     className="btn-primary w-full"
                                 >
-                                    Regenerate content
+                                    {liveContentRequest.status === 'partial' ? 'Complete missing outputs' : 'Regenerate content'}
                                 </button>
                             ) : null}
                             <button
@@ -561,6 +587,12 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                 ))}
                             </div>
                         )}
+
+                        {missingOutputTypes.length > 0 && !isProcessing ? (
+                            <div className="mt-5 rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+                                Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}. Use the regenerate action to finish the set.
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -590,9 +622,13 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 onConfirm={regenerateContent}
                 processing={regenerating}
                 variant="warning"
-                title="Regenerate content?"
-                message="This will keep the transcript, remove the current content responses, and create fresh outputs again."
-                confirmText="Regenerate Content"
+                title={liveContentRequest.status === 'partial' ? 'Complete missing outputs?' : 'Regenerate content?'}
+                message={
+                    liveContentRequest.status === 'partial'
+                        ? 'This will keep the transcript and try to complete the missing content outputs again.'
+                        : 'This will keep the transcript, remove the current content responses, and create fresh outputs again.'
+                }
+                confirmText={liveContentRequest.status === 'partial' ? 'Complete Missing Outputs' : 'Regenerate Content'}
             />
 
             <ActionConfirmationModal

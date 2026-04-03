@@ -516,6 +516,7 @@ class ContentRequestController extends Controller
             'summary' => $contentRequest->summary,
             'error_message' => $contentRequest->error_message,
             'failure_stage' => $contentRequest->failure_stage,
+            'expected_output_count' => count(ContentRequest::EXPECTED_OUTPUT_TYPES),
             'created_at' => optional($contentRequest->created_at)->toDateTimeString(),
             'input_type' => $contentRequest->input_type,
             'media_kind' => $contentRequest->media_kind,

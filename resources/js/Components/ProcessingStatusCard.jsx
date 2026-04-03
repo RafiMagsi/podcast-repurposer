@@ -6,6 +6,8 @@ function statusClass(status) {
             return 'status-badge status-completed';
         case 'cancelled':
             return 'status-badge status-cancelled';
+        case 'partial':
+            return 'status-badge status-partial';
         case 'transcribing':
         case 'transcribed':
             return 'status-badge status-transcribing';
@@ -150,6 +152,8 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                     ? 'border-blue-200 bg-blue-50'
                     : contentRequest.status === 'completed'
                     ? 'border-emerald-200 bg-emerald-50'
+                    : contentRequest.status === 'partial'
+                    ? 'border-amber-200 bg-amber-50'
                     : contentRequest.status === 'cancelled'
                     ? 'border-amber-200 bg-amber-50'
                     : contentRequest.status === 'failed'
@@ -168,6 +172,8 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                     </>
                 ) : contentRequest.status === 'completed' ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-200/30 blur-3xl" />
+                ) : contentRequest.status === 'partial' ? (
+                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-200/30 blur-3xl" />
                 ) : contentRequest.status === 'cancelled' ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-200/30 blur-3xl" />
                 ) : contentRequest.status === 'failed' ? (

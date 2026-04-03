@@ -9,6 +9,8 @@ function statusClass(status) {
             return 'status-badge status-completed';
         case 'cancelled':
             return 'status-badge status-cancelled';
+        case 'partial':
+            return 'status-badge status-partial';
         case 'transcribing':
         case 'transcribed':
             return 'status-badge status-transcribing';
@@ -30,7 +32,7 @@ function sourceLabel(sourceType) {
         case 'audio':
             return 'Audio';
         default:
-            return 'Recording';
+            return 'Audio';
     }
 }
 

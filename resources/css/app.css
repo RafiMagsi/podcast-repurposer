@@ -519,6 +519,11 @@
         color: rgb(180 83 9);
     }
 
+    .status-partial {
+        background: rgb(255 249 230);
+        color: rgb(164 106 18);
+    }
+
     .status-failed {
         background: rgb(var(--color-danger-bg));
         color: rgb(var(--color-danger-text));

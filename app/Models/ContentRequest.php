@@ -17,8 +17,17 @@ class ContentRequest extends Model
     public const STATUS_TRANSCRIBED = 'transcribed';
     public const STATUS_GENERATING = 'generating';
     public const STATUS_COMPLETED = 'completed';
+    public const STATUS_PARTIAL = 'partial';
     public const STATUS_FAILED = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
+
+    public const EXPECTED_OUTPUT_TYPES = [
+        'summary',
+        'linkedin_post',
+        'x_post',
+        'instagram_caption',
+        'newsletter',
+    ];
 
     protected $table = 'episodes';
 

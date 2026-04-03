@@ -35,7 +35,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
     const processingCount = contentRequests.filter((contentRequest) =>
         ['uploaded', 'transcribing', 'transcribed', 'generating'].includes(contentRequest.status),
     ).length;
-    const failedCount = contentRequests.filter((contentRequest) => contentRequest.status === 'failed').length;
+    const failedCount = contentRequests.filter((contentRequest) => ['failed', 'partial'].includes(contentRequest.status)).length;
     const activeContentRequest = contentRequests[0] || null;
 
     return (

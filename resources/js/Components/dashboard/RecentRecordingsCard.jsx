@@ -18,20 +18,22 @@ export default function RecentRecordingsCard({ contentRequests }) {
                 return 'Video';
             case 'text':
                 return 'Text note';
-            case 'audio':
-                return 'Audio';
-            default:
-                return 'Recording';
-        }
+        case 'audio':
+            return 'Audio';
+        default:
+            return 'Audio';
+    }
     }
 
     function statusClass(status) {
         switch (status) {
             case 'completed':
                 return 'status-badge status-completed';
-            case 'cancelled':
-                return 'status-badge status-cancelled';
-            case 'transcribing':
+        case 'cancelled':
+            return 'status-badge status-cancelled';
+        case 'partial':
+            return 'status-badge status-partial';
+        case 'transcribing':
             case 'transcribed':
                 return 'status-badge status-transcribing';
             case 'generating':

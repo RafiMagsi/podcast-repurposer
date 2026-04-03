@@ -201,7 +201,7 @@ Before going live, verify:
 - Verify Instagram caption includes body and 5 hashtags.
 - Verify newsletter includes subject and email-ready body.
 
-### 10. Improve partial-success states
+### 10. Improve partial-success states - done
 - Handle transcript success with generation failure.
 - Handle generation success with missing output types.
 - Show partial completion status clearly in UI.

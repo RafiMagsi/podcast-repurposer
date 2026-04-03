@@ -71,7 +71,7 @@ it('marks the content request failed when output generation throws', function ()
 
     $contentRequest->refresh();
 
-    expect($contentRequest->status)->toBe(ContentRequest::STATUS_FAILED);
+    expect($contentRequest->status)->toBe(ContentRequest::STATUS_PARTIAL);
     expect($contentRequest->error_message)->toBe('Content generation failed: Content generation failed.');
     expect($contentRequest->failure_stage)->toBe('generation');
 });

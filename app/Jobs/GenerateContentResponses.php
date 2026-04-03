@@ -86,35 +86,41 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
                 'newsletter_length' => strlen($outputs['newsletter'] ?? ''),
             ]);
 
-            ContentResponse::updateOrCreate(
-                ['episode_id' => $contentRequest->id, 'content_type' => 'summary'],
-                ['title' => 'Summary', 'body' => $outputs['summary'], 'meta' => null]
-            );
+            $outputTitles = [
+                'summary' => 'Summary',
+                'linkedin_post' => 'LinkedIn Post',
+                'x_post' => 'X Post',
+                'instagram_caption' => 'Instagram Caption',
+                'newsletter' => 'Newsletter',
+            ];
 
-            ContentResponse::updateOrCreate(
-                ['episode_id' => $contentRequest->id, 'content_type' => 'linkedin_post'],
-                ['title' => 'LinkedIn Post', 'body' => $outputs['linkedin_post'], 'meta' => null]
-            );
+            $savedOutputTypes = [];
 
-            ContentResponse::updateOrCreate(
-                ['episode_id' => $contentRequest->id, 'content_type' => 'x_post'],
-                ['title' => 'X Post', 'body' => $outputs['x_post'], 'meta' => null]
-            );
+            foreach (ContentRequest::EXPECTED_OUTPUT_TYPES as $contentType) {
+                $body = trim((string) ($outputs[$contentType] ?? ''));
 
-            ContentResponse::updateOrCreate(
-                ['episode_id' => $contentRequest->id, 'content_type' => 'instagram_caption'],
-                ['title' => 'Instagram Caption', 'body' => $outputs['instagram_caption'], 'meta' => null]
-            );
+                if ($body === '') {
+                    continue;
+                }
 
-            ContentResponse::updateOrCreate(
-                ['episode_id' => $contentRequest->id, 'content_type' => 'newsletter'],
-                ['title' => 'Newsletter', 'body' => $outputs['newsletter'], 'meta' => null]
-            );
+                ContentResponse::updateOrCreate(
+                    ['episode_id' => $contentRequest->id, 'content_type' => $contentType],
+                    ['title' => $outputTitles[$contentType], 'body' => $body, 'meta' => null]
+                );
+
+                $savedOutputTypes[] = $contentType;
+            }
+
+            $missingOutputTypes = array_values(array_diff(ContentRequest::EXPECTED_OUTPUT_TYPES, $savedOutputTypes));
+            $hasAllOutputs = $missingOutputTypes === [];
 
             $contentRequest->update([
                 'summary' => $outputs['summary'],
-                'status' => ContentRequest::STATUS_COMPLETED,
-                'failure_stage' => null,
+                'status' => $hasAllOutputs ? ContentRequest::STATUS_COMPLETED : ContentRequest::STATUS_PARTIAL,
+                'error_message' => $hasAllOutputs
+                    ? null
+                    : 'Content generation finished with missing outputs: ' . implode(', ', $missingOutputTypes) . '.',
+                'failure_stage' => $hasAllOutputs ? null : 'generation',
             ]);
         } catch (ProcessingCancelledException $e) {
             Log::info('GenerateContentResponses cancelled', [
@@ -141,11 +147,7 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
                 'message' => $e->getMessage(),
             ]);
 
-            $contentRequest->update([
-                'status' => ContentRequest::STATUS_FAILED,
-                'error_message' => $this->generationFailureMessage($e),
-                'failure_stage' => 'generation',
-            ]);
+            $contentRequest->update($this->generationFailureState($contentRequest, $e));
 
             throw $e;
         } finally {
@@ -172,11 +174,7 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
             return;
         }
 
-        $contentRequest->update([
-            'status' => ContentRequest::STATUS_FAILED,
-            'error_message' => $this->generationFailureMessage($e),
-            'failure_stage' => 'generation',
-        ]);
+        $contentRequest->update($this->generationFailureState($contentRequest, $e));
     }
 
     private function abortIfCancelled(ContentRequest $contentRequest): void
@@ -191,5 +189,19 @@ class GenerateContentResponses implements ShouldQueue, ShouldBeUnique
     private function generationFailureMessage(Throwable $e): string
     {
         return 'Content generation failed: ' . $e->getMessage();
+    }
+
+    private function generationFailureState(ContentRequest $contentRequest, Throwable $e): array
+    {
+        $hasTranscript = filled($contentRequest->transcript);
+        $hasExistingOutputs = $contentRequest->contentResponses()->exists() || filled($contentRequest->summary);
+
+        return [
+            'status' => ($hasTranscript || $hasExistingOutputs)
+                ? ContentRequest::STATUS_PARTIAL
+                : ContentRequest::STATUS_FAILED,
+            'error_message' => $this->generationFailureMessage($e),
+            'failure_stage' => 'generation',
+        ];
     }
 }

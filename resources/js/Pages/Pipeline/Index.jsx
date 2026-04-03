@@ -11,6 +11,8 @@ function statusClass(status) {
             return 'status-badge status-generating';
         case 'cancelled':
             return 'status-badge status-cancelled';
+        case 'partial':
+            return 'status-badge status-partial';
         case 'completed':
             return 'status-badge status-completed';
         case 'failed':
@@ -29,7 +31,7 @@ function sourceLabel(sourceType) {
         case 'audio':
             return 'Audio';
         default:
-            return 'Recording';
+            return 'Audio';
     }
 }
 
