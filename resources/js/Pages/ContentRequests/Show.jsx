@@ -329,300 +329,270 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         <AuthenticatedLayout
             user={auth?.user}
             header={
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,.88fr)] xl:items-start">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
-                        <div className="app-badge mb-4">Recording workspace</div>
-                        <h1 className="app-heading">{liveContentRequest.title}</h1>
-                        <p className="app-subheading mt-5 max-w-2xl">
-                            Review the source, transcript, and generated outputs from one workspace without losing track of the run state.
+                        <div className="app-badge mb-3">Recording workspace</div>
+                        <h1 className="text-[32px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[38px]">
+                            {liveContentRequest.title}
+                        </h1>
+                        <p className="mt-3 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            Review the source, transcript, and final content from one compact workspace.
                         </p>
-                        <div className="mt-6 flex flex-wrap items-center gap-3">
+                        <div className="mt-4 flex flex-wrap items-center gap-2.5">
                             <span className={statusClass(liveContentRequest.status)}>{liveContentRequest.status}</span>
-                            {isProcessing ? (
-                                <span className="app-badge-neutral">Auto updating</span>
-                            ) : null}
-                            {isProcessing ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCancelModal(true)}
-                                    className="btn-outline"
-                                >
-                                    Cancel Processing
-                                </button>
-                            ) : null}
-                            {showRetryAction ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowRetryModal(true)}
-                                    className="btn-secondary"
-                                >
-                                    Retry Transcription
-                                </button>
-                            ) : null}
-
-                            {showRegenerateAction ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowRegenerateModal(true)}
-                                    className="btn-primary"
-                                >
-                                    Regenerate Content
-                                </button>
-                            ) : null}
+                            {isProcessing ? <span className="app-badge-neutral">Auto updating</span> : null}
+                            <span className="app-badge-neutral">{sourceLabel(liveContentRequest.source_type)}</span>
                         </div>
                     </div>
 
-                    <div className="app-card-soft p-5 sm:p-6">
-                        <div className="tab-group">
-                            <div className="tab-item tab-item-active">Transcript</div>
-                            <div className="tab-item">AI Content</div>
-                            <div className="tab-item">Magic Chat</div>
-                        </div>
-
-                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                            {[
-                                ['Summary', liveContentRequest.summary ? 'Ready' : 'Pending'],
-                                ['Transcript', liveContentRequest.transcript ? 'Ready' : 'Pending'],
-                                ['Responses', `${orderedContentResponses.length}/${liveContentRequest.expected_output_count || expectedOutputTypes.length} generated`],
-                            ].map(([label, value]) => (
-                                <div
-                                    key={label}
-                                    className="rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-4"
-                                >
-                                    <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
-                                        {label}
-                                    </div>
-                                    <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                                        {value}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                    <div className="grid w-full gap-2 sm:grid-cols-2 xl:w-auto xl:min-w-[460px] xl:grid-cols-2">
+                        {isProcessing ? (
+                            <button type="button" onClick={() => setShowCancelModal(true)} className="btn-outline w-full">
+                                Cancel Processing
+                            </button>
+                        ) : null}
+                        {showRetryAction ? (
+                            <button type="button" onClick={() => setShowRetryModal(true)} className="btn-secondary w-full">
+                                Retry Transcription
+                            </button>
+                        ) : null}
+                        {showRegenerateAction ? (
+                            <button type="button" onClick={() => setShowRegenerateModal(true)} className="btn-primary w-full">
+                                {liveContentRequest.status === 'partial' ? 'Complete Missing Outputs' : 'Regenerate Content'}
+                            </button>
+                        ) : null}
+                        <button type="button" onClick={() => setShowDeleteModal(true)} className="btn-danger w-full">
+                            Delete Recording
+                        </button>
                     </div>
                 </div>
             }
         >
             <Head title={liveContentRequest.title} />
 
-            {flash?.success && (
-                <div className="app-card bg-[rgb(var(--color-success-bg))] p-4 text-sm text-[rgb(var(--color-success-text))]">
-                    {flash.success}
-                </div>
-            )}
+            <div className="space-y-4 sm:space-y-5 xl:space-y-6">
+                {flash?.success && (
+                    <div className="app-card bg-[rgb(var(--color-success-bg))] p-4 text-sm text-[rgb(var(--color-success-text))]">
+                        {flash.success}
+                    </div>
+                )}
 
-            <ProcessingStatusCard
-                contentRequest={liveContentRequest}
-                isProcessing={isProcessing}
-                liveStatusLabel={liveStatusLabel}
-            />
-
-            {errors?.contentRequest && (
-                <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-sm text-[rgb(var(--color-danger-text))]">
-                    {errors.contentRequest}
-                </div>
-            )}
-
-            <div className="grid gap-6 2xl:grid-cols-[minmax(300px,.8fr)_minmax(0,1.2fr)]">
-                <div className="space-y-6">
-                    <div className="app-card p-6">
-                        <h2 className="app-section-title">Recording details</h2>
-                        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                            {details.map(([label, value]) => (
-                                <div
-                                    key={label}
-                                    className="dashboard-note"
-                                >
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                        {label}
-                                    </div>
-                                    <div className="mt-2 break-all text-sm leading-6 text-[rgb(var(--color-text-strong))]">
-                                        {value}
-                                    </div>
+                <div className="app-card-compact p-4 sm:p-5">
+                    <div className="compact-grid-2 xl:grid-cols-4">
+                        {[
+                            ['Run state', formatContentType(liveContentRequest.status)],
+                            ['Transcript', liveContentRequest.transcript ? 'Ready' : isProcessing ? 'In progress' : 'Pending'],
+                            ['Outputs', `${orderedContentResponses.length}/${liveContentRequest.expected_output_count || expectedOutputTypes.length} ready`],
+                            ['Source', sourceLabel(liveContentRequest.source_type)],
+                        ].map(([label, value]) => (
+                            <div key={label} className="app-card-muted p-3.5">
+                                <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
+                                    {label}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {liveContentRequest.compression_error && (
-                        <div className="app-card bg-[rgb(var(--color-warning-bg))] p-6 text-[rgb(var(--color-warning-text))]">
-                            <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Compression issue</h2>
-                            <p className="mt-3 text-sm">{liveContentRequest.compression_error}</p>
-                        </div>
-                    )}
-
-                    {liveContentRequest.error_message && (
-                        <div className="app-card bg-[rgb(var(--color-danger-bg))] p-6 text-[rgb(var(--color-danger-text))]">
-                            <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">
-                                {liveContentRequest.failure_stage === 'transcription'
-                                    ? 'Transcription issue'
-                                    : liveContentRequest.failure_stage === 'generation'
-                                    ? 'Generation issue'
-                                    : 'Processing issue'}
-                            </h2>
-                            <p className="mt-3 text-sm">{liveContentRequest.error_message}</p>
-                        </div>
-                    )}
-
-                    {liveContentRequest.status === 'partial' ? (
-                        <div className="app-card bg-[rgb(var(--color-warning-bg))] p-6 text-[rgb(var(--color-warning-text))]">
-                            <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Partial completion</h2>
-                            <p className="mt-3 text-sm">
-                                The transcript is available, but this run did not finish every content output.
-                            </p>
-                            {missingOutputTypes.length > 0 ? (
-                                <p className="mt-2 text-sm">
-                                    Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}.
-                                </p>
-                            ) : null}
-                        </div>
-                    ) : null}
-
-                    {isProcessing ? (
-                        <div className="app-card bg-[rgb(var(--color-surface-soft))] p-6">
-                            <h2 className="app-section-title">Content actions locked</h2>
-                            <p className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                Retry transcription and regenerate content are only available after this run reaches a final state.
-                            </p>
-                        </div>
-                    ) : null}
-
-                    <div className="app-card p-6">
-                        <h2 className="app-section-title">Quick actions</h2>
-                        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                            <button
-                                type="button"
-                                onClick={() => copyToClipboard(liveContentRequest.transcript || '')}
-                                className="btn-outline w-full"
-                                disabled={!liveContentRequest.transcript}
-                            >
-                                Copy transcript
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => copyToClipboard(liveContentRequest.summary || '')}
-                                className="btn-outline w-full"
-                                disabled={!liveContentRequest.summary}
-                            >
-                                Copy summary
-                            </button>
-                            {showRetryAction ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowRetryModal(true)}
-                                    className="btn-secondary w-full"
-                                >
-                                    Retry transcription
-                                </button>
-                            ) : null}
-                            {isProcessing ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCancelModal(true)}
-                                    className="btn-outline w-full"
-                                >
-                                    Cancel processing
-                                </button>
-                            ) : null}
-                            {showRegenerateAction ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowRegenerateModal(true)}
-                                    className="btn-primary w-full"
-                                >
-                                    {liveContentRequest.status === 'partial' ? 'Complete missing outputs' : 'Regenerate content'}
-                                </button>
-                            ) : null}
-                            <button
-                                type="button"
-                                onClick={() => setShowDeleteModal(true)}
-                                className="btn-danger w-full sm:col-span-2 xl:col-span-1"
-                            >
-                                Delete Recording
-                            </button>
-                        </div>
+                                <div className="mt-1.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                    {value}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel} />
-                    
-                    <div className="app-card p-6">
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 className="app-section-title">Transcript</h2>
-                                <p className="app-muted mt-2">
-                                    The full text source used by the generation pipeline.
-                                </p>
-                            </div>
-                            {liveContentRequest.transcript ? (
-                                <button
-                                    type="button"
-                                    onClick={() => copyToClipboard(liveContentRequest.transcript)}
-                                    className="btn-copy"
-                                >
-                                    Copy
-                                </button>
-                            ) : null}
-                        </div>
-                        <div className="mt-5 max-h-[500px] overflow-y-auto rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
-                        </div>
-                    </div>
-                    
-                    <div className="app-card p-6">
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 className="app-section-title">Summary</h2>
-                                <p className="app-muted mt-2">
-                                    Condensed context before you review the full transcript.
-                                </p>
-                            </div>
-                            {liveContentRequest.summary ? (
-                                <button
-                                    type="button"
-                                    onClick={() => copyToClipboard(liveContentRequest.summary)}
-                                    className="btn-copy"
-                                >
-                                    Copy
-                                </button>
-                            ) : null}
-                        </div>
-                        <div className="mt-5 rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 text-sm leading-7 text-[rgb(var(--color-text))]">
-                            {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
-                        </div>
-                    </div>
+                <ProcessingStatusCard
+                    contentRequest={liveContentRequest}
+                    isProcessing={isProcessing}
+                    liveStatusLabel={liveStatusLabel}
+                />
 
-                    <div className="app-card p-6">
-                        <div>
-                            <h2 className="app-section-title">Content responses</h2>
-                            <p className="app-muted mt-2">
-                                AI-generated assets created from the transcript and recording tone.
-                            </p>
-                        </div>
+                {errors?.contentRequest && (
+                    <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-sm text-[rgb(var(--color-danger-text))]">
+                        {errors.contentRequest}
+                    </div>
+                )}
 
-                        {orderedContentResponses.length === 0 ? (
-                            <div className="mt-5 text-sm text-slate-400">
-                                {isProcessing ? 'Content responses will appear here automatically once ready.' : 'No content responses yet.'}
+                <div className="grid gap-4 2xl:grid-cols-[300px_minmax(0,1fr)] 2xl:gap-6">
+                    <div className="space-y-4">
+                        <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel} />
+
+                        <div className="app-card-compact p-4">
+                            <div className="section-header-compact">
+                                <div className="section-header-copy">
+                                    <h2 className="app-section-title">Recording details</h2>
+                                </div>
                             </div>
-                        ) : (
-                            <div className="mt-5 grid gap-5">
-                                {orderedContentResponses.map((contentResponse) => (
-                                    <ContentResponseCard
-                                        key={contentResponse.id}
-                                        contentResponse={contentResponse}
-                                        onCopy={copyToClipboard}
-                                        onRegenerate={regenerateSingleOutput}
-                                        fallbackLabel={formatContentType(contentResponse.content_type)}
-                                    />
+                            <div className="space-y-2.5">
+                                {details.map(([label, value]) => (
+                                    <div key={label} className="note-card">
+                                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                            {label}
+                                        </div>
+                                        <div className="mt-1.5 break-all text-sm leading-6 text-[rgb(var(--color-text-strong))]">
+                                            {value}
+                                        </div>
+                                    </div>
                                 ))}
+                            </div>
+                        </div>
+
+                        <div className="app-card-compact p-4">
+                            <div className="section-header-compact">
+                                <div className="section-header-copy">
+                                    <h2 className="app-section-title">Quick actions</h2>
+                                </div>
+                            </div>
+                            <div className="space-y-2.5">
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(liveContentRequest.transcript || '')}
+                                    className="btn-outline w-full"
+                                    disabled={!liveContentRequest.transcript}
+                                >
+                                    Copy transcript
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(liveContentRequest.summary || '')}
+                                    className="btn-outline w-full"
+                                    disabled={!liveContentRequest.summary}
+                                >
+                                    Copy summary
+                                </button>
+                                {showRetryAction ? (
+                                    <button type="button" onClick={() => setShowRetryModal(true)} className="btn-secondary w-full">
+                                        Retry transcription
+                                    </button>
+                                ) : null}
+                                {isProcessing ? (
+                                    <button type="button" onClick={() => setShowCancelModal(true)} className="btn-outline w-full">
+                                        Cancel processing
+                                    </button>
+                                ) : null}
+                                {showRegenerateAction ? (
+                                    <button type="button" onClick={() => setShowRegenerateModal(true)} className="btn-primary w-full">
+                                        {liveContentRequest.status === 'partial' ? 'Complete missing outputs' : 'Regenerate content'}
+                                    </button>
+                                ) : null}
+                            </div>
+                        </div>
+
+                        {liveContentRequest.compression_error && (
+                            <div className="app-card bg-[rgb(var(--color-warning-bg))] p-4 text-[rgb(var(--color-warning-text))]">
+                                <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Compression issue</h2>
+                                <p className="mt-2 text-sm">{liveContentRequest.compression_error}</p>
                             </div>
                         )}
 
-                        {missingOutputTypes.length > 0 && !isProcessing ? (
-                            <div className="mt-5 rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
-                                Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}. Use the regenerate action to finish the set.
+                        {liveContentRequest.error_message && (
+                            <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-[rgb(var(--color-danger-text))]">
+                                <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">
+                                    {liveContentRequest.failure_stage === 'transcription'
+                                        ? 'Transcription issue'
+                                        : liveContentRequest.failure_stage === 'generation'
+                                        ? 'Generation issue'
+                                        : 'Processing issue'}
+                                </h2>
+                                <p className="mt-2 text-sm">{liveContentRequest.error_message}</p>
+                            </div>
+                        )}
+
+                        {liveContentRequest.status === 'partial' ? (
+                            <div className="app-card bg-[rgb(var(--color-warning-bg))] p-4 text-[rgb(var(--color-warning-text))]">
+                                <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Partial completion</h2>
+                                <p className="mt-2 text-sm">
+                                    The transcript is available, but this run did not finish every content output.
+                                </p>
+                                {missingOutputTypes.length > 0 ? (
+                                    <p className="mt-2 text-sm">
+                                        Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}.
+                                    </p>
+                                ) : null}
                             </div>
                         ) : null}
+
+                        {isProcessing ? (
+                            <div className="app-card bg-[rgb(var(--color-surface-soft))] p-4">
+                                <h2 className="app-section-title">Content actions locked</h2>
+                                <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    Retry transcription and regenerate content unlock after this run reaches a final state.
+                                </p>
+                            </div>
+                        ) : null}
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+                            <div className="app-card-compact p-4 sm:p-5">
+                                <div className="section-header-compact">
+                                    <div className="section-header-copy">
+                                        <h2 className="app-section-title">Transcript</h2>
+                                        <p className="app-muted mt-1 text-sm">
+                                            The source text used by the generation pipeline.
+                                        </p>
+                                    </div>
+                                    {liveContentRequest.transcript ? (
+                                        <button type="button" onClick={() => copyToClipboard(liveContentRequest.transcript)} className="btn-copy">
+                                            Copy
+                                        </button>
+                                    ) : null}
+                                </div>
+                                <div className="max-h-[560px] overflow-y-auto rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                    {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
+                                </div>
+                            </div>
+
+                            <div className="app-card-compact p-4 sm:p-5">
+                                <div className="section-header-compact">
+                                    <div className="section-header-copy">
+                                        <h2 className="app-section-title">Summary</h2>
+                                        <p className="app-muted mt-1 text-sm">
+                                            Condensed context before reviewing the full run.
+                                        </p>
+                                    </div>
+                                    {liveContentRequest.summary ? (
+                                        <button type="button" onClick={() => copyToClipboard(liveContentRequest.summary)} className="btn-copy">
+                                            Copy
+                                        </button>
+                                    ) : null}
+                                </div>
+                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                    {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="app-card-compact p-4 sm:p-5">
+                            <div className="section-header-compact">
+                                <div className="section-header-copy">
+                                    <h2 className="app-section-title">Content responses</h2>
+                                    <p className="app-muted mt-1 text-sm">
+                                        AI-generated assets created from the transcript and selected tone.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {orderedContentResponses.length === 0 ? (
+                                <div className="rounded-[14px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm text-slate-400">
+                                    {isProcessing ? 'Content responses will appear here automatically once ready.' : 'No content responses yet.'}
+                                </div>
+                            ) : (
+                                <div className="grid gap-4">
+                                    {orderedContentResponses.map((contentResponse) => (
+                                        <ContentResponseCard
+                                            key={contentResponse.id}
+                                            contentResponse={contentResponse}
+                                            onCopy={copyToClipboard}
+                                            onRegenerate={regenerateSingleOutput}
+                                            fallbackLabel={formatContentType(contentResponse.content_type)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            {missingOutputTypes.length > 0 && !isProcessing ? (
+                                <div className="mt-4 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
+                                    Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}. Use the regenerate action to finish the set.
+                                </div>
+                            ) : null}
+                        </div>
                     </div>
                 </div>
             </div>

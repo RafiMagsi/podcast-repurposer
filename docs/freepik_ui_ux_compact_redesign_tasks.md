@@ -77,7 +77,7 @@ Turn one short source into ready-to-post content.
 
 ## Phase 4: Workspace Redesign
 
-### 10. Rebuild show page into a clearer workspace
+### 10. Rebuild show page into a clearer workspace - done
 - Use a narrower details rail and a stronger main content canvas.
 - Reduce header clutter.
 - Keep one top status strip for run state, transcript, and outputs.
