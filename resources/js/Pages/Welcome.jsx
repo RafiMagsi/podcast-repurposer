@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 import AppCard from '@/Components/ui/AppCard';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 
@@ -48,6 +49,8 @@ const usageAndLimits = [
     ['Plan Model', '$10 plan with 100 runs by default, adjustable per user'],
 ];
 
+const welcomeTabs = ['Transcript', 'AI Content', 'Magic Chat'];
+
 function NavLink({ href, children, primary = false }) {
     return primary ? (
         <Link href={href} className="btn-primary">
@@ -71,6 +74,8 @@ function FeatureCard({ title, description }) {
 }
 
 export default function Welcome({ auth }) {
+    const [activePreviewTab, setActivePreviewTab] = useState('Transcript');
+
     return (
         <>
             <Head title="VoicePost AI" />
@@ -179,13 +184,15 @@ export default function Welcome({ auth }) {
                                                 </div>
 
                                                 <div className="mt-4 flex flex-wrap gap-2">
-                                                    {['Transcript', 'AI Content', 'Magic Chat'].map((tab, index) => (
-                                                        <div
+                                                    {welcomeTabs.map((tab) => (
+                                                        <button
                                                             key={tab}
-                                                            className={index === 0 ? 'filter-pill filter-pill-active' : 'filter-pill'}
+                                                            type="button"
+                                                            onClick={() => setActivePreviewTab(tab)}
+                                                            className={activePreviewTab === tab ? 'filter-pill filter-pill-active' : 'filter-pill'}
                                                         >
                                                             {tab}
-                                                        </div>
+                                                        </button>
                                                     ))}
                                                 </div>
 
@@ -212,35 +219,114 @@ export default function Welcome({ auth }) {
                                                     </div>
 
                                                     <div className="space-y-4">
-                                                        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
-                                                            <div className="section-header-compact">
-                                                                <div className="section-header-copy">
-                                                                    <h3 className="app-section-title">Transcript</h3>
-                                                                    <p className="app-muted mt-1 text-sm">Source text used for the writing pass.</p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="mt-3 rounded-[14px] border border-[rgb(var(--color-border))] bg-white p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
-                                                                No extra tools, just one short source turned into a transcript and ready-to-post content.
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
-                                                            <div className="section-header-compact">
-                                                                <div className="section-header-copy">
-                                                                    <h3 className="app-section-title">Output stack</h3>
-                                                                    <p className="app-muted mt-1 text-sm">Five reusable assets from one source.</p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                                                                {outputs.map((item) => (
-                                                                    <div key={item} className="note-card">
-                                                                        <span className="text-sm font-medium text-[rgb(var(--color-text))]">
-                                                                            {item}
-                                                                        </span>
+                                                        {activePreviewTab === 'Transcript' ? (
+                                                            <>
+                                                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                                    <div className="section-header-compact">
+                                                                        <div className="section-header-copy">
+                                                                            <h3 className="app-section-title">Transcript</h3>
+                                                                            <p className="app-muted mt-1 text-sm">Source text used for the writing pass.</p>
+                                                                        </div>
                                                                     </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
+                                                                    <div className="mt-3 rounded-[14px] border border-[rgb(var(--color-border))] bg-white p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                                                        No extra tools, just one short source turned into a transcript and ready-to-post content.
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                                    <div className="section-header-compact">
+                                                                        <div className="section-header-copy">
+                                                                            <h3 className="app-section-title">Output stack</h3>
+                                                                            <p className="app-muted mt-1 text-sm">Five reusable assets from one source.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                                        {outputs.map((item) => (
+                                                                            <div key={item} className="note-card">
+                                                                                <span className="text-sm font-medium text-[rgb(var(--color-text))]">
+                                                                                    {item}
+                                                                                </span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : null}
+
+                                                        {activePreviewTab === 'AI Content' ? (
+                                                            <>
+                                                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                                    <div className="section-header-compact">
+                                                                        <div className="section-header-copy">
+                                                                            <h3 className="app-section-title">AI Content</h3>
+                                                                            <p className="app-muted mt-1 text-sm">Reusable post-ready assets generated from the source.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-3 grid gap-2">
+                                                                        {[
+                                                                            ['Summary', 'A clean condensed overview for fast review.'],
+                                                                            ['LinkedIn Post', 'A professional draft built from the same transcript.'],
+                                                                            ['X Post', 'A shorter publish-ready version for short-form posting.'],
+                                                                        ].map(([title, copy]) => (
+                                                                            <div key={title} className="rounded-[14px] border border-[rgb(var(--color-border))] bg-white p-4">
+                                                                                <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                                                <div className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{copy}</div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                                    <div className="section-header-compact">
+                                                                        <div className="section-header-copy">
+                                                                            <h3 className="app-section-title">Per-output control</h3>
+                                                                            <p className="app-muted mt-1 text-sm">Refresh one asset without replacing the rest of the run.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-3 flex flex-wrap gap-2">
+                                                                        {['Refresh one output', 'Copy content', 'Keep other outputs'].map((item) => (
+                                                                            <div key={item} className="pill-compact">{item}</div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : null}
+
+                                                        {activePreviewTab === 'Magic Chat' ? (
+                                                            <>
+                                                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                                    <div className="section-header-compact">
+                                                                        <div className="section-header-copy">
+                                                                            <h3 className="app-section-title">Magic Chat</h3>
+                                                                            <p className="app-muted mt-1 text-sm">Ask for rewrites, sharper hooks, shorter versions, and better CTAs.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-3 space-y-3">
+                                                                        <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                                                            Make the LinkedIn post sound more direct and founder-led.
+                                                                        </div>
+                                                                        <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-blue))] px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text))]">
+                                                                            Rewriting the post with a stronger hook, shorter opening, and clearer CTA based on the current transcript.
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                                    <div className="section-header-compact">
+                                                                        <div className="section-header-copy">
+                                                                            <h3 className="app-section-title">What it can do</h3>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                                        {['Rewrite tone', 'Shorten output', 'Improve CTA', 'Change angle'].map((item) => (
+                                                                            <div key={item} className="note-card">
+                                                                                <span className="text-sm font-medium text-[rgb(var(--color-text))]">{item}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : null}
                                                     </div>
                                                 </div>
                                             </div>

@@ -408,7 +408,7 @@ export default function CreateContent({
                 </div>
             ) : null}
 
-            <div className="grid gap-4 p-4 sm:gap-5 sm:p-5 2xl:grid-cols-[minmax(0,1.18fr)_340px] 2xl:items-start">
+            <div className="grid gap-4 p-4 sm:gap-5 sm:p-5 2xl:grid-cols-[minmax(0,1fr)_340px] 2xl:items-start">
                 <div className="space-y-4">
                     <AppCard variant="muted" padding="md">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
@@ -443,8 +443,7 @@ export default function CreateContent({
                         </div>
                     </AppCard>
 
-                    <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:items-start">
-                        <form onSubmit={submit} className="space-y-4">
+                    <form onSubmit={submit} className="space-y-4">
                             <AppCard variant="muted" padding="md">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     {sourceTypeMeta.eyebrow}
@@ -635,116 +634,121 @@ export default function CreateContent({
                                     </button>
                                 </div>
                             </div>
-                        </form>
+                    </form>
+                </div>
 
-                        <div className="grid gap-4 lg:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
-                            <AppCard variant="muted" padding="md">
-                                <div className="app-badge-neutral">New Source</div>
-                                <h3 className="mt-3 app-heading-md">
-                                    Start one short run from this workspace.
-                                </h3>
-                                <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    Choose video, audio, or text, then move straight into the recording workspace while transcript and output generation run in the background.
-                                </p>
+                <div className="grid gap-4 lg:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
+                    <AppCard variant="muted" padding="md">
+                        <div>
+                            <h1 className="mt-3 app-heading-md">Turn one short source into ready-to-post content.</h1>
+                            <p className="app-subheading mt-2 max-w-2xl">
+                                Upload a 1-minute video, a 1-minute audio clip, or paste one short text idea. VoicePost AI takes you straight into the workspace while the transcript and outputs are prepared.
+                            </p>
+                        </div>
+                        <div className="app-badge-neutral">New Source</div>
+                        <h3 className="mt-3 app-heading-md">
+                            Start one short run from this workspace.
+                        </h3>
+                        <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            Choose video, audio, or text, then move straight into the recording workspace while transcript and output generation run in the background.
+                        </p>
 
-                                {usageLimits ? (
-                                    <div className={`mt-4 rounded-[14px] border px-4 py-3 ${
-                                        usageLimitReached
-                                            ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
-                                            : 'border-[rgb(var(--color-border))] bg-white'
-                                    }`}>
-                                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                            Usage Remaining
-                                        </div>
-                                        <div className="mt-1.5 text-base font-semibold text-[rgb(var(--color-text-strong))]">
-                                            {usageLimits.remaining} of {usageLimits.limit} runs left
-                                        </div>
-                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                            ${usageLimits.plan_price_usd} plan. Every new request uses one run.
-                                        </div>
-                                        <div className="mt-3 usage-bar-track">
-                                            <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
-                                        </div>
-                                        <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                            {usageLimits.used} used
-                                        </div>
-                                        {usageLimitReached ? (
-                                            <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                                The current quota is exhausted. New processing is blocked until the limit is increased.
-                                            </div>
-                                        ) : null}
+                        {usageLimits ? (
+                            <div className={`mt-4 rounded-[14px] border px-4 py-3 ${
+                                usageLimitReached
+                                    ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
+                                    : 'border-[rgb(var(--color-border))] bg-white'
+                            }`}>
+                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                    Usage Remaining
+                                </div>
+                                <div className="mt-1.5 text-base font-semibold text-[rgb(var(--color-text-strong))]">
+                                    {usageLimits.remaining} of {usageLimits.limit} runs left
+                                </div>
+                                <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    ${usageLimits.plan_price_usd} plan. Every new request uses one run.
+                                </div>
+                                <div className="mt-3 usage-bar-track">
+                                    <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
+                                </div>
+                                <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                    {usageLimits.used} used
+                                </div>
+                                {usageLimitReached ? (
+                                    <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                        The current quota is exhausted. New processing is blocked until the limit is increased.
                                     </div>
                                 ) : null}
-                            </AppCard>
-
-                            <AppCard variant="muted" padding="md">
-                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                    Included Outputs
-                                </div>
-                                <div className="mt-3 space-y-2.5">
-                                    {outputPreviewCards.map(([title, description], index) => (
-                                        <div key={title} className="flex items-center gap-3 rounded-[12px] border border-[rgb(var(--color-border))] bg-white px-3 py-2.5">
-                                            <div className={`icon-compact ${
-                                                ['profile-icon-purple', 'profile-icon-blue', 'profile-icon-green', 'profile-icon-yellow', 'profile-icon-orange'][index]
-                                            } text-[rgb(var(--color-text-strong))]`}>
-                                                {index + 1}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
-                                                <div className="text-xs leading-5 text-[rgb(var(--color-text-muted))]">{description}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </AppCard>
-
-                            <AppCard variant="muted" padding="md" className="lg:col-span-2 2xl:col-span-1">
-                                <div className="app-badge-neutral">After You Submit</div>
-                                <h3 className="mt-3 app-heading-md">
-                                    You go straight to the recording workspace.
-                                </h3>
-                                <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    The real transcript, processing states, and content responses live on the recording page.
-                                </p>
-
-                                <div className="mt-4 space-y-2.5">
-                        {handoffSteps.map(([step, title, description], index) => (
-                            <div key={step} className="profile-card min-h-[unset] p-3.5">
-                                <div
-                                    className={`profile-icon ${
-                                        ['profile-icon-blue', 'profile-icon-purple', 'profile-icon-green'][index]
-                                    } text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
-                                >
-                                    {step}
-                                </div>
-                                <div>
-                                    <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                                        {title}
-                                    </div>
-                                    <div className="text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                        {description}
-                                    </div>
-                                </div>
                             </div>
-                        ))}
-                                </div>
-                                <div className="mt-4 rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    Source selection, limits, and expectation-setting happen here. The workspace handles the real review.
-                                </div>
-                            </AppCard>
+                        ) : null}
+                    </AppCard>
 
-                            <AppCard variant="muted" padding="md" className="lg:col-span-2 2xl:col-span-1">
-                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                    Limits
-                                </div>
-                                <div className="mt-3 space-y-2.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    <div className="note-card-muted">Video or audio: 1 minute</div>
-                                    <div className="note-card-muted">Text note: 200 characters</div>
-                                    <div className="note-card-muted">One run creates all five outputs in one workspace.</div>
-                                </div>
-                            </AppCard>
+                    <AppCard variant="muted" padding="md">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Included Outputs
                         </div>
-                    </div>
+                        <div className="mt-3 space-y-2.5">
+                            {outputPreviewCards.map(([title, description], index) => (
+                                <div key={title} className="flex items-center gap-3 rounded-[12px] border border-[rgb(var(--color-border))] bg-white px-3 py-2.5">
+                                    <div className={`icon-compact ${
+                                        ['profile-icon-purple', 'profile-icon-blue', 'profile-icon-green', 'profile-icon-yellow', 'profile-icon-orange'][index]
+                                    } text-[rgb(var(--color-text-strong))]`}>
+                                        {index + 1}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                        <div className="text-xs leading-5 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </AppCard>
+
+                    <AppCard variant="muted" padding="md" className="lg:col-span-2 2xl:col-span-1">
+                        <div className="app-badge-neutral">After You Submit</div>
+                        <h3 className="mt-3 app-heading-md">
+                            You go straight to the recording workspace.
+                        </h3>
+                        <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            The real transcript, processing states, and content responses live on the recording page.
+                        </p>
+
+                        <div className="mt-4 space-y-2.5">
+                            {handoffSteps.map(([step, title, description], index) => (
+                                <div key={step} className="profile-card min-h-[unset] p-3.5">
+                                    <div
+                                        className={`profile-icon ${
+                                            ['profile-icon-blue', 'profile-icon-purple', 'profile-icon-green'][index]
+                                        } text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
+                                    >
+                                        {step}
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                            {title}
+                                        </div>
+                                        <div className="text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                            {description}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            Source selection, limits, and expectation-setting happen here. The workspace handles the real review.
+                        </div>
+                    </AppCard>
+
+                    <AppCard variant="muted" padding="md" className="lg:col-span-2 2xl:col-span-1">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                            Limits
+                        </div>
+                        <div className="mt-3 space-y-2.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            <div className="note-card-muted">Video or audio: 1 minute</div>
+                            <div className="note-card-muted">Text note: 200 characters</div>
+                            <div className="note-card-muted">One run creates all five outputs in one workspace.</div>
+                        </div>
+                    </AppCard>
                 </div>
             </div>
         </AppCard>
