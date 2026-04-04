@@ -58,7 +58,7 @@ Turn one short source into ready-to-post content.
 
 ## Phase 3: Create Workflow Redesign
 
-### 7. Shift create page into tool-panel layout
+### 7. Shift create page into tool-panel layout - done
 - Use a compact left-side creation panel.
 - Use a right-side support panel for outputs and workflow guidance.
 - Reduce vertical scroll before submit.

@@ -16,7 +16,7 @@ export default function UploadSourcePanel({
         : 'Supported formats: MP3, WAV, M4A, WebM. Keep audio uploads under 25 MB and within 1 minute.';
 
     return (
-        <div className="mt-5 rounded-[24px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-5">
+        <div className="rounded-[16px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-4">
             <label className="label-theme">{label}</label>
 
             <input
@@ -26,12 +26,12 @@ export default function UploadSourcePanel({
                 className="block w-full text-sm text-[rgb(var(--color-text-muted))] file:mr-4 file:rounded-full file:border-0 file:bg-[rgb(var(--color-primary))] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[rgb(var(--color-primary-hover))]"
             />
 
-            <div className="mt-4 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+            <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                 {helpText}
             </div>
 
             {selectedFile ? (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-3">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 py-3">
                     <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                             {selectedFile.name}

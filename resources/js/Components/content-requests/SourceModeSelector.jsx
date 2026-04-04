@@ -7,15 +7,15 @@ export default function SourceModeSelector({ sourceType, value, onChange }) {
     const recordLabel = sourceType === 'video' ? 'Record Video' : 'Record Audio';
 
     const baseClass =
-        'rounded-[18px] border px-4 py-3 text-sm font-medium transition';
+        'rounded-[14px] border px-4 py-2.5 text-sm font-medium transition';
     const activeClass =
         'border-[rgb(var(--color-primary))] bg-[rgb(var(--color-primary-soft))] text-[rgb(var(--color-primary))]';
     const inactiveClass =
         'border-[rgb(var(--color-border))] bg-white text-[rgb(var(--color-text-muted))] hover:border-[rgb(var(--color-border-strong))]';
 
     return (
-        <div className="mt-5">
-            <div className="mb-3 text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+        <div className="mt-4">
+            <div className="mb-2.5 text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                 Input Method
             </div>
 

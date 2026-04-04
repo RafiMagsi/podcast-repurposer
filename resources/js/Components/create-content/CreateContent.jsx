@@ -43,6 +43,14 @@ const handoffSteps = [
     ['3', 'Review five outputs', 'Summary, LinkedIn post, X post, Instagram caption, and newsletter are reviewed where the actual data exists.'],
 ];
 
+const outputPreviewCards = [
+    ['Summary', 'Clean overview'],
+    ['LinkedIn', 'Professional draft'],
+    ['X Post', 'Short-form version'],
+    ['Instagram', 'Caption + hashtags'],
+    ['Newsletter', 'Subject + body'],
+];
+
 export default function CreateContent({
     tones = [],
     uploadLimits = null,
@@ -379,51 +387,51 @@ export default function CreateContent({
     };
 
     return (
-        <div className={`app-card overflow-hidden ${className}`}>
+        <div className={`app-card-compact overflow-hidden ${className}`}>
             {showCardHeader ? (
-                <div className="border-b border-[rgb(var(--color-border))] px-6 py-5">
+                <div className="border-b border-[rgb(var(--color-border))] px-5 py-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                             <div className="app-badge-neutral">Create Content</div>
-                            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                            <h2 className="mt-2.5 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
                                 Turn one short source into ready-to-post content.
                             </h2>
                         </div>
 
-                        <div className="tab-group">
-                            <div className="tab-item tab-item-active">Create</div>
-                            <div className="tab-item">Recurring prompts</div>
+                        <div className="tab-group-compact">
+                            <div className="tab-item-compact tab-item-compact-active">Create</div>
+                            <div className="tab-item-compact">Outputs</div>
                         </div>
                     </div>
                 </div>
             ) : null}
 
-            <div className="grid gap-8 p-6 2xl:grid-cols-[minmax(0,1.22fr)_360px]">
-                <div>
-                    <div>
+            <div className="grid gap-5 p-4 sm:p-5 xl:grid-cols-[minmax(0,1.08fr)_320px] xl:items-start 2xl:grid-cols-[minmax(0,1.18fr)_340px]">
+                <div className="space-y-4">
+                    <div className="app-card-muted p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Choose your source type
                         </div>
-                        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                         {sourceOptions.map((option) => (
                             <button
                                 key={option.value}
                                 type="button"
                                 onClick={() => handleSourceTypeChange(option.value)}
-                                className={`profile-card min-h-[unset] px-5 py-5 text-left ${data.source_type === option.value ? 'profile-card-active' : ''}`}
+                                className={`profile-card min-h-[unset] px-3.5 py-3.5 text-left ${data.source_type === option.value ? 'profile-card-active' : ''}`}
                             >
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-3">
                                     <div
-                                        className={`profile-icon ${option.iconClass} mt-0.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
+                                        className={`profile-icon ${option.iconClass} mt-0.5 h-8 w-8 text-sm font-semibold text-[rgb(var(--color-text-strong))]`}
                                     >
                                         {option.icon}
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <div className="text-[18px] font-semibold leading-8 text-[rgb(var(--color-text-strong))]">
+                                        <div className="text-[15px] font-semibold leading-6 text-[rgb(var(--color-text-strong))]">
                                             {option.title}
                                         </div>
-                                        <div className="mt-1 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                                        <div className="mt-0.5 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
                                             {option.description}
                                         </div>
                                     </div>
@@ -433,85 +441,107 @@ export default function CreateContent({
                         </div>
                     </div>
 
-                    <SourceModeSelector
-                        sourceType={data.source_type}
-                        value={data.source_mode}
-                        onChange={(mode) => {
-                            setData('source_mode', mode);
-                            setData('source_file', null);
-                            clearErrors('source_file');
-                        }}
-                    />
+                    <form onSubmit={submit} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start">
+                        <div className="space-y-4">
+                            <div className="app-card-muted p-4">
+                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                    {sourceTypeMeta.eyebrow}
+                                </div>
+                                <div className="mt-1.5 text-base font-semibold text-[rgb(var(--color-text-strong))]">
+                                    {sourceTypeMeta.title}
+                                </div>
+                                <div className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    {sourceTypeMeta.detail}
+                                </div>
 
-                    <form onSubmit={submit} className="mt-6 space-y-5">
-                        <div className="rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
-                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                {sourceTypeMeta.eyebrow}
+                                <SourceModeSelector
+                                    sourceType={data.source_type}
+                                    value={data.source_mode}
+                                    onChange={(mode) => {
+                                        setData('source_mode', mode);
+                                        setData('source_file', null);
+                                        clearErrors('source_file');
+                                    }}
+                                />
                             </div>
-                            <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
-                                {sourceTypeMeta.title}
-                            </div>
-                            <div className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                {sourceTypeMeta.detail}
-                            </div>
-                        </div>
 
-                        {usageLimits ? (
-                            <div className={`rounded-[20px] border px-5 py-4 ${
-                                usageLimitReached
-                                    ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
-                                    : 'border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))]'
-                            }`}>
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="app-card-muted p-4">
+                                <div className="grid gap-4 lg:grid-cols-2">
                                     <div>
-                                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                            Usage remaining
-                                        </div>
-                                        <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
-                                            {usageLimits.remaining} of {usageLimits.limit} runs left
-                                        </div>
-                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                            ${usageLimits.plan_price_usd} plan. Every new request uses one run.
-                                        </div>
+                                        <label className="label-theme">Recording title</label>
+                                        <input
+                                            type="text"
+                                            value={data.title}
+                                            onChange={(e) => {
+                                                setData('title', e.target.value);
+                                                clearErrors('title');
+                                                resetSuggestionState();
+                                            }}
+                                            className="input-theme"
+                                            placeholder={titlePlaceholder}
+                                        />
                                     </div>
-                                    <div className="min-w-[180px]">
-                                        <div className="usage-bar-track">
-                                            <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
-                                        </div>
-                                        <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                            {usageLimits.used} used
-                                        </div>
+
+                                    <div>
+                                        <label className="label-theme">Voice and tone</label>
+                                        <select
+                                            value={data.tone}
+                                            onChange={(e) => {
+                                                setData('tone', e.target.value);
+                                                resetSuggestionState();
+                                            }}
+                                            className="select-theme"
+                                        >
+                                            {toneOptions.map((tone) => (
+                                                <option key={tone.value} value={tone.value}>
+                                                    {tone.label}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
-                                {usageLimitReached ? (
-                                    <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                        The current quota is exhausted. New processing is blocked until the limit is increased.
-                                    </div>
-                                ) : null}
                             </div>
-                        ) : null}
 
-                        <div>
-                            <label className="label-theme">Recording title</label>
-                            <input
-                                type="text"
-                                value={data.title}
-                                onChange={(e) => {
-                                    setData('title', e.target.value);
-                                    clearErrors('title');
-                                    resetSuggestionState();
-                                }}
-                                className="input-theme"
-                                placeholder={titlePlaceholder}
-                            />
-                        </div>
+                            {usageLimits ? (
+                                <div className={`rounded-[14px] border px-4 py-3 ${
+                                    usageLimitReached
+                                        ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
+                                        : 'border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))]'
+                                }`}>
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                                Usage remaining
+                                            </div>
+                                            <div className="mt-1.5 text-base font-semibold text-[rgb(var(--color-text-strong))]">
+                                                {usageLimits.remaining} of {usageLimits.limit} runs left
+                                            </div>
+                                            <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                                ${usageLimits.plan_price_usd} plan. Every new request uses one run.
+                                            </div>
+                                        </div>
+                                        <div className="min-w-[160px]">
+                                            <div className="usage-bar-track">
+                                                <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
+                                            </div>
+                                            <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                                {usageLimits.used} used
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {usageLimitReached ? (
+                                        <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                            The current quota is exhausted. New processing is blocked until the limit is increased.
+                                        </div>
+                                    ) : null}
+                                </div>
+                            ) : null}
 
-                        <div className="grid gap-5">
                             {data.source_type === 'text' ? (
-                            <div className="mt-5">
+                            <div className="app-card-muted p-4">
                                 <label className="label-theme">Text Prompt</label>
                                 <div className="mb-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    Keep the note short and direct. One sentence or one tight thought works best.
+                                    Keep the note short and direct. One sentence works best.
                                 </div>
                                 <textarea
                                     value={data.source_text}
@@ -530,7 +560,7 @@ export default function CreateContent({
                                 </div>
                             </div>
                         ) : (
-                            <>
+                            <div className="space-y-4">
                                 {data.source_mode === 'upload' ? (
                                     <UploadSourcePanel
                                         sourceType={data.source_type}
@@ -563,30 +593,11 @@ export default function CreateContent({
                                         sourceText={data.source_text}
                                     />
                                 ) : null}
-                            </>
+                            </div>
                         )}
 
-                            <div>
-                                <label className="label-theme">Voice and tone</label>
-                                <select
-                                    value={data.tone}
-                                    onChange={(e) => {
-                                        setData('tone', e.target.value);
-                                        resetSuggestionState();
-                                    }}
-                                    className="select-theme"
-                                >
-                                    {toneOptions.map((tone) => (
-                                        <option key={tone.value} value={tone.value}>
-                                            {tone.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {showUploadProgress && data.source_type !== 'text' ? (
-                            <div className="mt-4 rounded-[18px] border border-[rgb(var(--color-border))] bg-white p-4">
+                            {showUploadProgress && data.source_type !== 'text' ? (
+                            <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-white p-4">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
                                         <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
@@ -620,8 +631,8 @@ export default function CreateContent({
                             </div>
                         ) : null}
 
-                        <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
-                            <p className="max-w-2xl pr-0 text-sm leading-7 text-[rgb(var(--color-text-muted))] 2xl:pr-8">
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <p className="max-w-2xl pr-0 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                 {isTextSource
                                     ? 'Text notes skip transcription and go straight into content generation.'
                                     : 'File uploads run through transcription first, then generate content outputs.'}
@@ -648,33 +659,52 @@ export default function CreateContent({
                                 </button>
                             </div>
                         </div>
-                    </form>
-                </div>
+                        </div>
+                        <div className="space-y-4 xl:sticky xl:top-24">
+                            <div className="app-card-muted p-4">
+                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                    Supported outputs
+                                </div>
+                                <div className="mt-3 space-y-2.5">
+                                    {outputPreviewCards.map(([title, description], index) => (
+                                        <div key={title} className="flex items-center gap-3 rounded-[12px] border border-[rgb(var(--color-border))] bg-white px-3 py-2.5">
+                                            <div className={`icon-compact ${
+                                                ['profile-icon-purple', 'profile-icon-blue', 'profile-icon-green', 'profile-icon-yellow', 'profile-icon-orange'][index]
+                                            } text-[rgb(var(--color-text-strong))]`}>
+                                                {index + 1}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                <div className="text-xs leading-5 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                <div className="mt-4 rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
-                    <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                        Limits
-                    </div>
-                    <div className="mt-3 space-y-3 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                        <p>Video or audio: 1 minute</p>
-                        <p>Text note: 200 characters</p>
-                        <p>Outputs: summary, LinkedIn post, X post, Instagram caption, and newsletter from one idea.</p>
-                    </div>
-                </div>
+                            <div className="app-card-muted p-4">
+                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                    Limits
+                                </div>
+                                <div className="mt-3 space-y-2.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    <div className="note-card-muted">Video or audio: 1 minute</div>
+                                    <div className="note-card-muted">Text note: 200 characters</div>
+                                    <div className="note-card-muted">One run creates all five outputs in one workspace.</div>
+                                </div>
+                            </div>
 
-                <div className="rounded-[28px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5 xl:sticky xl:top-24">
-                    <div className="app-badge-neutral">After You Submit</div>
-                    <h3 className="mt-4 text-xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
-                        You go straight to the recording workspace.
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                        The dashboard is only for starting the run. Once submitted, the real transcript,
-                        processing states, and content responses live on the recording page.
-                    </p>
+                            <div className="app-card-muted p-4">
+                                <div className="app-badge-neutral">After You Submit</div>
+                                <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                                    You go straight to the recording workspace.
+                                </h3>
+                                <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    The real transcript, processing states, and content responses live on the recording page.
+                                </p>
 
-                    <div className="mt-5 space-y-3">
+                                <div className="mt-4 space-y-2.5">
                         {handoffSteps.map(([step, title, description], index) => (
-                            <div key={step} className="profile-card">
+                            <div key={step} className="profile-card min-h-[unset] p-3.5">
                                 <div
                                     className={`profile-icon ${
                                         ['profile-icon-blue', 'profile-icon-purple', 'profile-icon-green'][index]
@@ -692,17 +722,13 @@ export default function CreateContent({
                                 </div>
                             </div>
                         ))}
-                    </div>
-
-                    <div className="mt-5 rounded-[20px] border border-[rgb(var(--color-border))] bg-white px-4 py-4">
-                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                            Best use of this space
+                                </div>
+                                <div className="mt-4 rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    Source selection, limits, and expectation-setting happen here. The workspace handles the real review.
+                                </div>
+                            </div>
                         </div>
-                        <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                            Source selection, limits, and expectation-setting before the handoff.
-                            The workspace handles the real transcript and content review.
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
