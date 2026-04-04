@@ -94,8 +94,11 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             </span>
                         </div>
                         {usageLimits?.reached ? (
-                            <div className="mt-3 rounded-[14px] border border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)] px-3 py-2 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
-                                Usage limit reached. New runs are blocked until the quota is increased.
+                            <div className="mt-3 rounded-[14px] border border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)] px-3 py-3 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
+                                <div>Usage limit reached. New runs are blocked until the quota is increased.</div>
+                                <a href={route('billing.page')} className="btn-danger mt-3 w-full justify-center">
+                                    Buy 100 Runs
+                                </a>
                             </div>
                         ) : null}
                     </AppCard>

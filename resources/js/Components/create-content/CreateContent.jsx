@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
 import AppCard from '@/Components/ui/AppCard';
 import SourceModeSelector from '@/Components/content-requests/SourceModeSelector';
@@ -290,6 +290,12 @@ export default function CreateContent({
 
     const submit = async (e) => {
         e.preventDefault();
+
+        if (usageLimitReached) {
+            openErrorModal('You need to buy a run pack before starting AI processing.', 'Payment required');
+            router.visit(route('billing.page'));
+            return;
+        }
 
         if (!isTextSource && data.source_file && !validateSourceFile(data.source_file)) {
             return;
@@ -625,7 +631,7 @@ export default function CreateContent({
                                         className="btn-primary min-w-[172px] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {usageLimitReached
-                                            ? 'Usage limit reached'
+                                            ? 'Choose A Plan'
                                             : processing
                                             ? isRedirectingToWorkspace
                                                 ? 'Opening workspace...'
@@ -666,7 +672,9 @@ export default function CreateContent({
                                     {usageLimits.remaining} of {usageLimits.limit} runs left
                                 </div>
                                 <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    ${usageLimits.plan_price_usd} plan. Every new request uses one run.
+                                    {usageLimits.plan_price_usd > 0
+                                        ? `$${usageLimits.plan_price_usd} plan active. Each new request uses one available run.`
+                                        : 'No active plan yet. Choose a plan before starting AI processing.'}
                                 </div>
                                 <div className="mt-3 usage-bar-track">
                                     <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
@@ -674,14 +682,17 @@ export default function CreateContent({
                                 <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
                                     {usageLimits.used} used
                                 </div>
-                                {usageLimitReached ? (
-                                    <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                        The current quota is exhausted. New processing is blocked until the limit is increased.
+                                        {usageLimitReached ? (
+                                            <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                                No runs are available on this account yet. Choose a plan to continue.
+                                            </div>
+                                        ) : null}
+                                        <a href={route('billing.page')} className="btn-outline mt-4 w-full justify-center">
+                                            {usageLimitReached ? 'Choose A Plan' : 'Add More Runs'}
+                                        </a>
                                     </div>
                                 ) : null}
-                            </div>
-                        ) : null}
-                    </AppCard>
+                            </AppCard>
 
                     <AppCard variant="muted" padding="md">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">

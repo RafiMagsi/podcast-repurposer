@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ContentRequest::class);
     }
+
+    public function billingPurchases()
+    {
+        return $this->hasMany(BillingPurchase::class);
+    }
 }

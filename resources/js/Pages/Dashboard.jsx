@@ -112,6 +112,9 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                                 <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                     {usageLimits.used} used · {usageLimits.percent_used}% consumed
                                 </div>
+                                <a href={route('billing.page')} className="btn-outline mt-4 w-full justify-center">
+                                    Buy More Runs
+                                </a>
                             </AppCard>
                         ) : null}
 

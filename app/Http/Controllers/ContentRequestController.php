@@ -94,11 +94,7 @@ class ContentRequestController extends Controller
 
         if ($usageSummary['reached']) {
             return back()->withErrors([
-                'source_file' => sprintf(
-                    'You have reached your %d-run limit on the $%s plan. Upgrade or wait before starting a new run.',
-                    $usageSummary['limit'],
-                    rtrim(rtrim(number_format((float) $usageSummary['plan_price_usd'], 2, '.', ''), '0'), '.')
-                ),
+                'source_file' => 'No runs are currently available on this account. Choose a plan before starting AI processing.',
             ])->withInput();
         }
 

@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET_KEY'),
+        'publishable_key' => env('STRIPE_PUBLISHABLE_KEY'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'package_name' => env('STRIPE_PACKAGE_NAME', 'VoicePost AI Starter Pack'),
+        'package_runs' => (int) env('STRIPE_PACKAGE_RUNS', 100),
+        'package_price_usd' => (int) env('STRIPE_PACKAGE_PRICE_USD', 10),
+        'package_price_cents' => (int) env('STRIPE_PACKAGE_PRICE_CENTS', 1000),
+        'currency' => env('STRIPE_CURRENCY', 'usd'),
+    ],
+
 ];

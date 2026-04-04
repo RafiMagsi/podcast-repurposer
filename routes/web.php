@@ -5,6 +5,7 @@ use App\Http\Controllers\PipelineController;
 use App\Http\Controllers\AdminRunController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\ContentRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
@@ -34,12 +35,21 @@ Route::get('/pricing', function () {
     return Inertia::render('Pricing');
 })->name('pricing');
 
+Route::post('/billing/stripe/webhook', [BillingController::class, 'webhook'])
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->name('billing.stripe.webhook');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/billing/checkout', [BillingController::class, 'page'])->name('billing.page');
+    Route::get('/billing/start', [BillingController::class, 'start'])->name('billing.start');
+    Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+    Route::post('/billing/payment-intent', [BillingController::class, 'createPaymentIntent'])->name('billing.payment-intent');
+    Route::post('/billing/payment-intent/finalize', [BillingController::class, 'finalizePaymentIntent'])->name('billing.payment-intent.finalize');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
