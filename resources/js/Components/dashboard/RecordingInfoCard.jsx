@@ -27,7 +27,7 @@ export default function RecordingInfoCard() {
                     </div>
                 </div>
 
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[220px]">
+                <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-[320px] lg:grid-cols-1 xl:min-w-[220px]">
                     <a href={route('content-requests.create')} className="btn-primary inline-flex w-full justify-center whitespace-nowrap">
                         Create new run
                     </a>

@@ -42,7 +42,7 @@ export default function CurrentFocusCard({ activeContentRequest }) {
                 </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row xl:flex-col">
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
                 {activeContentRequest ? (
                     <a href={route('content-requests.show', activeContentRequest.public_id)} className="btn-primary w-full">
                         Open latest workspace

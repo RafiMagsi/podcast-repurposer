@@ -51,7 +51,7 @@ Turn one short source into ready-to-post content.
 - Make the current focus card denser and clearer.
 - Make the new-run entry card more action-oriented.
 
-### 6. Improve dashboard responsive behavior
+### 6. Improve dashboard responsive behavior - done
 - Tablet: collapse long side sections lower in the page.
 - Mobile: stack cards without oversized gaps.
 - Ensure CTA buttons stay aligned and readable on smaller widths.

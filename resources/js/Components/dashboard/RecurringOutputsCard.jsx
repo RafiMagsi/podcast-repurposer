@@ -14,7 +14,7 @@ export default function RecurringOutputsCard({ items }) {
                     </p>
                 </div>
 
-                <Link href={route('content-requests.index')} className="btn-compact">
+                <Link href={route('content-requests.index')} className="btn-compact w-full sm:w-auto">
                     View library
                 </Link>
             </div>

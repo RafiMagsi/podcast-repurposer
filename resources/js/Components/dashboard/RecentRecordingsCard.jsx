@@ -73,7 +73,7 @@ export default function RecentRecordingsCard({ contentRequests }) {
                     </p>
                 </div>
 
-                <a href={route('content-requests.index')} className="btn-compact">
+                <a href={route('content-requests.index')} className="btn-compact w-full sm:w-auto">
                     Open library
                 </a>
             </div>

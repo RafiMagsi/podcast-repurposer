@@ -42,7 +42,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                <div className="flex flex-col gap-4 lg:gap-5 xl:flex-row xl:items-end xl:justify-between">
                     <div className="max-w-3xl">
                         <div className="app-badge-neutral">VoicePost AI Studio</div>
                         <h1 className="mt-3 text-[34px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[40px]">
@@ -53,11 +53,11 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Link href={route('content-requests.create')} className="btn-primary-rect">
+                    <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2 xl:flex xl:w-auto xl:flex-wrap xl:items-center">
+                        <Link href={route('content-requests.create')} className="btn-primary-rect w-full sm:min-w-[170px]">
                             New recording
                         </Link>
-                        <Link href={route('content-requests.index')} className="btn-outline">
+                        <Link href={route('content-requests.index')} className="btn-outline w-full sm:min-w-[150px]">
                             Open library
                         </Link>
                     </div>
@@ -66,15 +66,15 @@ export default function Dashboard({ auth, contentRequests = [] }) {
         >
             <Head title="Dashboard" />
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-5 xl:space-y-6">
                 {flash?.success && (
                     <div className="app-card border-[rgb(var(--color-border))] bg-[rgb(var(--color-success-bg))] p-4 text-sm text-[rgb(var(--color-success-text))]">
                         {flash.success}
                     </div>
                 )}
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.48fr)_minmax(300px,.88fr)]">
-                    <div className="space-y-6">
+                <div className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.48fr)_minmax(300px,.88fr)] xl:gap-6">
+                    <div className="space-y-4 sm:space-y-5 xl:space-y-6">
                         <StatsCard
                             contentRequests={contentRequests}
                             completedCount={completedCount}
@@ -90,7 +90,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                         <RecurringOutputsCard items={outputCards} />
                     </div>
 
-                    <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+                    <div className="space-y-4 sm:space-y-5 xl:sticky xl:top-24 xl:self-start xl:space-y-6">
                         {usageLimits ? (
                             <div className="app-card-compact p-4">
                                 <div className="section-header-compact">
