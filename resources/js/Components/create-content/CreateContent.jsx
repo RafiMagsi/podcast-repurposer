@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
+import AppCard from '@/Components/ui/AppCard';
 import SourceModeSelector from '@/Components/content-requests/SourceModeSelector';
 import UploadSourcePanel from '@/Components/content-requests/UploadSourcePanel';
 import AudioRecorder from '@/Components/content-requests/AudioRecorder';
@@ -387,13 +388,14 @@ export default function CreateContent({
     };
 
     return (
-        <div className={`app-card-compact overflow-hidden ${className}`}>
+        <>
+        <AppCard variant="compact" padding="none" className={`overflow-hidden ${className}`}>
             {showCardHeader ? (
                 <div className="border-b border-[rgb(var(--color-border))] px-5 py-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                             <div className="app-badge-neutral">Create Content</div>
-                            <h2 className="mt-2.5 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                            <h2 className="mt-2 app-heading-md">
                                 Turn one short source into ready-to-post content.
                             </h2>
                         </div>
@@ -408,7 +410,7 @@ export default function CreateContent({
 
             <div className="grid gap-4 p-4 sm:gap-5 sm:p-5 2xl:grid-cols-[minmax(0,1.18fr)_340px] 2xl:items-start">
                 <div className="space-y-4">
-                    <div className="app-card-muted p-4">
+                    <AppCard variant="muted" padding="md">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Choose your source type
                         </div>
@@ -439,11 +441,11 @@ export default function CreateContent({
                             </button>
                         ))}
                         </div>
-                    </div>
+                    </AppCard>
 
                     <form onSubmit={submit} className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_260px] 2xl:items-start">
                         <div className="space-y-4">
-                            <div className="app-card-muted p-4">
+                            <AppCard variant="muted" padding="md">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     {sourceTypeMeta.eyebrow}
                                 </div>
@@ -463,9 +465,9 @@ export default function CreateContent({
                                         clearErrors('source_file');
                                     }}
                                 />
-                            </div>
+                            </AppCard>
 
-                            <div className="app-card-muted p-4">
+                            <AppCard variant="muted" padding="md">
                                 <div className="grid gap-4 lg:grid-cols-2">
                                     <div>
                                         <label className="label-theme">Recording title</label>
@@ -500,7 +502,7 @@ export default function CreateContent({
                                         </select>
                                     </div>
                                 </div>
-                            </div>
+                            </AppCard>
 
                             {usageLimits ? (
                                 <div className={`rounded-[14px] border px-4 py-3 ${
@@ -539,7 +541,7 @@ export default function CreateContent({
 
                             {data.source_type === 'text' ? (
                             <div className="space-y-3">
-                                <div className="app-card-muted p-4">
+                                <AppCard variant="muted" padding="md">
                                     <label className="label-theme">Text Prompt</label>
                                     <textarea
                                         value={data.source_text}
@@ -556,7 +558,7 @@ export default function CreateContent({
                                         <span>Used directly for suggestions and outputs.</span>
                                         <span>{textLength}/200</span>
                                     </div>
-                                </div>
+                                </AppCard>
 
                                 <div className="note-card-muted">
                                     Keep it short and direct. One sentence with one clear angle works best.
@@ -670,7 +672,7 @@ export default function CreateContent({
                         </div>
                         </div>
                         <div className="grid gap-4 md:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
-                            <div className="app-card-muted p-4">
+                            <AppCard variant="muted" padding="md">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     Supported outputs
                                 </div>
@@ -689,9 +691,9 @@ export default function CreateContent({
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </AppCard>
 
-                            <div className="app-card-muted p-4">
+                            <AppCard variant="muted" padding="md">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     Limits
                                 </div>
@@ -700,11 +702,11 @@ export default function CreateContent({
                                     <div className="note-card-muted">Text note: 200 characters</div>
                                     <div className="note-card-muted">One run creates all five outputs in one workspace.</div>
                                 </div>
-                            </div>
+                            </AppCard>
 
-                            <div className="app-card-muted p-4 md:col-span-2 2xl:col-span-1">
+                            <AppCard variant="muted" padding="md" className="md:col-span-2 2xl:col-span-1">
                                 <div className="app-badge-neutral">After You Submit</div>
-                                <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                                <h3 className="mt-3 app-heading-md">
                                     You go straight to the recording workspace.
                                 </h3>
                                 <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
@@ -735,12 +737,12 @@ export default function CreateContent({
                                 <div className="mt-4 rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                     Source selection, limits, and expectation-setting happen here. The workspace handles the real review.
                                 </div>
-                            </div>
+                            </AppCard>
                         </div>
                     </form>
                 </div>
             </div>
-
+        </AppCard>
             <Modal
                 show={showSuggestionsModal}
                 maxWidth="2xl"
@@ -866,6 +868,6 @@ export default function CreateContent({
                     </button>
                 </div>
             </Modal>
-        </div>
+        </>
     );
 }

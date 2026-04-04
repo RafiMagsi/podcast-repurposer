@@ -128,7 +128,7 @@ Turn one short source into ready-to-post content.
 - Make uniform Cards overall the project, make card component and reuse
 - Reduce border radius similar to FreePicks design
 
-### Pass 2
+### Pass 2 - done
 - Redesign dashboard.
 - Redesign create page and source entry panels.
 - Make whole project design compact

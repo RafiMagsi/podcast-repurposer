@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CreateContent from '@/Components/create-content/CreateContent';
+import AppCard from '@/Components/ui/AppCard';
 import { Head, usePage } from '@inertiajs/react';
 
 export default function ContentRequestsCreate({ auth, tones = [], uploadLimits = null }) {
@@ -11,9 +12,9 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
             header={
                 <div className="grid gap-4 lg:gap-5 2xl:grid-cols-[1.15fr_.85fr] 2xl:items-center">
                     <div>
-                        <div className="app-badge mb-3">New source</div>
-                        <h1 className="app-heading">Turn one short source into ready-to-post content.</h1>
-                        <p className="app-subheading mt-3 max-w-2xl">
+                        <div className="app-badge-neutral mb-3">New source</div>
+                        <h1 className="app-page-title">Turn one short source into ready-to-post content.</h1>
+                        <p className="app-subheading mt-2 max-w-2xl">
                             Upload a 1-minute video, a 1-minute audio clip, or paste one short text idea. VoicePost AI takes you straight into the workspace while the transcript and outputs are prepared.
                         </p>
                         {usageLimits ? (
@@ -23,7 +24,7 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
                         ) : null}
                     </div>
 
-                    <div className="app-card-soft p-4 sm:p-5">
+                    <AppCard variant="soft" padding="md" className="sm:p-5">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Included outputs
                         </div>
@@ -46,14 +47,14 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
                                         <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                                             {title}
                                         </div>
-                                        <div className="text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                        <div className="text-xs leading-5 text-[rgb(var(--color-text-muted))] sm:text-sm sm:leading-6">
                                             {description}
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </AppCard>
                 </div>
             }
         >

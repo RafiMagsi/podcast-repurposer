@@ -46,10 +46,10 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                 <div className="flex flex-col gap-4 lg:gap-5 xl:flex-row xl:items-end xl:justify-between">
                     <div className="max-w-3xl">
                         <div className="app-badge-neutral">VoicePost AI Studio</div>
-                        <h1 className="mt-3 text-[34px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[40px]">
+                        <h1 className="app-page-title mt-3">
                             Turn one short source into ready-to-post content.
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                        <p className="app-subheading mt-2 max-w-2xl">
                             Start with a 1-minute video, a 1-minute audio clip, or one short text idea. Submit the run here, then review the transcript and five outputs in the workspace.
                         </p>
                     </div>
