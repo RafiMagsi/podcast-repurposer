@@ -16,7 +16,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -290,7 +292,7 @@ class ContentRequestController extends Controller
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        $contentRequest->load(['contentResponses', 'chatMessages']);
+        $this->loadWorkspaceRelations($contentRequest);
 
         return Inertia::render('ContentRequests/Show', [
             'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
@@ -301,7 +303,7 @@ class ContentRequestController extends Controller
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        $contentRequest->load(['contentResponses', 'chatMessages']);
+        $this->loadWorkspaceRelations($contentRequest);
 
         return response()->json([
             'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
@@ -320,7 +322,7 @@ class ContentRequestController extends Controller
             'message' => ['required', 'string', 'max:2000'],
         ]);
 
-        $contentRequest->load(['contentResponses', 'chatMessages']);
+        $this->loadWorkspaceRelations($contentRequest);
 
         if (
             blank($contentRequest->transcript)
@@ -330,6 +332,12 @@ class ContentRequestController extends Controller
             return response()->json([
                 'message' => 'Magic Chat becomes available after the transcript or outputs are ready.',
             ], 422);
+        }
+
+        if (! $this->chatMessagesTableExists()) {
+            return response()->json([
+                'message' => 'Magic Chat is temporarily unavailable while workspace updates are still being applied.',
+            ], 503);
         }
 
         $userMessage = $contentRequest->chatMessages()->create([
@@ -366,7 +374,7 @@ class ContentRequestController extends Controller
             ], 422);
         }
 
-        $contentRequest->load(['contentResponses', 'chatMessages']);
+        $this->loadWorkspaceRelations($contentRequest);
 
         return response()->json([
             'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
@@ -760,6 +768,32 @@ class ContentRequestController extends Controller
         }
 
         return sprintf('%d bytes', $bytes);
+    }
+
+    private function loadWorkspaceRelations(ContentRequest $contentRequest): void
+    {
+        $contentRequest->load('contentResponses');
+
+        if ($this->chatMessagesTableExists()) {
+            $contentRequest->load('chatMessages');
+
+            return;
+        }
+
+        $contentRequest->setRelation('chatMessages', new Collection());
+    }
+
+    private function chatMessagesTableExists(): bool
+    {
+        static $tableExists = null;
+
+        if ($tableExists !== null) {
+            return $tableExists;
+        }
+
+        $tableExists = Schema::hasTable('content_request_chat_messages');
+
+        return $tableExists;
     }
 
     private function validateUploadedMediaFileSize($file, ?string $sourceType, ?string $requestedSourceType, array $uploadLimits): ?string

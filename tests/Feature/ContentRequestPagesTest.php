@@ -4,6 +4,7 @@ use App\Models\ContentRequest;
 use App\Models\User;
 use App\Services\S3DiskFactory;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\RateLimiter;
 
 it('redirects guests from content request pages', function () {
@@ -55,6 +56,8 @@ it('allows authenticated users to view content request pages', function () {
 });
 
 it('allows a user to cancel active processing', function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+
     $user = User::factory()->create();
     $contentRequest = ContentRequest::create([
         'user_id' => $user->id,
@@ -81,6 +84,8 @@ it('allows a user to cancel active processing', function () {
 });
 
 it('blocks retry transcription while processing is already active', function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+
     $user = User::factory()->create();
     $contentRequest = ContentRequest::create([
         'user_id' => $user->id,
@@ -107,6 +112,8 @@ it('blocks retry transcription while processing is already active', function () 
 });
 
 it('blocks regenerate content while processing is already active', function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+
     $user = User::factory()->create();
     $contentRequest = ContentRequest::create([
         'user_id' => $user->id,
@@ -134,6 +141,8 @@ it('blocks regenerate content while processing is already active', function () {
 });
 
 it('rate limits retry and regenerate actions with a safe fallback error', function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+
     $user = User::factory()->create();
     $contentRequest = ContentRequest::create([
         'user_id' => $user->id,
@@ -170,6 +179,8 @@ it('rate limits retry and regenerate actions with a safe fallback error', functi
 });
 
 it('deletes only expected media paths from storage when removing a content request', function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+
     $user = User::factory()->create();
     $contentRequest = ContentRequest::create([
         'user_id' => $user->id,
