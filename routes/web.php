@@ -3,13 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PipelineController;
 use App\Http\Controllers\AdminRunController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ContentRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
-use App\Services\S3DiskFactory;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -21,10 +19,20 @@ Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
 })->name('home');
+
+Route::get('/product', function () {
+    return Inertia::render('Product');
+})->name('product');
+
+Route::get('/use-cases', function () {
+    return Inertia::render('UseCases');
+})->name('use-cases');
+
+Route::get('/pricing', function () {
+    return Inertia::render('Pricing');
+})->name('pricing');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -63,6 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/content-requests/{contentRequest}/regenerate-output/{contentType}', [ContentRequestController::class, 'regenerateOutput'])
         ->middleware('content.rate:action')
         ->name('content-requests.regenerate-output');
+    Route::post('/content-requests/{contentRequest}/magic-chat', [ContentRequestController::class, 'magicChat'])
+        ->middleware('content.rate:action')
+        ->name('content-requests.magic-chat');
     Route::post('/content-requests/{contentRequest}/cancel-processing', [ContentRequestController::class, 'cancelProcessing'])
         ->name('content-requests.cancel-processing');
     Route::delete('/content-requests/{contentRequest}', [ContentRequestController::class, 'destroy'])
@@ -94,31 +105,5 @@ Route::get('/signed/content-requests/{contentRequest}/thumbnail', [ContentReques
         VerifyCsrfToken::class,
     ])
     ->name('content-requests.thumbnail.signed');
-
-
-Route::get('/test-s3', function (S3DiskFactory $factory) {
-    try {
-        $disk = $factory->make();
-
-        $path = 'test/hello.txt';
-
-        $stream = fopen('php://temp', 'r+');
-        fwrite($stream, 'hello from VoicePost AI');
-        rewind($stream);
-
-        $result = $disk->writeStream($path, $stream);
-        fclose($stream);
-
-        return [
-            'result' => $result,
-            'path' => $path,
-        ];
-    } catch (\Throwable $e) {
-        dd([
-            'message' => $e->getMessage(),
-            'class' => get_class($e),
-        ]);
-    }
-})->middleware(['auth']);
 
 require __DIR__.'/auth.php';

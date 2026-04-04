@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import AppCard from '@/Components/ui/AppCard';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 const features = [
     {
@@ -21,6 +22,31 @@ const features = [
 ];
 
 const outputs = ['Transcript', 'Summary', 'LinkedIn Post', 'X Post', 'Instagram Caption', 'Newsletter'];
+const supportedSources = [
+    ['1-Minute Video', 'Upload or record a short clip. VoicePost AI extracts the audio, transcribes it, and prepares reusable outputs.'],
+    ['1-Minute Audio', 'Upload or record spoken audio, then review transcript and generated content from the same workspace.'],
+    ['Short Text Note', 'Paste one short text idea up to 200 characters and skip the transcription step entirely.'],
+];
+const workspaceCapabilities = [
+    ['Live Processing Status', 'Track queue state, Media Prep, transcription, generation, partial completion, failure, or cancellation from one run page.'],
+    ['Per-Output Regeneration', 'Refresh one output card at a time without deleting the rest of the content set.'],
+    ['Magic Chat Assistant', 'Ask for rewrites, stronger hooks, shorter versions, CTA changes, and alternate angles tied to the current recording.'],
+    ['Retry And Recovery', 'Retry transcription, regenerate content, cancel active work, and clearly see incomplete or failed states.'],
+    ['Streaming Media Review', 'Preview uploaded or recorded video and audio directly in the workspace with browser-native buffering.'],
+    ['Usage Tracking', 'See remaining runs, enforce per-user limits, and block new processing when quota is exhausted.'],
+];
+const operationalHighlights = [
+    ['Admin Run Monitoring', 'Review users, source types, statuses, and timestamps across runs from one admin page.'],
+    ['Operational Analytics', 'Track source usage, completion rates, failure rates, retries, regenerations, and top output usage.'],
+    ['Signed Media Access', 'Use temporary or signed media delivery paths instead of exposing source files publicly.'],
+    ['Safer Failure Handling', 'Persist failure stage, show useful error messages, and avoid automatic retry loops that waste tokens.'],
+];
+const usageAndLimits = [
+    ['Video', 'Up to 1 minute, up to 300 MB'],
+    ['Audio', 'Up to 1 minute, up to 25 MB'],
+    ['Text Note', 'Up to 200 characters'],
+    ['Plan Model', '$10 plan with 100 runs by default, adjustable per user'],
+];
 
 function NavLink({ href, children, primary = false }) {
     return primary ? (
@@ -63,26 +89,28 @@ export default function Welcome({ auth }) {
 
                             <div className="relative px-5 pb-10 pt-5 lg:px-7">
                                 <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <Link href="/" className="flex items-center gap-3">
-                                        <img src="/assets/welcome/brand-mark.svg" alt="VoicePost AI" className="h-9 w-9" />
-                                        <span className="text-lg font-semibold text-[rgb(var(--color-text-strong))]">
-                                            VoicePost AI
-                                        </span>
+                                    <Link href="/">
+                                        <ApplicationLogo
+                                            className="h-9 w-9 rounded-[18px]"
+                                            withText
+                                            textClassName="text-lg font-semibold text-[rgb(var(--color-text-strong))]"
+                                            subtitleClassName="hidden"
+                                        />
                                     </Link>
 
                                     <nav className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                        <Link href="#" className="nav-link">Product</Link>
-                                        <Link href="#" className="nav-link">Use Cases</Link>
-                                        <Link href="#" className="nav-link">Pricing</Link>
+                                        <Link href={route('product')} className="nav-link">Product</Link>
+                                        <Link href={route('use-cases')} className="nav-link">Use Cases</Link>
+                                        <Link href={route('pricing')} className="nav-link">Pricing</Link>
                                         {auth?.user ? (
                                             <NavLink href={route('dashboard')} primary>
-                                                Open dashboard
+                                                Open Dashboard
                                             </NavLink>
                                         ) : (
                                             <>
-                                                <NavLink href={route('login')}>Sign in</NavLink>
+                                                <NavLink href={route('login')}>Sign In</NavLink>
                                                 <NavLink href={route('register')} primary>
-                                                    Sign up
+                                                    Sign Up
                                                 </NavLink>
                                             </>
                                         )}
@@ -107,9 +135,9 @@ export default function Welcome({ auth }) {
                                             ) : (
                                                 <>
                                                     <NavLink href={route('register')} primary>
-                                                        Start free
+                                                        Start Free
                                                     </NavLink>
-                                                    <NavLink href={route('login')}>Sign in</NavLink>
+                                                    <NavLink href={route('login')}>Sign In</NavLink>
                                                 </>
                                             )}
                                         </div>
@@ -283,6 +311,101 @@ export default function Welcome({ auth }) {
                                                 </AppCard>
                                             ))}
                                         </div>
+                                    </div>
+                                </section>
+
+                                <section className="mx-auto max-w-6xl py-4">
+                                    <div className="grid gap-4 xl:grid-cols-[.94fr_1.06fr]">
+                                        <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
+                                            <div className="app-badge-neutral">Supported Inputs</div>
+                                            <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[rgb(var(--color-text-strong))] sm:text-3xl">
+                                                Everything starts from one short source.
+                                            </h2>
+                                            <div className="mt-5 space-y-3">
+                                                {supportedSources.map(([title, description]) => (
+                                                    <div key={title} className="note-card">
+                                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </AppCard>
+
+                                        <AppCard variant="muted" padding="md">
+                                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                                Usage And Limits
+                                            </div>
+                                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                                {usageAndLimits.map(([title, description]) => (
+                                                    <div key={title} className="note-card">
+                                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </AppCard>
+                                    </div>
+                                </section>
+
+                                <section className="mx-auto max-w-6xl py-4">
+                                    <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
+                                        <div className="section-header">
+                                            <div className="section-header-copy">
+                                                <div className="app-badge-neutral">What VoicePost AI Can Do</div>
+                                                <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[rgb(var(--color-text-strong))] sm:text-3xl">
+                                                    Full project capabilities in one place.
+                                                </h2>
+                                                <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                                    This product is built to cover the full short-source workflow: input, transcript, outputs, workspace controls, recovery, and monitoring.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                            {workspaceCapabilities.map(([title, description]) => (
+                                                <div key={title} className="note-card">
+                                                    <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                    <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </AppCard>
+                                </section>
+
+                                <section className="mx-auto max-w-6xl py-4">
+                                    <div className="grid gap-4 xl:grid-cols-[1.04fr_.96fr]">
+                                        <AppCard variant="muted" padding="md">
+                                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                                Output Set
+                                            </div>
+                                            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                                {[
+                                                    ['Transcript', 'Source-of-truth text extracted from audio or video when applicable.'],
+                                                    ['Summary', 'Condensed context for fast review before opening the full content stack.'],
+                                                    ['LinkedIn Post', 'Professional draft shaped from the transcript and selected tone.'],
+                                                    ['X Post', 'Short post constrained to the platform character limit.'],
+                                                    ['Instagram Caption', 'Caption body with exactly five hashtags.'],
+                                                    ['Newsletter', 'Email-ready body with a subject line.'],
+                                                ].map(([title, description]) => (
+                                                    <div key={title} className="note-card">
+                                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </AppCard>
+
+                                        <AppCard variant="compact" padding="lg" className="p-6">
+                                            <div className="app-badge-neutral">Operations And Reliability</div>
+                                            <div className="mt-4 space-y-3">
+                                                {operationalHighlights.map(([title, description]) => (
+                                                    <div key={title} className="note-card-muted">
+                                                        <div className="font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                        <div className="mt-1">{description}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </AppCard>
                                     </div>
                                 </section>
                             </div>

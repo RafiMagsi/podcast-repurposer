@@ -3,6 +3,7 @@
 use App\Jobs\GenerateContentResponses;
 use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
+use App\Models\ContentRequestChatMessage;
 use App\Models\ContentResponse;
 use App\Models\User;
 use App\Services\ContentSuggestionService;
@@ -277,6 +278,53 @@ it('passes the selected suggestion into content generation', function () {
 
     expect($contentRequest->status)->toBe(ContentRequest::STATUS_COMPLETED);
     expect($contentRequest->summary)->toBe('Summary');
+});
+
+it('stores a magic chat thread and returns the assistant reply for a content request', function () {
+    $user = User::factory()->create();
+
+    $contentRequest = ContentRequest::create([
+        'user_id' => $user->id,
+        'title' => 'Chat-enabled recording',
+        'tone' => 'professional',
+        'input_type' => 'audio',
+        'media_kind' => 'audio',
+        'original_file_name' => 'clip.mp3',
+        'file_path' => 'content-requests/test.mp3',
+        'mime_type' => 'audio/mpeg',
+        'file_size' => 1024,
+        'transcript' => 'This is the current transcript.',
+        'summary' => 'This is the current summary.',
+        'status' => ContentRequest::STATUS_COMPLETED,
+    ]);
+
+    ContentResponse::create([
+        'episode_id' => $contentRequest->id,
+        'content_type' => 'linkedin_post',
+        'title' => 'LinkedIn Post',
+        'body' => 'Current LinkedIn post body.',
+    ]);
+
+    $service = Mockery::mock(OpenAIContentService::class);
+    $service->shouldReceive('generateChatReply')
+        ->once()
+        ->andReturn('Here is a stronger rewrite with a cleaner hook.');
+
+    app()->instance(OpenAIContentService::class, $service);
+
+    $response = $this
+        ->actingAs($user)
+        ->postJson(route('content-requests.magic-chat', $contentRequest), [
+            'message' => 'Rewrite the LinkedIn post with a stronger hook.',
+        ]);
+
+    $response
+        ->assertOk()
+        ->assertJsonPath('contentRequest.chat_messages.0.role', 'user')
+        ->assertJsonPath('contentRequest.chat_messages.1.role', 'assistant')
+        ->assertJsonPath('contentRequest.chat_messages.1.body', 'Here is a stronger rewrite with a cleaner hook.');
+
+    expect(ContentRequestChatMessage::query()->where('episode_id', $contentRequest->id)->count())->toBe(2);
 });
 
 it('regenerates only the requested output in the job handler', function () {

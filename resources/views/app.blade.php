@@ -6,6 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <link rel="icon" type="image/svg+xml" href="/assets/logo/voicepost-ai-mark.svg">
+        <link rel="shortcut icon" href="/assets/logo/voicepost-ai-mark.svg">
+        <link rel="apple-touch-icon" href="/assets/logo/voicepost-ai-mark.svg">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

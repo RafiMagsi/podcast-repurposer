@@ -7,6 +7,7 @@ import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 import ProcessingStatusCard from '@/Components/ProcessingStatusCard';
 import ContentResponseCard from '@/Components/content-responses/ContentResponseCard';
 import ContentPreviewCard from '@/Components/content-responses/ContentPreviewCard';
+import MagicChatPanel from '@/Components/content-requests/MagicChatPanel';
 import { formatCompressionStatusLabel, formatStatusLabel } from '@/utils/contentRequestLabels';
 
 function formatContentType(value) {
@@ -81,6 +82,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     const { flash, errors } = usePage().props;
     const [liveContentRequest, setLiveContentRequest] = useState(contentRequest);
     const [regeneratingOutputTypes, setRegeneratingOutputTypes] = useState({});
+    const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('transcript');
+    const [chatInput, setChatInput] = useState('');
+    const [chatSending, setChatSending] = useState(false);
+    const [chatError, setChatError] = useState('');
     const canRetryTranscription = liveContentRequest.source_type !== 'text';
 
     useEffect(() => {
@@ -105,6 +110,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
     const missingOutputTypes = expectedOutputTypes.filter(
         (contentType) => !orderedContentResponses.some((response) => response.content_type === contentType),
     );
+    const chatMessages = liveContentRequest.chat_messages || [];
 
     const retryTranscription = () => {
         setRetrying(true);
@@ -273,6 +279,45 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 setCancelling(false);
             },
         });
+    };
+
+    const sendMagicChatMessage = async () => {
+        const message = chatInput.trim();
+
+        if (!message) {
+            return;
+        }
+
+        setChatSending(true);
+        setChatError('');
+
+        try {
+            const response = await window.axios.post(
+                route('content-requests.magic-chat', liveContentRequest.public_id),
+                { message },
+                {
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                },
+            );
+
+            if (response?.data?.contentRequest) {
+                setLiveContentRequest((currentContentRequest) =>
+                    mergeStableMediaUrls(currentContentRequest, response.data.contentRequest),
+                );
+            }
+
+            setChatInput('');
+        } catch (error) {
+            setChatError(
+                error?.response?.data?.message
+                    || 'Magic Chat is unavailable right now. Please try again.',
+            );
+        } finally {
+            setChatSending(false);
+        }
     };
 
     useEffect(() => {
@@ -521,80 +566,115 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                     <div className="space-y-4 xl:space-y-5">
                         <ContentPreviewCard contentRequest={liveContentRequest} sourceLabel={sourceLabel} />
 
-                        <div className="grid gap-4 2xl:grid-cols-2 2xl:gap-5">
-                            <AppCard variant="compact" padding="md" className="sm:p-5">
-                                <div className="section-header-compact">
-                                    <div className="section-header-copy">
-                                        <h2 className="app-section-title">Transcript</h2>
-                                        <p className="app-muted mt-1 text-sm">
-                                            The source text used by the generation pipeline.
-                                        </p>
-                                    </div>
-                                    {liveContentRequest.transcript ? (
-                                        <button type="button" onClick={() => copyToClipboard(liveContentRequest.transcript)} className="btn-copy">
-                                            Copy
-                                        </button>
-                                    ) : null}
-                                </div>
-                                <div className="max-h-[460px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))] sm:max-h-[520px]">
-                                    {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
-                                </div>
-                            </AppCard>
-
-                            <AppCard variant="compact" padding="md" className="sm:p-5">
-                                <div className="section-header-compact">
-                                    <div className="section-header-copy">
-                                        <h2 className="app-section-title">Summary</h2>
-                                        <p className="app-muted mt-1 text-sm">
-                                            Condensed context before reviewing the full run.
-                                        </p>
-                                    </div>
-                                    {liveContentRequest.summary ? (
-                                        <button type="button" onClick={() => copyToClipboard(liveContentRequest.summary)} className="btn-copy">
-                                            Copy
-                                        </button>
-                                    ) : null}
-                                </div>
-                                <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
-                                    {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
-                                </div>
-                            </AppCard>
-                        </div>
-
                         <AppCard variant="compact" padding="md" className="sm:p-5">
-                            <div className="section-header-compact">
-                                <div className="section-header-copy">
-                                    <h2 className="app-section-title">Content responses</h2>
-                                    <p className="app-muted mt-1 text-sm">
-                                        AI-generated assets created from the transcript and selected tone.
-                                    </p>
-                                </div>
+                            <div className="tab-group">
+                                {[
+                                    ['transcript', 'Transcript'],
+                                    ['content', 'AI Content'],
+                                    ['chat', 'Magic Chat'],
+                                ].map(([value, label]) => (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => setActiveWorkspaceTab(value)}
+                                        className={`tab-item ${activeWorkspaceTab === value ? 'tab-item-active' : ''}`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
                             </div>
-
-                            {orderedContentResponses.length === 0 ? (
-                                <div className="rounded-[14px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm text-slate-400">
-                                    {isProcessing ? 'Content responses will appear here automatically once ready.' : 'No content responses yet.'}
-                                </div>
-                            ) : (
-                                <div className="grid gap-4">
-                                    {orderedContentResponses.map((contentResponse) => (
-                                        <ContentResponseCard
-                                            key={contentResponse.id}
-                                            contentResponse={contentResponse}
-                                            onCopy={copyToClipboard}
-                                            onRegenerate={regenerateSingleOutput}
-                                            fallbackLabel={formatContentType(contentResponse.content_type)}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            {missingOutputTypes.length > 0 && !isProcessing ? (
-                                <div className="mt-4 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
-                                    Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}. Use the regenerate action to finish the set.
-                                </div>
-                            ) : null}
                         </AppCard>
+
+                        {activeWorkspaceTab === 'transcript' ? (
+                            <div className="grid gap-4 2xl:grid-cols-2 2xl:gap-5">
+                                <AppCard variant="compact" padding="md" className="sm:p-5">
+                                    <div className="section-header-compact">
+                                        <div className="section-header-copy">
+                                            <h2 className="app-section-title">Transcript</h2>
+                                            <p className="app-muted mt-1 text-sm">
+                                                The source text used by the generation pipeline.
+                                            </p>
+                                        </div>
+                                        {liveContentRequest.transcript ? (
+                                            <button type="button" onClick={() => copyToClipboard(liveContentRequest.transcript)} className="btn-copy">
+                                                Copy
+                                            </button>
+                                        ) : null}
+                                    </div>
+                                    <div className="max-h-[460px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))] sm:max-h-[520px]">
+                                        {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
+                                    </div>
+                                </AppCard>
+
+                                <AppCard variant="compact" padding="md" className="sm:p-5">
+                                    <div className="section-header-compact">
+                                        <div className="section-header-copy">
+                                            <h2 className="app-section-title">Summary</h2>
+                                            <p className="app-muted mt-1 text-sm">
+                                                Condensed context before reviewing the full run.
+                                            </p>
+                                        </div>
+                                        {liveContentRequest.summary ? (
+                                            <button type="button" onClick={() => copyToClipboard(liveContentRequest.summary)} className="btn-copy">
+                                                Copy
+                                            </button>
+                                        ) : null}
+                                    </div>
+                                    <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                        {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
+                                    </div>
+                                </AppCard>
+                            </div>
+                        ) : null}
+
+                        {activeWorkspaceTab === 'content' ? (
+                            <AppCard variant="compact" padding="md" className="sm:p-5">
+                                <div className="section-header-compact">
+                                    <div className="section-header-copy">
+                                        <h2 className="app-section-title">Content responses</h2>
+                                        <p className="app-muted mt-1 text-sm">
+                                            AI-generated assets created from the transcript and selected tone.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {orderedContentResponses.length === 0 ? (
+                                    <div className="rounded-[14px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm text-slate-400">
+                                        {isProcessing ? 'Content responses will appear here automatically once ready.' : 'No content responses yet.'}
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4">
+                                        {orderedContentResponses.map((contentResponse) => (
+                                            <ContentResponseCard
+                                                key={contentResponse.id}
+                                                contentResponse={contentResponse}
+                                                onCopy={copyToClipboard}
+                                                onRegenerate={regenerateSingleOutput}
+                                                fallbackLabel={formatContentType(contentResponse.content_type)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {missingOutputTypes.length > 0 && !isProcessing ? (
+                                    <div className="mt-4 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
+                                        Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}. Use the regenerate action to finish the set.
+                                    </div>
+                                ) : null}
+                            </AppCard>
+                        ) : null}
+
+                        {activeWorkspaceTab === 'chat' ? (
+                            <MagicChatPanel
+                                messages={chatMessages}
+                                value={chatInput}
+                                onChange={setChatInput}
+                                onSubmit={sendMagicChatMessage}
+                                sending={chatSending}
+                                disabled={!liveContentRequest.transcript && orderedContentResponses.length === 0}
+                                error={chatError}
+                            />
+                        ) : null}
                     </div>
                 </div>
             </div>

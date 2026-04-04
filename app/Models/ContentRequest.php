@@ -89,6 +89,11 @@ class ContentRequest extends Model
         return $this->hasMany(ContentResponse::class, 'episode_id');
     }
 
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(ContentRequestChatMessage::class, 'episode_id')->latest('id');
+    }
+
     public static function processingStatuses(): array
     {
         return [

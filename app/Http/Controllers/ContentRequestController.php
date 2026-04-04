@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Jobs\GenerateContentResponses;
 use App\Jobs\TranscribeContentRequest;
 use App\Models\ContentRequest;
+use App\Models\ContentRequestChatMessage;
 use App\Services\ContentSuggestionService;
+use App\Services\OpenAIContentService;
 use App\Services\OperationalAnalyticsService;
 use App\Services\S3DiskFactory;
 use App\Services\UsageLimitService;
@@ -292,7 +294,7 @@ class ContentRequestController extends Controller
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        $contentRequest->load('contentResponses');
+        $contentRequest->load(['contentResponses', 'chatMessages']);
 
         return Inertia::render('ContentRequests/Show', [
             'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
@@ -303,7 +305,72 @@ class ContentRequestController extends Controller
     {
         abort_unless($contentRequest->user_id === $request->user()->id, 403);
 
-        $contentRequest->load('contentResponses');
+        $contentRequest->load(['contentResponses', 'chatMessages']);
+
+        return response()->json([
+            'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
+        ]);
+    }
+
+    public function magicChat(
+        Request $request,
+        ContentRequest $contentRequest,
+        OpenAIContentService $openAIContentService,
+        S3DiskFactory $s3DiskFactory
+    ): JsonResponse {
+        abort_unless($contentRequest->user_id === $request->user()->id, 403);
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $contentRequest->load(['contentResponses', 'chatMessages']);
+
+        if (
+            blank($contentRequest->transcript)
+            && blank($contentRequest->summary)
+            && $contentRequest->contentResponses->isEmpty()
+        ) {
+            return response()->json([
+                'message' => 'Magic Chat becomes available after the transcript or outputs are ready.',
+            ], 422);
+        }
+
+        $userMessage = $contentRequest->chatMessages()->create([
+            'role' => 'user',
+            'body' => trim($validated['message']),
+        ]);
+
+        $contentRequest->load('chatMessages');
+
+        try {
+            $assistantReply = $openAIContentService->generateChatReply(
+                $contentRequest,
+                $userMessage->body,
+                $contentRequest->chatMessages
+                    ->sortBy('id')
+                    ->take(-8)
+                    ->map(fn (ContentRequestChatMessage $message) => [
+                        'role' => $message->role,
+                        'body' => $message->body,
+                    ])
+                    ->values()
+                    ->all(),
+            );
+
+            $contentRequest->chatMessages()->create([
+                'role' => 'assistant',
+                'body' => $assistantReply,
+            ]);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'message' => 'Magic Chat is unavailable right now. Please try again.',
+            ], 422);
+        }
+
+        $contentRequest->load(['contentResponses', 'chatMessages']);
 
         return response()->json([
             'contentRequest' => $this->serializeContentRequest($contentRequest, $s3DiskFactory),
@@ -612,6 +679,15 @@ class ContentRequestController extends Controller
                 'body' => $contentResponse->body,
                 'meta' => $contentResponse->meta,
             ])->values(),
+            'chat_messages' => $contentRequest->chatMessages
+                ->sortBy('id')
+                ->map(fn ($message) => [
+                    'id' => $message->id,
+                    'role' => $message->role,
+                    'body' => $message->body,
+                    'created_at' => optional($message->created_at)->toDateTimeString(),
+                ])
+                ->values(),
         ];
     }
 
