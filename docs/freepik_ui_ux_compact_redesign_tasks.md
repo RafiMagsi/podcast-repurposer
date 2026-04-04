@@ -122,7 +122,7 @@ Turn one short source into ready-to-post content.
 
 ## Implementation Order
 
-### Pass 1
+### Pass 1 - done
 - Update shared CSS tokens and compact component classes.
 - Rebuild authenticated shell and header.
 - Make uniform Cards overall the project, make card component and reuse

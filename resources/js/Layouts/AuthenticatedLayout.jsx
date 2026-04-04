@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import AppCard from '@/Components/ui/AppCard';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -67,7 +68,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                         </div>
                     </div>
 
-                    <div className="app-card-soft mt-2 hidden p-4 lg:block">
+                    <AppCard variant="soft" padding="md" className="mt-2 hidden lg:block">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Workspace
                         </div>
@@ -97,7 +98,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 Usage limit reached. New runs are blocked until the quota is increased.
                             </div>
                         ) : null}
-                    </div>
+                    </AppCard>
 
                     <div className="sidebar-scroll-area">
                     <div className="sidebar-section-label">Workspace</div>
@@ -159,7 +160,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                     </nav>
 
                     <div className="mt-6 hidden lg:block">
-                        <div className="app-card p-4">
+                        <AppCard padding="md">
                             <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                 Need content fast?
                             </div>
@@ -169,7 +170,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             <a href={route('content-requests.create')} className="btn-primary mt-4 w-full">
                                 New recording
                             </a>
-                        </div>
+                        </AppCard>
                     </div>
                     </div>
                 </aside>
@@ -237,7 +238,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                     </div>
 
                     <main className="workspace-content space-y-6">
-                        {header ? <div className="app-panel p-6 sm:p-8">{header}</div> : null}
+                        {header ? <AppCard variant="panel" padding="lg">{header}</AppCard> : null}
                         {children}
                     </main>
                 </div>

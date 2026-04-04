@@ -41,10 +41,10 @@
         --space-compact-3: 1rem;
         --space-compact-4: 1.25rem;
         --space-compact-5: 1.5rem;
-        --radius-compact-xs: 10px;
-        --radius-compact-sm: 12px;
-        --radius-compact-md: 16px;
-        --radius-compact-lg: 20px;
+        --radius-compact-xs: 8px;
+        --radius-compact-sm: 10px;
+        --radius-compact-md: 12px;
+        --radius-compact-lg: 16px;
         --height-button: 40px;
         --height-button-sm: 34px;
         --height-pill: 30px;
@@ -125,33 +125,33 @@
     }
 
     .app-card {
-        @apply rounded-[20px] border bg-white;
+        @apply rounded-[var(--radius-compact-lg)] border bg-white;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-compact);
     }
 
     .app-card-soft {
-        @apply rounded-[16px] border;
+        @apply rounded-[var(--radius-compact-md)] border;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
         box-shadow: var(--shadow-compact);
     }
 
     .app-card-compact {
-        @apply rounded-[14px] border bg-white;
+        @apply rounded-[var(--radius-compact-md)] border bg-white;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-compact);
     }
 
     .app-card-muted {
-        @apply rounded-[14px] border;
+        @apply rounded-[var(--radius-compact-md)] border;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
         box-shadow: none;
     }
 
     .app-panel {
-        @apply rounded-[24px] border bg-white;
+        @apply rounded-[18px] border bg-white;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 18px 42px rgba(17, 24, 39, 0.06);
     }
@@ -202,20 +202,20 @@
     }
 
     .dashboard-note {
-        @apply rounded-[14px] border px-4 py-3;
+        @apply rounded-[var(--radius-compact-md)] border px-4 py-3;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
     }
 
     .note-card {
-        @apply rounded-[14px] border px-4 py-3;
+        @apply rounded-[var(--radius-compact-md)] border px-4 py-3;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
         box-shadow: none;
     }
 
     .note-card-muted {
-        @apply rounded-[14px] border px-4 py-3 text-sm leading-6;
+        @apply rounded-[var(--radius-compact-md)] border px-4 py-3 text-sm leading-6;
         border-color: rgb(var(--color-border));
         background: rgba(255, 255, 255, 0.78);
         color: rgb(var(--color-text-muted));
@@ -290,7 +290,7 @@
     }
 
     .btn-primary-rect {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[12px] px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[10px] px-4 py-2 text-sm font-semibold transition-all duration-150;
         background: rgb(var(--color-primary));
         color: rgb(var(--color-primary-text));
     }
@@ -322,7 +322,7 @@
     }
 
     .btn-outline {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[12px] border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[10px] border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }
@@ -344,7 +344,7 @@
     }
 
     .btn-danger {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[12px] border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[10px] border px-4 py-2 text-sm font-semibold transition-all duration-150;
         border-color: rgba(191, 61, 61, 0.18);
         background: rgb(var(--color-danger-bg));
         color: rgb(var(--color-danger-text));
@@ -365,7 +365,7 @@
     .input-theme,
     .select-theme,
     .textarea-theme {
-        @apply w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition-all duration-150;
+        @apply w-full rounded-[12px] border bg-white px-4 py-3 text-sm outline-none transition-all duration-150;
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
@@ -479,7 +479,7 @@
     }
 
     .sidebar-link {
-        @apply flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-all duration-150;
+        @apply flex w-full items-center gap-3 rounded-[12px] px-3 py-2 text-sm font-medium transition-all duration-150;
         color: rgb(var(--color-text-muted));
     }
 
@@ -606,7 +606,7 @@
     }
 
     .profile-card {
-        @apply flex cursor-pointer items-center gap-3 rounded-[14px] border bg-white p-4 transition-all duration-150;
+        @apply flex cursor-pointer items-center gap-3 rounded-[var(--radius-compact-md)] border bg-white p-4 transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
     }
@@ -639,7 +639,7 @@
     .profile-icon-orange { background: rgb(var(--color-surface-pink)); }
 
     .output-section {
-        @apply rounded-[14px] border bg-white transition-all duration-150;
+        @apply rounded-[var(--radius-compact-md)] border bg-white transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
     }
@@ -656,13 +656,13 @@
     }
 
     .stat-card {
-        @apply rounded-[14px] border bg-white p-4;
+        @apply rounded-[var(--radius-compact-md)] border bg-white p-4;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-compact);
     }
 
     .stat-card-compact {
-        @apply rounded-[12px] border bg-white p-3.5;
+        @apply rounded-[var(--radius-compact-sm)] border bg-white p-3.5;
         border-color: rgb(var(--color-border));
         box-shadow: none;
     }
@@ -716,13 +716,13 @@
     }
 
     .auth-card {
-        @apply w-full max-w-md rounded-[20px] border bg-white p-8;
+        @apply w-full max-w-md rounded-[18px] border bg-white p-8;
         border-color: rgb(var(--color-border));
         box-shadow: 0 18px 42px rgba(17, 24, 39, 0.08);
     }
 
     .upload-zone {
-        @apply flex cursor-pointer flex-col items-center justify-center rounded-[16px] border-2 border-dashed px-8 py-12 text-center transition-all duration-150;
+        @apply flex cursor-pointer flex-col items-center justify-center rounded-[12px] border-2 border-dashed px-8 py-12 text-center transition-all duration-150;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
     }
@@ -776,7 +776,7 @@
     }
 
     .recording-status-panel {
-        @apply rounded-[14px] border px-4 py-4;
+        @apply rounded-[var(--radius-compact-md)] border px-4 py-4;
         border-color: rgb(var(--color-border));
         background: rgba(255, 255, 255, 0.76);
     }

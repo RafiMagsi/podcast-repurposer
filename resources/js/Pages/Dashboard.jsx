@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AppCard from '@/Components/ui/AppCard';
 import { Head, Link, usePage } from '@inertiajs/react';
 import CurrentFocusCard from '@/Components/dashboard/CurrentFocusCard';
 import RecurringOutputsCard from '@/Components/dashboard/RecurringOutputsCard';
@@ -92,7 +93,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
 
                     <div className="space-y-4 sm:space-y-5 xl:sticky xl:top-24 xl:self-start xl:space-y-6">
                         {usageLimits ? (
-                            <div className="app-card-compact p-4">
+                            <AppCard variant="compact" padding="md">
                                 <div className="section-header-compact">
                                     <div className="section-header-copy">
                                         <div className="app-badge-neutral">Usage</div>
@@ -111,12 +112,12 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                                 <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                     {usageLimits.used} used · {usageLimits.percent_used}% consumed
                                 </div>
-                            </div>
+                            </AppCard>
                         ) : null}
 
                         <CurrentFocusCard activeContentRequest={activeContentRequest} />
 
-                        <div className="app-card-compact p-4">
+                        <AppCard variant="compact" padding="md">
                             <div className="section-header-compact">
                                 <div className="section-header-copy">
                                     <div className="app-badge-neutral">Quick notes</div>
@@ -136,7 +137,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </AppCard>
                     </div>
                 </div>
             </div>

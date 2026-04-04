@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AppCard from '@/Components/ui/AppCard';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -196,7 +197,7 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                 </div>
             </div>
 
-            <div className="app-card-compact overflow-hidden">
+            <AppCard variant="compact" padding="none" className="overflow-hidden">
                 <div className="flex flex-col gap-3 border-b border-[rgb(var(--color-border))] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
                         <h2 className="app-section-title">Current processing</h2>
@@ -253,7 +254,7 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                         ))}
                     </div>
                 )}
-            </div>
+            </AppCard>
         </AuthenticatedLayout>
     );
 }

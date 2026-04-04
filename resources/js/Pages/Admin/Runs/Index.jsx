@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AppCard from '@/Components/ui/AppCard';
 import { Head, Link } from '@inertiajs/react';
 
 function statusClass(status) {
@@ -118,7 +119,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                     ))}
                 </div>
 
-                <div className="app-card-compact overflow-hidden">
+                <AppCard variant="compact" padding="none" className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-[rgb(var(--color-border))] px-4 py-4 sm:px-5">
                         <div>
                             <h2 className="app-section-title">Runs</h2>
@@ -167,7 +168,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                             ))}
                         </div>
                     )}
-                </div>
+                </AppCard>
             </div>
         </AuthenticatedLayout>
     );
