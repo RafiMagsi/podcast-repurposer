@@ -42,7 +42,7 @@ export default function ContentResponseCard({
                     <button
                         type="button"
                         onClick={() => onRegenerate?.(contentResponse.content_type)}
-                        className="btn-secondary"
+                        className="btn-copy"
                         disabled={isRegenerating}
                     >
                         {isRegenerating ? 'Regenerating...' : 'Regenerate'}

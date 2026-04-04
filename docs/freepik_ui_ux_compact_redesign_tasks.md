@@ -83,7 +83,7 @@ Turn one short source into ready-to-post content.
 - Keep one top status strip for run state, transcript, and outputs.
 - Make transcript and content review easier to scan.
 
-### 11. Improve workspace card consistency
+### 11. Improve workspace card consistency - done
 - Match source preview, transcript, summary, and content cards.
 - Standardize spacing, title rhythm, and action placement.
 - Reduce visual noise from repeated borders and oversized padding.

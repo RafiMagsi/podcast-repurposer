@@ -439,11 +439,11 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     <h2 className="app-section-title">Quick actions</h2>
                                 </div>
                             </div>
-                            <div className="space-y-2.5">
+                            <div className="grid gap-2.5 sm:grid-cols-2 2xl:grid-cols-1">
                                 <button
                                     type="button"
                                     onClick={() => copyToClipboard(liveContentRequest.transcript || '')}
-                                    className="btn-outline w-full"
+                                    className="btn-copy w-full justify-center"
                                     disabled={!liveContentRequest.transcript}
                                 >
                                     Copy transcript
@@ -451,23 +451,23 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                 <button
                                     type="button"
                                     onClick={() => copyToClipboard(liveContentRequest.summary || '')}
-                                    className="btn-outline w-full"
+                                    className="btn-copy w-full justify-center"
                                     disabled={!liveContentRequest.summary}
                                 >
                                     Copy summary
                                 </button>
                                 {showRetryAction ? (
-                                    <button type="button" onClick={() => setShowRetryModal(true)} className="btn-secondary w-full">
+                                    <button type="button" onClick={() => setShowRetryModal(true)} className="btn-compact w-full justify-center">
                                         Retry transcription
                                     </button>
                                 ) : null}
                                 {isProcessing ? (
-                                    <button type="button" onClick={() => setShowCancelModal(true)} className="btn-outline w-full">
+                                    <button type="button" onClick={() => setShowCancelModal(true)} className="btn-compact w-full justify-center">
                                         Cancel processing
                                     </button>
                                 ) : null}
                                 {showRegenerateAction ? (
-                                    <button type="button" onClick={() => setShowRegenerateModal(true)} className="btn-primary w-full">
+                                    <button type="button" onClick={() => setShowRegenerateModal(true)} className="btn-secondary w-full justify-center">
                                         {liveContentRequest.status === 'partial' ? 'Complete missing outputs' : 'Regenerate content'}
                                     </button>
                                 ) : null}
@@ -534,7 +534,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                         </button>
                                     ) : null}
                                 </div>
-                                <div className="max-h-[560px] overflow-y-auto rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                <div className="max-h-[560px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
                                     {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
                                 </div>
                             </div>
@@ -553,7 +553,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                         </button>
                                     ) : null}
                                 </div>
-                                <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
                                     {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
                                 </div>
                             </div>

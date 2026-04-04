@@ -66,7 +66,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
 
     return (
         <div className="app-card-compact p-4 sm:p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                     <div className="app-badge-neutral">{sourceLabel(contentRequest.input_type)}</div>
                     <h2 className="mt-2.5 text-lg font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
@@ -78,13 +78,13 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                 </div>
 
                 {contentRequest.original_file_name || contentRequest.media_thumbnail_url ? (
-                    <div className="dashboard-note w-full text-sm text-[rgb(var(--color-text-muted))] lg:w-auto lg:max-w-[280px]">
+                    <div className="note-card-muted w-full text-sm lg:w-auto lg:max-w-[260px]">
                         {contentRequest.original_file_name || 'Thumbnail available'}
                     </div>
                 ) : null}
             </div>
 
-            <div className="mt-5">
+            <div className="mt-4">
                 {contentRequest.input_type === 'text' ? (
                     <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
