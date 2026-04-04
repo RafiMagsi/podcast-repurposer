@@ -22,7 +22,7 @@ Turn one short source into ready-to-post content.
 - Standardize page gutters and max widths.
 - Improve sidebar collapse behavior for tablet and mobile.
 
-### 2. Build a compact component system
+### 2. Build a compact component system - done
 - Add compact spacing tokens in CSS.
 - Create compact card variants.
 - Standardize compact tabs, pills, badges, and icon containers.

@@ -36,6 +36,18 @@
         --color-warning-text: 164 106 18;
         --shadow-card: 0 1px 2px rgba(17, 24, 39, 0.04), 0 18px 40px rgba(17, 24, 39, 0.06);
         --shadow-soft: 0 1px 1px rgba(17, 24, 39, 0.03), 0 10px 26px rgba(17, 24, 39, 0.05);
+        --space-compact-1: 0.5rem;
+        --space-compact-2: 0.75rem;
+        --space-compact-3: 1rem;
+        --space-compact-4: 1.25rem;
+        --space-compact-5: 1.5rem;
+        --radius-compact-sm: 14px;
+        --radius-compact-md: 18px;
+        --radius-compact-lg: 22px;
+        --height-button: 40px;
+        --height-button-sm: 34px;
+        --height-pill: 30px;
+        --shadow-compact: 0 1px 2px rgba(17, 24, 39, 0.03), 0 8px 20px rgba(17, 24, 39, 0.04);
     }
 
     html {
@@ -114,20 +126,33 @@
     .app-card {
         @apply rounded-[24px] border bg-white;
         border-color: rgb(var(--color-border));
-        box-shadow: var(--shadow-card);
+        box-shadow: var(--shadow-compact);
     }
 
     .app-card-soft {
         @apply rounded-[20px] border;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
-        box-shadow: var(--shadow-soft);
+        box-shadow: var(--shadow-compact);
+    }
+
+    .app-card-compact {
+        @apply rounded-[18px] border bg-white;
+        border-color: rgb(var(--color-border));
+        box-shadow: var(--shadow-compact);
+    }
+
+    .app-card-muted {
+        @apply rounded-[18px] border;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+        box-shadow: none;
     }
 
     .app-panel {
         @apply rounded-[30px] border bg-white;
         border-color: rgb(var(--color-border));
-        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05), 0 24px 60px rgba(17, 24, 39, 0.08);
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 18px 42px rgba(17, 24, 39, 0.06);
     }
 
     .app-heading {
@@ -168,7 +193,7 @@
     }
 
     .app-badge {
-        @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em];
+        @apply inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em];
         background: rgb(var(--color-accent-bg));
         color: rgb(var(--color-accent-text));
     }
@@ -187,16 +212,23 @@
     }
 
     .app-badge-neutral {
-        @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium;
+        @apply inline-flex min-h-[var(--height-pill)] items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium;
         background: rgb(var(--color-surface-muted));
         color: rgb(var(--color-text-muted));
     }
 
     .app-badge-saved {
-        @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium;
+        @apply inline-flex min-h-[var(--height-pill)] items-center rounded-full border px-2.5 py-0.5 text-[10px] font-medium;
         background: rgb(var(--color-surface-soft));
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-faint));
+    }
+
+    .pill-compact {
+        @apply inline-flex min-h-[var(--height-pill)] items-center gap-1.5 rounded-full border px-3 text-xs font-medium;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-text-muted));
     }
 
     .app-divider {
@@ -205,7 +237,7 @@
     }
 
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150;
         background: rgb(var(--color-primary));
         color: rgb(var(--color-primary-text));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.08);
@@ -217,7 +249,7 @@
     }
 
     .btn-primary-rect {
-        @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[16px] px-4 py-2 text-sm font-semibold transition-all duration-150;
         background: rgb(var(--color-primary));
         color: rgb(var(--color-primary-text));
     }
@@ -227,7 +259,7 @@
     }
 
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150;
         background: rgb(var(--color-secondary-bg));
         color: rgb(var(--color-secondary-text));
     }
@@ -249,7 +281,7 @@
     }
 
     .btn-outline {
-        @apply inline-flex items-center justify-center gap-2 rounded-2xl border bg-white px-4 py-2.5 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[16px] border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }
@@ -261,7 +293,7 @@
     }
 
     .btn-ghost {
-        @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-all duration-150;
         color: rgb(var(--color-text-muted));
     }
 
@@ -271,10 +303,22 @@
     }
 
     .btn-danger {
-        @apply inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[16px] border px-4 py-2 text-sm font-semibold transition-all duration-150;
         border-color: rgba(191, 61, 61, 0.18);
         background: rgb(var(--color-danger-bg));
         color: rgb(var(--color-danger-text));
+    }
+
+    .btn-compact {
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 rounded-[14px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-text-muted));
+    }
+
+    .btn-compact:hover {
+        background: rgb(var(--color-surface-soft));
+        color: rgb(var(--color-text));
     }
 
     .input-theme,
@@ -361,7 +405,7 @@
     }
 
     .topbar-action {
-        @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150;
         border-color: rgb(var(--color-border));
         background: white;
         color: rgb(var(--color-text-muted));
@@ -481,7 +525,7 @@
     }
 
     .tab-item {
-        @apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-150;
         color: rgb(var(--color-text-muted));
     }
 
@@ -492,6 +536,22 @@
     .tab-item-active {
         background: rgb(var(--color-primary));
         color: white;
+    }
+
+    .tab-group-compact {
+        @apply inline-flex items-center gap-1 rounded-full border p-1;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+    }
+
+    .tab-item-compact {
+        @apply inline-flex min-h-[var(--height-pill)] items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150;
+        color: rgb(var(--color-text-muted));
+    }
+
+    .tab-item-compact-active {
+        background: rgb(var(--color-primary));
+        color: rgb(var(--color-primary-text));
     }
 
     .tab-underline {
@@ -505,7 +565,7 @@
     }
 
     .profile-card {
-        @apply flex cursor-pointer items-center gap-3 rounded-2xl border bg-white p-4 transition-all duration-150;
+        @apply flex cursor-pointer items-center gap-3 rounded-[18px] border bg-white p-4 transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
     }
@@ -519,11 +579,15 @@
         border-width: 2px;
         border-color: rgb(154 164 196);
         background: rgb(var(--color-surface-blue));
-        box-shadow: 0 10px 24px rgba(173, 189, 233, 0.18);
+        box-shadow: 0 8px 18px rgba(173, 189, 233, 0.14);
     }
 
     .profile-icon {
-        @apply flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-lg;
+        @apply flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[14px] text-base;
+    }
+
+    .icon-compact {
+        @apply flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[12px] text-sm;
     }
 
     .profile-icon-purple { background: rgb(var(--color-surface-lavender)); }
@@ -534,30 +598,36 @@
     .profile-icon-orange { background: rgb(var(--color-surface-pink)); }
 
     .output-section {
-        @apply rounded-2xl border bg-white transition-all duration-150;
+        @apply rounded-[18px] border bg-white transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
     }
 
     .output-section-header {
-        @apply flex w-full items-center gap-3 px-4 py-3.5 text-sm font-semibold;
+        @apply flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold;
         color: rgb(var(--color-text));
     }
 
     .output-section-body {
-        @apply border-t px-4 pb-4 pt-3 text-sm leading-7;
+        @apply border-t px-4 pb-4 pt-3 text-sm leading-6;
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }
 
     .stat-card {
-        @apply rounded-[22px] border bg-white p-5;
+        @apply rounded-[18px] border bg-white p-4;
         border-color: rgb(var(--color-border));
-        box-shadow: var(--shadow-soft);
+        box-shadow: var(--shadow-compact);
+    }
+
+    .stat-card-compact {
+        @apply rounded-[16px] border bg-white p-3.5;
+        border-color: rgb(var(--color-border));
+        box-shadow: none;
     }
 
     .status-badge {
-        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
+        @apply inline-flex min-h-[28px] items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
     }
 
     .status-uploaded {
@@ -742,7 +812,7 @@
     }
 
     .filter-pill {
-        @apply inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-pill)] items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150;
         border-color: rgb(var(--color-border));
         background: white;
         color: rgb(var(--color-text-muted));
@@ -760,7 +830,7 @@
     }
 
     .btn-copy {
-        @apply inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-semibold transition-all duration-150;
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }
