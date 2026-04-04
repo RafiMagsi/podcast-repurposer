@@ -78,7 +78,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                 </div>
 
                 {contentRequest.original_file_name || contentRequest.media_thumbnail_url ? (
-                    <div className="note-card-muted w-full text-sm sm:max-w-[320px] lg:w-auto lg:max-w-[260px]">
+                    <div className="note-card-muted w-full text-sm sm:max-w-[360px] lg:w-auto lg:min-w-[240px] lg:max-w-[320px]">
                         {contentRequest.original_file_name || 'Thumbnail available'}
                     </div>
                 ) : null}
@@ -99,7 +99,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Audio preview
                         </div>
-                        <div className="mt-3 flex min-h-[112px] items-center rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 sm:min-h-[124px]">
+                        <div className="mt-3 flex min-h-[120px] items-center rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 sm:min-h-[132px] lg:min-h-[140px]">
                             <audio
                                 ref={mediaElementRef}
                                 controls
@@ -117,7 +117,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                             Video preview
                         </div>
                         <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgb(var(--color-border))] bg-black">
-                            <div className="relative flex h-[220px] items-center justify-center bg-black sm:h-[250px] lg:h-[300px] 2xl:h-[240px]">
+                            <div className="relative flex h-[280px] items-center justify-center bg-black sm:h-[360px] xl:h-[440px] 2xl:h-[500px]">
                                 {mediaUrl ? (
                                     <video
                                         ref={mediaElementRef}

@@ -103,7 +103,7 @@ Turn one short source into ready-to-post content.
 
 ## Phase 5: Secondary Product Screens
 
-### 14. Align library, pipeline, and admin pages
+### 14. Align library, pipeline, and admin pages - done
 - Use the same compact shell and card language.
 - Make filters smaller and more consistent.
 - Tighten table and list spacing.

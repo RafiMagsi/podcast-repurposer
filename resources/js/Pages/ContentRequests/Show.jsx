@@ -411,8 +411,6 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
 
                 <div className="grid gap-4 xl:gap-5 2xl:grid-cols-[300px_minmax(0,1fr)] 2xl:gap-6">
                     <div className="space-y-4 xl:space-y-5">
-                        <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel} />
-
                         <div className="app-card-compact p-4">
                             <div className="section-header-compact">
                                 <div className="section-header-copy">
@@ -519,6 +517,8 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                     </div>
 
                     <div className="space-y-4 xl:space-y-5">
+                        <ContentPreviewCard contentRequest={liveContentRequest} sourceLabel={sourceLabel} />
+
                         <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_280px] 2xl:gap-5">
                             <div className="app-card-compact p-4 sm:p-5">
                                 <div className="section-header-compact">
