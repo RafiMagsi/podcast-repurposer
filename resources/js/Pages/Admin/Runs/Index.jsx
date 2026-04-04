@@ -43,13 +43,13 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
                         <div className="app-badge-neutral">Admin</div>
-                        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
+                        <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[34px]">
                             Monitor every content run.
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                             Review users, source types, statuses, and timestamps across all runs from one admin surface.
                         </p>
                     </div>
@@ -59,12 +59,12 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
             <Head title="Admin Runs" />
 
             <div className="space-y-6">
-                <div className="grid gap-4 lg:grid-cols-4">
+                <div className="compact-grid-4">
                     <div className="stat-card">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Source usage
                         </div>
-                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                        <div className="mt-2 space-y-1.5 text-sm text-[rgb(var(--color-text))]">
                             <div>Video: {sourceTypeUsage.video}</div>
                             <div>Audio: {sourceTypeUsage.audio}</div>
                             <div>Text: {sourceTypeUsage.text}</div>
@@ -74,7 +74,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Run outcomes
                         </div>
-                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                        <div className="mt-2 space-y-1.5 text-sm text-[rgb(var(--color-text))]">
                             <div>Total: {runOutcomes.total}</div>
                             <div>Completed: {runOutcomes.completed} ({runOutcomes.completion_rate}%)</div>
                             <div>Failed: {runOutcomes.failed} ({runOutcomes.failure_rate}%)</div>
@@ -85,7 +85,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Recovery usage
                         </div>
-                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                        <div className="mt-2 space-y-1.5 text-sm text-[rgb(var(--color-text))]">
                             <div>Retry transcription: {actions.retry_transcription}</div>
                             <div>Regenerate content: {actions.regenerate_content}</div>
                         </div>
@@ -94,7 +94,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Top outputs
                         </div>
-                        <div className="mt-3 space-y-2 text-sm text-[rgb(var(--color-text))]">
+                        <div className="mt-2 space-y-1.5 text-sm text-[rgb(var(--color-text))]">
                             {outputUsage.length === 0 ? (
                                 <div className="text-[rgb(var(--color-text-muted))]">No output activity yet.</div>
                             ) : outputUsage.slice(0, 5).map((item) => (
@@ -118,47 +118,47 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                     ))}
                 </div>
 
-                <div className="app-card overflow-hidden">
-                    <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)_120px_140px_180px_130px] gap-4 border-b border-[rgb(var(--color-border))] px-6 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                        <div>Run</div>
-                        <div>User</div>
-                        <div>Source</div>
-                        <div>Status</div>
-                        <div>Created</div>
-                        <div>Inspect</div>
+                <div className="app-card-compact overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-[rgb(var(--color-border))] px-4 py-4 sm:px-5">
+                        <div>
+                            <h2 className="app-section-title">Runs</h2>
+                            <p className="app-muted">Compact monitoring for active, failed, and completed runs.</p>
+                        </div>
                     </div>
 
                     {items.length === 0 ? (
-                        <div className="p-6 text-sm text-[rgb(var(--color-text-muted))]">No runs match this filter.</div>
+                        <div className="p-5 text-sm text-[rgb(var(--color-text-muted))]">No runs match this filter.</div>
                     ) : (
                         <div className="divide-y divide-[rgb(var(--color-border))]">
                             {items.map((run) => (
                                 <div
                                     key={run.public_id}
-                                    className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)_120px_140px_180px_130px] items-center gap-4 px-6 py-4"
+                                    className="flex flex-col gap-3 px-4 py-4 sm:px-5 xl:flex-row xl:items-center xl:justify-between"
                                 >
-                                    <div className="min-w-0">
-                                        <div className="truncate text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                                            {run.title}
+                                    <div className="min-w-0 xl:flex-1">
+                                        <div className="flex flex-wrap items-center gap-2.5">
+                                            <div className="truncate text-base font-semibold text-[rgb(var(--color-text-strong))]">
+                                                {run.title}
+                                            </div>
+                                            <span className="app-badge-neutral">{sourceLabel(run.source_type)}</span>
+                                            <span className={statusClass(run.status)}>{run.status}</span>
                                         </div>
-                                        <div className="mt-1 text-xs text-[rgb(var(--color-text-muted))]">
+                                        <div className="mt-1.5 text-xs text-[rgb(var(--color-text-muted))]">
                                             {run.public_id}
                                         </div>
                                     </div>
-                                    <div className="min-w-0">
+                                    <div className="min-w-0 xl:w-[260px]">
                                         <div className="truncate text-sm font-medium text-[rgb(var(--color-text-strong))]">
                                             {run.user?.name || 'Unknown user'}
                                         </div>
-                                        <div className="truncate text-xs text-[rgb(var(--color-text-muted))]">
+                                        <div className="mt-0.5 truncate text-xs text-[rgb(var(--color-text-muted))]">
                                             {run.user?.email || 'No email'}
                                         </div>
                                     </div>
-                                    <div className="text-sm text-[rgb(var(--color-text))]">{sourceLabel(run.source_type)}</div>
-                                    <div>
-                                        <span className={statusClass(run.status)}>{run.status}</span>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[rgb(var(--color-text-muted))] xl:w-[260px] xl:justify-end">
+                                        <span>{run.created_at}</span>
                                     </div>
-                                    <div className="text-sm text-[rgb(var(--color-text-muted))]">{run.created_at}</div>
-                                    <div>
+                                    <div className="xl:w-[130px] xl:text-right">
                                         <a href={route('content-requests.show', run.public_id)} className="btn-secondary">
                                             Open run
                                         </a>

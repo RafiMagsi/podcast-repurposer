@@ -84,39 +84,29 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
         <AuthenticatedLayout
             user={auth?.user}
             header={
-                <div className="grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
-                        <div className="app-badge mb-4">Recordings library</div>
-                        <h1 className="app-heading">Browse every upload in a cleaner recording catalog.</h1>
-                        <p className="app-subheading mt-5 max-w-2xl">
-                            The reference images use a white canvas, dark type, and clearer grouping.
-                            This library now follows that same structure so recordings feel easier to scan.
+                        <div className="app-badge-neutral mb-3">Recordings library</div>
+                        <h1 className="text-[30px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[34px]">
+                            Browse every upload from one compact library.
+                        </h1>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                            Scan status, source type, and created time quickly, then jump straight into the workspace.
                         </p>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="stat-card">
-                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                On this page
-                            </div>
-                            <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
-                                {items.length}
-                            </div>
-                            <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                Recordings currently visible in the library.
-                            </div>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                        <div className="app-card-muted px-4 py-3">
+                            <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">Visible</div>
+                            <div className="mt-1 text-sm font-semibold text-[rgb(var(--color-text-strong))]">{items.length} runs</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                Completed
-                            </div>
-                            <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
-                                {completedCount}
-                            </div>
-                            <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                Ready to open and export.
-                            </div>
+                        <div className="app-card-muted px-4 py-3">
+                            <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">Completed</div>
+                            <div className="mt-1 text-sm font-semibold text-[rgb(var(--color-text-strong))]">{completedCount} ready</div>
                         </div>
+                        <Link href={route('content-requests.create')} className="btn-primary">
+                            Create New
+                        </Link>
                     </div>
                 </div>
             }
@@ -135,15 +125,15 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
                 </div>
             )}
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="compact-grid-3">
                 <div className="stat-card">
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Active processing
                     </div>
-                    <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
                         {activeCount}
                     </div>
-                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="mt-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                         Uploads moving through transcription or generation.
                     </div>
                 </div>
@@ -151,10 +141,10 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         View style
                     </div>
-                    <div className="mt-3 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
                         Library / Workspace
                     </div>
-                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="mt-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                         Open any recording to inspect transcript and content responses.
                     </div>
                 </div>
@@ -163,7 +153,7 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             New source
                         </div>
-                        <div className="mt-3 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                        <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
                             Start another run
                         </div>
                     </div>
@@ -173,8 +163,8 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
                 </div>
             </div>
 
-            <div className="app-card overflow-hidden">
-                <div className="flex flex-col gap-4 border-b border-[rgb(var(--color-border))] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="app-card-compact overflow-hidden">
+                <div className="flex flex-col gap-3 border-b border-[rgb(var(--color-border))] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
                         <h2 className="app-section-title">All recordings</h2>
                         <p className="app-muted">Your uploaded sources, current status, and entry to each workspace.</p>
@@ -185,30 +175,29 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
                 </div>
 
                 {items.length === 0 ? (
-                    <div className="p-6 text-sm text-[rgb(var(--color-text-muted))]">No recordings found.</div>
+                    <div className="p-5 text-sm text-[rgb(var(--color-text-muted))]">No recordings found.</div>
                 ) : (
                     <div className="divide-y divide-[rgb(var(--color-border))]">
                         {items.map((contentRequest) => (
                             <div
                                 key={contentRequest.id}
-                                className="flex flex-col gap-4 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
+                                className="flex flex-col gap-3 px-4 py-4 sm:px-5 xl:flex-row xl:items-center xl:justify-between"
                             >
                                 <div className="min-w-0">
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <div className="truncate text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                                    <div className="flex flex-wrap items-center gap-2.5">
+                                        <div className="truncate text-base font-semibold text-[rgb(var(--color-text-strong))]">
                                             {contentRequest.title}
                                         </div>
                                         <span className="app-badge-neutral">{sourceLabel(contentRequest.source_type)}</span>
+                                        <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
                                     </div>
-                                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                                         <span>{contentRequest.original_file_name || 'Inline text note'}</span>
                                         <span>{contentRequest.created_at}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
-                                    <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
-
+                                <div className="flex flex-wrap items-center gap-2.5">
                                     <Link href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary">
                                         Open workspace
                                     </Link>

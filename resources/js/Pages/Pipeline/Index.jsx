@@ -136,13 +136,13 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
                         <div className="app-badge-neutral">Active Pipeline</div>
-                        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
+                        <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[34px]">
                             Monitor current processing runs.
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                             This page shows every active recording moving through media prep, transcription, or content generation.
                         </p>
                     </div>
@@ -160,15 +160,15 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
         >
             <Head title="Pipeline" />
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="compact-grid-3">
                 <div className="stat-card">
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Active runs
                     </div>
-                    <div className="mt-3 text-4xl font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
                         {orderedContentRequests.length}
                     </div>
-                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="mt-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                         Auto-refreshing every few seconds.
                     </div>
                 </div>
@@ -176,10 +176,10 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Focus
                     </div>
-                    <div className="mt-3 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
                         {currentProcessingCount} current, {queuedCount} queued
                     </div>
-                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="mt-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                         Active work stays at the top, with queued runs listed below it.
                     </div>
                 </div>
@@ -187,17 +187,17 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Refresh
                     </div>
-                    <div className="mt-3 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
                         Live polling enabled
                     </div>
-                    <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="mt-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                         No manual refresh needed while jobs are active.
                     </div>
                 </div>
             </div>
 
-            <div className="app-card overflow-hidden">
-                <div className="flex flex-col gap-4 border-b border-[rgb(var(--color-border))] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="app-card-compact overflow-hidden">
+                <div className="flex flex-col gap-3 border-b border-[rgb(var(--color-border))] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
                         <h2 className="app-section-title">Current processing</h2>
                         <p className="app-muted">Only active items are shown here.</p>
@@ -205,7 +205,7 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                 </div>
 
                 {orderedContentRequests.length === 0 ? (
-                    <div className="p-6 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="p-5 text-sm text-[rgb(var(--color-text-muted))]">
                         No active processing right now.
                     </div>
                 ) : (
@@ -213,11 +213,11 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                         {orderedContentRequests.map((item) => (
                             <div
                                 key={item.public_id}
-                                className="flex flex-col gap-4 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
+                                className="flex flex-col gap-3 px-4 py-4 sm:px-5 xl:flex-row xl:items-center xl:justify-between"
                             >
                                 <div className="min-w-0">
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <div className="truncate text-lg font-semibold text-[rgb(var(--color-text-strong))]">
+                                    <div className="flex flex-wrap items-center gap-2.5">
+                                        <div className="truncate text-base font-semibold text-[rgb(var(--color-text-strong))]">
                                             {item.title}
                                         </div>
                                         {queueState(item) === 'current' ? (
@@ -232,14 +232,14 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                                         <span className="app-badge-neutral">{sourceLabel(item.source_type)}</span>
                                         <span className={statusClass(item.status)}>{item.status}</span>
                                     </div>
-                                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                                         <span>{pipelineLabel(item)}</span>
                                         <span>{item.original_file_name || 'Inline text note'}</span>
                                         <span>{item.created_at}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-2.5">
                                     {item.compression_status ? (
                                         <span className="app-badge-neutral">
                                             Media prep {item.compression_status}
