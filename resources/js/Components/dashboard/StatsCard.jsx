@@ -5,11 +5,11 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                 <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                     Total runs
                 </div>
-                <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
+                <div className="mt-1.5 text-[1.75rem] font-semibold leading-none text-[rgb(var(--color-text-strong))]">
                     {contentRequests.length}
                 </div>
                 <div className="stat-card-copy">
-                    Video, audio, and text note requests in one library.
+                    Video, audio, and text in one library.
                 </div>
             </div>
 
@@ -17,11 +17,11 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                 <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                     Completed
                 </div>
-                <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
+                <div className="mt-1.5 text-[1.75rem] font-semibold leading-none text-[rgb(var(--color-text-strong))]">
                     {completedCount}
                 </div>
                 <div className="stat-card-copy">
-                    Ready to copy, refine, or publish.
+                    Ready to review or publish.
                 </div>
             </div>
 
@@ -29,11 +29,11 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                 <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                     Processing
                 </div>
-                <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
+                <div className="mt-1.5 text-[1.75rem] font-semibold leading-none text-[rgb(var(--color-text-strong))]">
                     {processingCount}
                 </div>
                 <div className="stat-card-copy">
-                    Transcribing or generating content right now.
+                    Active transcription or generation.
                 </div>
             </div>
 
@@ -41,11 +41,11 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                 <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                     Needs review
                 </div>
-                <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
+                <div className="mt-1.5 text-[1.75rem] font-semibold leading-none text-[rgb(var(--color-text-strong))]">
                     {failedCount}
                 </div>
                 <div className="stat-card-copy">
-                    Items that need another pass or a settings fix.
+                    Runs that need another pass.
                 </div>
             </div>
 
@@ -53,11 +53,11 @@ export default function StatsCard({ contentRequests, completedCount, processingC
                 <div className="app-faint text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                     Remaining
                 </div>
-                <div className="mt-2 text-3xl font-semibold text-[rgb(var(--color-text-strong))]">
+                <div className="mt-1.5 text-[1.75rem] font-semibold leading-none text-[rgb(var(--color-text-strong))]">
                     {usageLimits?.remaining ?? '0'}
                 </div>
                 <div className="stat-card-copy">
-                    {usageLimits ? `${usageLimits.limit} runs on the $${usageLimits.plan_price_usd} plan.` : 'Usage data unavailable.'}
+                    {usageLimits ? `${usageLimits.limit} runs on the $${usageLimits.plan_price_usd} plan.` : 'Usage unavailable.'}
                 </div>
             </div>
         </div>

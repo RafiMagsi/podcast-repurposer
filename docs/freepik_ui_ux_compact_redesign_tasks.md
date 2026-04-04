@@ -44,7 +44,7 @@ Turn one short source into ready-to-post content.
 - Show recent runs, current focus, and usage in a tighter layout.
 - Move low-priority tips into smaller side cards.
 
-### 5. Compact the dashboard cards
+### 5. Compact the dashboard cards - done
 - Tighten spacing in stats cards.
 - Tighten spacing in recent recordings.
 - Make recurring outputs more asset-like and less verbose.

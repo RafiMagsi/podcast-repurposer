@@ -64,22 +64,22 @@ export default function RecentRecordingsCard({ contentRequests }) {
     }
 
     return (
-        <div className="app-card overflow-hidden">
-            <div className="flex flex-col gap-4 border-b border-[rgb(var(--color-border))] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="app-card-compact overflow-hidden">
+            <div className="section-header-compact border-b border-[rgb(var(--color-border))] px-4 py-3.5">
                 <div>
                     <h2 className="app-section-title">Recent recordings</h2>
-                    <p className="app-muted mt-1">
-                        Browse the latest runs and jump back into the workspace quickly.
+                    <p className="app-muted mt-1 text-sm">
+                        Latest runs, ready to reopen.
                     </p>
                 </div>
 
-                <a href={route('content-requests.index')} className="btn-secondary">
+                <a href={route('content-requests.index')} className="btn-compact">
                     Open library
                 </a>
             </div>
 
             {contentRequests.length === 0 ? (
-                <div className="p-6 text-sm text-[rgb(var(--color-text-muted))]">
+                <div className="p-4 text-sm text-[rgb(var(--color-text-muted))]">
                     No recordings yet. Create your first short source above.
                 </div>
             ) : (
@@ -87,11 +87,11 @@ export default function RecentRecordingsCard({ contentRequests }) {
                     {contentRequests.map((contentRequest) => (
                         <div
                             key={contentRequest.public_id || contentRequest.id}
-                            className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between"
+                            className="flex flex-col gap-2.5 px-4 py-3.5 lg:flex-row lg:items-center lg:justify-between"
                         >
                             <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-2.5">
-                                    <div className="truncate text-base font-semibold leading-7 text-[rgb(var(--color-text-strong))]">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="truncate text-sm font-semibold leading-5 text-[rgb(var(--color-text-strong))]">
                                         {contentRequest.title}
                                     </div>
                                     <span className={sourcePillClass(contentRequest.source_type)}>
@@ -99,14 +99,17 @@ export default function RecentRecordingsCard({ contentRequests }) {
                                     </span>
                                     <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
                                 </div>
-                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
                                     <span className="truncate">{contentRequest.original_file_name || 'Inline text note'}</span>
                                     <span>{formatRelative(contentRequest.created_at)}</span>
                                 </div>
                             </div>
 
-                            <a href={route('content-requests.show', contentRequest.public_id)} className="btn-secondary w-full justify-center lg:w-auto">
-                                Open workspace
+                            <a
+                                href={route('content-requests.show', contentRequest.public_id)}
+                                className="btn-compact w-full justify-center lg:w-auto"
+                            >
+                                Open
                             </a>
                         </div>
                     ))}

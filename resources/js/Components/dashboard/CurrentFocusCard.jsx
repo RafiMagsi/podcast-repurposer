@@ -3,22 +3,22 @@ export default function CurrentFocusCard({ activeContentRequest }) {
         <div className="app-card-compact p-4">
             <div className="app-badge-neutral">Current Focus</div>
 
-            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-[rgb(var(--color-text-strong))]">
+            <h2 className="mt-2.5 text-[1.8rem] font-semibold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
                 {activeContentRequest ? activeContentRequest.title : 'Build your first content run'}
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+            <p className="mt-1.5 text-sm leading-5 text-[rgb(var(--color-text-muted))]">
                 {activeContentRequest
-                    ? 'Open the latest run to review its transcript, content responses, and status in the workspace.'
-                    : 'Use the create page to start with a 1-minute video, a 1-minute audio clip, or one short text idea.'}
+                    ? 'Open the latest run to review transcript, outputs, and status.'
+                    : 'Start with a short video, audio clip, or one text idea.'}
             </p>
 
-            <div className="mt-4 compact-grid-3 xl:grid-cols-1">
+            <div className="mt-3.5 compact-grid-3 xl:grid-cols-1">
                 <div className="note-card">
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Source types
                     </div>
-                    <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-1.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                         Video, audio, text
                     </div>
                 </div>
@@ -27,7 +27,7 @@ export default function CurrentFocusCard({ activeContentRequest }) {
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Limits
                     </div>
-                    <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                    <div className="mt-1.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                         1 minute / 200 chars
                     </div>
                 </div>
@@ -36,13 +36,13 @@ export default function CurrentFocusCard({ activeContentRequest }) {
                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                         Outputs
                     </div>
-                    <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                        Summary, LinkedIn, X, Instagram, Newsletter
+                    <div className="mt-1.5 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                        Summary, LinkedIn, X, Instagram, newsletter
                     </div>
                 </div>
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row xl:flex-col">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row xl:flex-col">
                 {activeContentRequest ? (
                     <a href={route('content-requests.show', activeContentRequest.public_id)} className="btn-primary w-full">
                         Open latest workspace
