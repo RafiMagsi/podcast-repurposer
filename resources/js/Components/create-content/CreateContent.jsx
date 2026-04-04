@@ -406,13 +406,13 @@ export default function CreateContent({
                 </div>
             ) : null}
 
-            <div className="grid gap-5 p-4 sm:p-5 xl:grid-cols-[minmax(0,1.08fr)_320px] xl:items-start 2xl:grid-cols-[minmax(0,1.18fr)_340px]">
+            <div className="grid gap-4 p-4 sm:gap-5 sm:p-5 2xl:grid-cols-[minmax(0,1.18fr)_340px] 2xl:items-start">
                 <div className="space-y-4">
                     <div className="app-card-muted p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Choose your source type
                         </div>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="mt-3 grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
                         {sourceOptions.map((option) => (
                             <button
                                 key={option.value}
@@ -441,7 +441,7 @@ export default function CreateContent({
                         </div>
                     </div>
 
-                    <form onSubmit={submit} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start">
+                    <form onSubmit={submit} className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_260px] 2xl:items-start">
                         <div className="space-y-4">
                             <div className="app-card-muted p-4">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
@@ -669,7 +669,7 @@ export default function CreateContent({
                             </div>
                         </div>
                         </div>
-                        <div className="space-y-4 xl:sticky xl:top-24">
+                        <div className="grid gap-4 md:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
                             <div className="app-card-muted p-4">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     Supported outputs
@@ -702,7 +702,7 @@ export default function CreateContent({
                                 </div>
                             </div>
 
-                            <div className="app-card-muted p-4">
+                            <div className="app-card-muted p-4 md:col-span-2 2xl:col-span-1">
                                 <div className="app-badge-neutral">After You Submit</div>
                                 <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
                                     You go straight to the recording workspace.

@@ -199,7 +199,7 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
             </div>
 
             <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgb(var(--color-border))] bg-black">
-                <div className="flex h-[250px] items-center justify-center bg-black sm:h-[320px] lg:h-[380px]">
+                <div className="flex h-[220px] items-center justify-center bg-black sm:h-[280px] lg:h-[340px] xl:h-[380px]">
                     {previewUrl ? (
                         <video controls className="max-h-full max-w-full object-contain" src={previewUrl} />
                     ) : (

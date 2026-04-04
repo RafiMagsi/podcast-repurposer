@@ -70,7 +70,7 @@ Turn one short source into ready-to-post content.
 - Reduce long helper paragraphs into smaller support blocks.
 - Keep error and progress states compact.
 
-### 9. Tighten create flow responsive layout
+### 9. Tighten create flow responsive layout - done
 - Tablet: stack left panel above right support panel cleanly.
 - Mobile: keep source selector usable without oversized cards.
 - Avoid large empty zones after file selection or recording preview.

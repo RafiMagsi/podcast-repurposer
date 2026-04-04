@@ -9,7 +9,7 @@ export default function ContentRequestsCreate({ auth, tones = [], uploadLimits =
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr] xl:items-center">
+                <div className="grid gap-4 lg:gap-5 2xl:grid-cols-[1.15fr_.85fr] 2xl:items-center">
                     <div>
                         <div className="app-badge mb-3">New source</div>
                         <h1 className="app-heading">Turn one short source into ready-to-post content.</h1>
