@@ -5,7 +5,7 @@ export function contentTypeMeta(contentType, fallbackLabel = 'Content') {
         case 'summary':
             return {
                 label: 'Summary',
-                description: '2–3 sentences capturing the core idea.',
+                description: 'Core idea in 2–3 sentences.',
                 badgeClass: 'border-sky-200 bg-sky-50 text-sky-700',
                 iconWrapClass: 'bg-sky-100 text-sky-700',
                 sectionClass: 'border-sky-200/80 bg-sky-50/50',
@@ -19,7 +19,7 @@ export function contentTypeMeta(contentType, fallbackLabel = 'Content') {
         case 'linkedin_post':
             return {
                 label: 'LinkedIn Post',
-                description: 'Professional, value-driven writing.',
+                description: 'Professional draft.',
                 badgeClass: 'border-blue-200 bg-blue-50 text-blue-700',
                 iconWrapClass: 'bg-blue-100 text-blue-700',
                 sectionClass: 'border-blue-200/80 bg-blue-50/50',
@@ -33,7 +33,7 @@ export function contentTypeMeta(contentType, fallbackLabel = 'Content') {
         case 'x_post':
             return {
                 label: 'X Post',
-                description: 'Under 280 chars, punchy and ready to post.',
+                description: 'Short post under 280 chars.',
                 badgeClass: 'border-slate-200 bg-slate-100 text-slate-700',
                 iconWrapClass: 'bg-slate-200 text-slate-800',
                 sectionClass: 'border-slate-200/80 bg-slate-50',
@@ -47,7 +47,7 @@ export function contentTypeMeta(contentType, fallbackLabel = 'Content') {
         case 'instagram_caption':
             return {
                 label: 'Instagram Caption',
-                description: 'Hook, body, and 5 hashtags.',
+                description: 'Caption plus 5 hashtags.',
                 badgeClass: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700',
                 iconWrapClass: 'bg-fuchsia-100 text-fuchsia-700',
                 sectionClass: 'border-fuchsia-200/80 bg-fuchsia-50/50',
@@ -61,7 +61,7 @@ export function contentTypeMeta(contentType, fallbackLabel = 'Content') {
         case 'newsletter':
             return {
                 label: 'Newsletter',
-                description: 'Subject line and email-ready body.',
+                description: 'Subject and email-ready body.',
                 badgeClass: 'border-amber-200 bg-amber-50 text-amber-700',
                 iconWrapClass: 'bg-amber-100 text-amber-700',
                 sectionClass: 'border-amber-200/80 bg-amber-50/50',
@@ -75,7 +75,7 @@ export function contentTypeMeta(contentType, fallbackLabel = 'Content') {
         default:
             return {
                 label: fallbackLabel,
-                description: 'Generated content output.',
+                description: 'Generated output.',
                 badgeClass: 'border-slate-200 bg-slate-50 text-slate-700',
                 iconWrapClass: 'bg-slate-100 text-slate-700',
                 sectionClass: 'border-slate-200 bg-slate-50',

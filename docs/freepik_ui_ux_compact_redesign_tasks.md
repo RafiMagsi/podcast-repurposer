@@ -89,7 +89,7 @@ Turn one short source into ready-to-post content.
 - Reduce visual noise from repeated borders and oversized padding.
 - Keep quick actions compact and secondary.
 
-### 12. Improve generated content card UX
+### 12. Improve generated content card UX - done
 - Make content cards feel like reusable assets.
 - Keep actions in consistent positions.
 - Reduce visual weight of helper text.
@@ -98,7 +98,8 @@ Turn one short source into ready-to-post content.
 ### 13. Improve workspace responsiveness
 - Tablet: preserve hierarchy without squeezing the main content area.
 - Mobile: stack details, preview, transcript, and outputs cleanly.
-- Prevent video/audio preview sections from becoming too tall.
+- Prevent video/audio preview sections from becoming too tall. 
+- Make sure both audio and video have enough space for preview
 
 ## Phase 5: Secondary Product Screens
 

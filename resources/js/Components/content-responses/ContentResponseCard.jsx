@@ -27,7 +27,7 @@ export default function ContentResponseCard({
                             <div className="text-base font-semibold text-[rgb(var(--color-text-strong))]">
                                 {meta.label}
                             </div>
-                            <div className="mt-1 text-sm text-[rgb(var(--color-text-muted))]">
+                            <div className="mt-0.5 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
                                 {meta.description}
                             </div>
                         </div>
@@ -36,7 +36,7 @@ export default function ContentResponseCard({
 
                 <div className="flex flex-wrap items-center gap-2">
                     <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.badgeClass}`}>
-                        {meta.label}
+                        Asset
                     </span>
 
                     <button
@@ -45,7 +45,7 @@ export default function ContentResponseCard({
                         className="btn-copy"
                         disabled={isRegenerating}
                     >
-                        {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+                        {isRegenerating ? 'Regenerating...' : 'Refresh'}
                     </button>
 
                     <button
@@ -61,7 +61,7 @@ export default function ContentResponseCard({
 
             {isRegenerating ? (
                 <div className="mt-3 rounded-[14px] border border-[rgb(var(--color-border-strong))] bg-white/80 px-4 py-3 text-sm text-[rgb(var(--color-text-muted))]">
-                    Regenerating this output. The rest of the content set stays unchanged.
+                    Refreshing this asset. The rest of the content set stays unchanged.
                 </div>
             ) : null}
 
