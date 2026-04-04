@@ -1,9 +1,13 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 export default function VerifyEmail({ status }) {
     const { post, processing } = useForm({});
+    const csrfToken =
+        typeof document !== 'undefined'
+            ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            : '';
 
     const submit = (e) => {
         e.preventDefault();
@@ -34,14 +38,15 @@ export default function VerifyEmail({ status }) {
                         Resend verification email
                     </PrimaryButton>
 
-                    <Link
-                        href={route('logout')}
-                        method="post"
-                        as="button"
-                        className="text-sm text-[rgb(var(--color-text-muted))] underline underline-offset-4 hover:text-[rgb(var(--color-text-strong))]"
-                    >
-                        Log out
-                    </Link>
+                    <form method="POST" action={route('logout')}>
+                        <input type="hidden" name="_token" value={csrfToken} />
+                        <button
+                            type="submit"
+                            className="text-sm text-[rgb(var(--color-text-muted))] underline underline-offset-4 hover:text-[rgb(var(--color-text-strong))]"
+                        >
+                            Log out
+                        </button>
+                    </form>
                 </form>
             </div>
         </GuestLayout>

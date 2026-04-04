@@ -1,6 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import AppCard from '@/Components/ui/AppCard';
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 function isActive(url, target) {
@@ -34,6 +34,10 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
     const isAdmin = Boolean(authUser?.is_admin);
     const usageLimits = page.props?.usageLimits || null;
     const breadcrumb = buildBreadcrumb(url);
+    const csrfToken =
+        typeof document !== 'undefined'
+            ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            : '';
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
@@ -234,9 +238,12 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 <a href={route('content-requests.create')} className="btn-primary-rect">
                                     New recording
                                 </a>
-                                <Link href={route('logout')} method="post" as="button" className="btn-outline">
-                                    Logout
-                                </Link>
+                                <form method="POST" action={route('logout')}>
+                                    <input type="hidden" name="_token" value={csrfToken} />
+                                    <button type="submit" className="btn-outline">
+                                        Logout
+                                    </button>
+                                </form>
                                 </div>
                             </div>
                         </div>

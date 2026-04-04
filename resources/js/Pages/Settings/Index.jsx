@@ -1,7 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 
-export default function SettingsIndex({ auth, settings, billing, canManageSystemSettings = false }) {
+export default function SettingsIndex({
+    auth,
+    settings,
+    billing,
+    canManageSystemSettings = false,
+    settingScope = { type: 'project', user_id: null, label: 'Project Default', uses_project_defaults: true },
+    scopeUsers = [],
+}) {
     const { flash } = usePage().props;
     const configuredLabels = {
         openai_api_key: settings.has_openai_api_key,
@@ -14,6 +21,8 @@ export default function SettingsIndex({ auth, settings, billing, canManageSystem
     };
 
     const { data, setData, post, processing, errors } = useForm({
+        scope_type: settingScope.type || 'project',
+        scope_user_id: settingScope.user_id || '',
         openai_api_key: settings.openai_api_key || '',
         claude_api_key: settings.claude_api_key || '',
         aws_access_key_id: settings.aws_access_key_id || '',
@@ -34,6 +43,29 @@ export default function SettingsIndex({ auth, settings, billing, canManageSystem
         stripe_currency: settings.stripe_currency || 'usd',
     });
 
+    const changeScope = (scopeType, scopeUserId = '') => {
+        const nextUserId = scopeType === 'user' ? scopeUserId : '';
+
+        setData((current) => ({
+            ...current,
+            scope_type: scopeType,
+            scope_user_id: nextUserId,
+        }));
+
+        router.get(
+            route('settings.index'),
+            {
+                scope_type: scopeType,
+                scope_user_id: scopeType === 'user' && nextUserId ? nextUserId : undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
+    };
+
     const submit = (e) => {
         e.preventDefault();
         post(route('settings.update'));
@@ -50,12 +82,12 @@ export default function SettingsIndex({ auth, settings, billing, canManageSystem
                         </div>
                         <h1 className="app-heading">
                             {canManageSystemSettings
-                                ? 'Manage the shared project settings used across every workspace.'
+                                ? 'Manage shared project defaults or apply a user-specific override.'
                                 : 'Review your billing activity and current run balance.'}
                         </h1>
                         <p className="app-subheading mt-5 max-w-2xl">
                             {canManageSystemSettings
-                                ? 'AI providers, storage, and Stripe are configured once at the project level by admins. All users use the same active project settings right now.'
+                                ? 'Project settings are used by every workspace by default. When needed, admins can switch to a user scope and save a targeted override without redesigning the system later.'
                                 : 'System-level provider, Stripe, and storage settings are restricted to admin accounts.'}
                         </p>
                     </div>
@@ -107,6 +139,73 @@ export default function SettingsIndex({ auth, settings, billing, canManageSystem
 
             <form onSubmit={submit} className="grid gap-6 xl:grid-cols-[1fr_1fr]">
                 {canManageSystemSettings ? (
+                    <div className="app-card p-6 sm:p-8 xl:col-span-2">
+                        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                            <div>
+                                <h2 className="app-section-title">Settings scope</h2>
+                                <p className="app-muted mt-2">
+                                    Choose whether you are editing shared project defaults or a specific user override.
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-4 xl:items-end">
+                                <div className="tab-group">
+                                    <button
+                                        type="button"
+                                        className={`tab-item ${data.scope_type === 'project' ? 'tab-item-active' : ''}`}
+                                        onClick={() => changeScope('project')}
+                                    >
+                                        Project
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`tab-item ${data.scope_type === 'user' ? 'tab-item-active' : ''}`}
+                                        onClick={() =>
+                                            changeScope('user', data.scope_user_id || scopeUsers[0]?.id || '')
+                                        }
+                                    >
+                                        User
+                                    </button>
+                                </div>
+
+                                {data.scope_type === 'user' ? (
+                                    <div className="w-full min-w-[280px] xl:w-[360px]">
+                                        <label className="label-theme">User override target</label>
+                                        <select
+                                            value={data.scope_user_id}
+                                            onChange={(e) => changeScope('user', e.target.value)}
+                                            className="select-theme"
+                                        >
+                                            <option value="">Choose a user</option>
+                                            {scopeUsers.map((userOption) => (
+                                                <option key={userOption.id} value={userOption.id}>
+                                                    {userOption.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.scope_user_id ? <p className="form-error">{errors.scope_user_id}</p> : null}
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+
+                        <div className="mt-5 note-card">
+                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                Active scope
+                            </div>
+                            <div className="mt-2 text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                                {settingScope.label}
+                            </div>
+                            <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                {settingScope.uses_project_defaults
+                                    ? 'Changes saved here become the shared default for every user.'
+                                    : 'Changes saved here override the project default only for this user. Any value you leave untouched will still fall back to the project setting.'}
+                            </p>
+                        </div>
+                    </div>
+                ) : null}
+
+                {canManageSystemSettings ? (
                 <div className="app-card p-6 sm:p-8">
                     <div>
                         <h2 className="app-section-title">AI providers</h2>
@@ -126,7 +225,9 @@ export default function SettingsIndex({ auth, settings, billing, canManageSystem
                                 placeholder={configuredLabels.openai_api_key ? 'Saved on server. Enter a new key to replace it.' : 'Enter OpenAI API key'}
                             />
                             {configuredLabels.openai_api_key ? (
-                                <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">Existing key is stored server-side and hidden from the browser.</p>
+                                <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                    Existing key is stored server-side and hidden from the browser.
+                                </p>
                             ) : null}
                             {errors.openai_api_key && <p className="form-error">{errors.openai_api_key}</p>}
                         </div>

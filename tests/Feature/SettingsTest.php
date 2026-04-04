@@ -59,11 +59,12 @@ it('saves encrypted provider and stripe keys for admins', function () {
     $user = User::factory()->create(['is_admin' => true]);
 
     $this->actingAs($user)->post(route('settings.update'), [
+        'scope_type' => 'project',
         'openai_api_key' => 'openai-test-key',
         'claude_api_key' => 'claude-test-key',
         'stripe_secret_key' => 'sk_test_value',
         'stripe_webhook_secret' => 'whsec_test_value',
-    ])->assertRedirect(route('settings.index'));
+    ])->assertRedirect(route('settings.index', ['scope_type' => 'project']));
 
     $openAi = Setting::where('key', 'openai_api_key')->first();
     $claude = Setting::where('key', 'claude_api_key')->first();
@@ -101,9 +102,10 @@ it('keeps existing encrypted secrets when a blank settings save is submitted', f
     ]);
 
     $this->actingAs($user)->post(route('settings.update'), [
+        'scope_type' => 'project',
         'openai_api_key' => '',
         'aws_default_region' => 'us-east-1',
-    ])->assertRedirect(route('settings.index'));
+    ])->assertRedirect(route('settings.index', ['scope_type' => 'project']));
 
     $openAi = Setting::where('key', 'openai_api_key')->first();
 
@@ -117,6 +119,55 @@ it('blocks non-admin users from updating system settings', function () {
     $user = User::factory()->create(['is_admin' => false]);
 
     $this->actingAs($user)->post(route('settings.update'), [
+        'scope_type' => 'project',
         'openai_api_key' => 'openai-test-key',
     ])->assertForbidden();
+});
+
+it('shows admin scope controls for project and user overrides', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $targetUser = User::factory()->create(['name' => 'Target User', 'email' => 'target@example.com']);
+
+    $this->actingAs($admin)
+        ->get(route('settings.index', ['scope_type' => 'user', 'scope_user_id' => $targetUser->id]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('settingScope.type', 'user')
+            ->where('settingScope.user_id', $targetUser->id)
+            ->has('scopeUsers')
+        );
+});
+
+it('stores a user-scoped override through the settings page', function () {
+    $this->withoutMiddleware();
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $targetUser = User::factory()->create();
+
+    $this->actingAs($admin)->post(route('settings.update'), [
+        'scope_type' => 'user',
+        'scope_user_id' => $targetUser->id,
+        'openai_api_key' => 'user-openai-key',
+        'stripe_package_runs' => 150,
+    ])->assertRedirect(route('settings.index', [
+        'scope_type' => 'user',
+        'scope_user_id' => $targetUser->id,
+    ]));
+
+    $openAi = Setting::query()
+        ->where('scope_type', 'user')
+        ->where('scope_id', $targetUser->id)
+        ->where('key', 'openai_api_key')
+        ->first();
+
+    $packageRuns = Setting::query()
+        ->where('scope_type', 'user')
+        ->where('scope_id', $targetUser->id)
+        ->where('key', 'stripe_package_runs')
+        ->first();
+
+    expect($openAi)->not->toBeNull();
+    expect($packageRuns)->not->toBeNull();
+    expect(Crypt::decryptString($openAi->value))->toBe('user-openai-key');
+    expect($packageRuns->value)->toBe('150');
 });
