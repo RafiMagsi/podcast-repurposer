@@ -99,9 +99,9 @@ export default function Welcome({ auth }) {
                                     </Link>
 
                                     <nav className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                        <Link href={route('product')} className="nav-link">Product</Link>
-                                        <Link href={route('use-cases')} className="nav-link">Use Cases</Link>
-                                        <Link href={route('pricing')} className="nav-link">Pricing</Link>
+                                        <Link href="/product" className="nav-link">Product</Link>
+                                        <Link href="/use-cases" className="nav-link">Use Cases</Link>
+                                        <Link href="/pricing" className="nav-link">Pricing</Link>
                                         {auth?.user ? (
                                             <NavLink href={route('dashboard')} primary>
                                                 Open Dashboard

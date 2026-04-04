@@ -47,7 +47,7 @@ export default function MarketingLayout({
 
                             <div className="relative px-5 pb-10 pt-5 lg:px-7">
                                 <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <Link href={route('home')}>
+                                    <Link href="/">
                                         <ApplicationLogo
                                             className="h-9 w-9 rounded-[18px]"
                                             withText
@@ -57,9 +57,9 @@ export default function MarketingLayout({
                                     </Link>
 
                                     <nav className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                        <NavItem href={route('product')} active={activeNav === 'product'}>Product</NavItem>
-                                        <NavItem href={route('use-cases')} active={activeNav === 'use-cases'}>Use Cases</NavItem>
-                                        <NavItem href={route('pricing')} active={activeNav === 'pricing'}>Pricing</NavItem>
+                                        <NavItem href="/product" active={activeNav === 'product'}>Product</NavItem>
+                                        <NavItem href="/use-cases" active={activeNav === 'use-cases'}>Use Cases</NavItem>
+                                        <NavItem href="/pricing" active={activeNav === 'pricing'}>Pricing</NavItem>
                                         {auth?.user ? (
                                             <ActionLink href={route('dashboard')} primary>
                                                 Open Dashboard
