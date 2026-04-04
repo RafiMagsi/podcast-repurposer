@@ -23,15 +23,15 @@ export default function Register() {
             <Head title="Register" />
 
             <div className="auth-card">
-                <div className="mb-8">
-                    <div className="app-badge mb-4">Get started</div>
+                <div className="mb-7">
+                    <div className="app-badge-neutral mb-3">Get started</div>
                     <h1 className="text-3xl font-semibold text-[rgb(var(--color-text-strong))]">Create your account</h1>
                     <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                        Turn one short source into ready-to-post content with VoicePost AI.
+                        Create an account to turn short video, audio, or text into ready-to-post content.
                     </p>
                 </div>
 
-                <form onSubmit={submit} className="space-y-5">
+                <form onSubmit={submit} className="space-y-4.5">
                     <div>
                         <label className="label-theme">Name</label>
                         <input
@@ -88,7 +88,7 @@ export default function Register() {
                         {processing ? 'Creating account...' : 'Create account'}
                     </button>
 
-                    <div className="text-center text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="pt-1 text-center text-sm text-[rgb(var(--color-text-muted))]">
                         Already have an account?{' '}
                         <Link href={route('login')} className="text-[rgb(var(--color-text-strong))] hover:underline">
                             Sign in

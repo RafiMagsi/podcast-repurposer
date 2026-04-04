@@ -20,11 +20,11 @@ export default function Login({ status, canResetPassword }) {
             <Head title="Login" />
 
             <div className="auth-card">
-                <div className="mb-8">
-                    <div className="app-badge mb-4">Welcome back</div>
+                <div className="mb-7">
+                    <div className="app-badge-neutral mb-3">Welcome back</div>
                     <h1 className="text-3xl font-semibold text-[rgb(var(--color-text-strong))]">Sign in</h1>
                     <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                        Access your VoicePost AI workspace.
+                        Open your VoicePost AI workspace for short-source transcription and post-ready content.
                     </p>
                 </div>
 
@@ -34,7 +34,7 @@ export default function Login({ status, canResetPassword }) {
                     </div>
                 )}
 
-                <form onSubmit={submit} className="space-y-5">
+                <form onSubmit={submit} className="space-y-4.5">
                     <div>
                         <label className="label-theme">Email</label>
                         <input

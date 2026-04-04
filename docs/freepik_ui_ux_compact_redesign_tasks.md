@@ -109,7 +109,7 @@ Turn one short source into ready-to-post content.
 - Tighten table and list spacing.
 - Keep monitoring and queue states easy to scan.
 
-### 15. Align auth pages with the same product message
+### 15. Align auth pages with the same product message - done
 - Keep the same compact visual language.
 - Remove outdated output references.
 - Keep signup and login focused on the real current product.
