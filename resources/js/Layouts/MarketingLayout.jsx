@@ -35,15 +35,15 @@ export default function MarketingLayout({
 
             <div className="min-h-screen overflow-hidden">
                 <div className="mx-auto max-w-[1360px] p-2.5 sm:p-4">
-                    <div className="overflow-hidden rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_22px_60px_rgba(17,24,39,0.08)] sm:rounded-[28px]">
+                    <div className="overflow-hidden rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_10px_28px_rgba(17,24,39,0.06)] sm:rounded-[28px] sm:shadow-[0_22px_60px_rgba(17,24,39,0.08)]">
                         <div className="px-4 py-2.5 text-center text-xs font-semibold text-[rgb(var(--color-text-strong))] sm:px-6 sm:py-3 sm:text-sm bg-[rgb(var(--color-surface-pink))]">
                             VoicePost AI for fast short-source-to-content workflows
                         </div>
 
                         <div className="relative">
-                            <div className="absolute left-[-8rem] top-28 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-pink))] opacity-70 blur-3xl" />
-                            <div className="absolute right-[-6rem] top-24 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl" />
-                            <div className="absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl" />
+                            <div className="absolute left-[-8rem] top-28 hidden h-72 w-72 rounded-full bg-[rgb(var(--color-surface-pink))] opacity-70 blur-3xl lg:block" />
+                            <div className="absolute right-[-6rem] top-24 hidden h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl lg:block" />
+                            <div className="absolute bottom-[-6rem] left-1/3 hidden h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl lg:block" />
 
                             <div className="relative px-3.5 pb-6 pt-4 sm:px-5 sm:pb-8 sm:pt-5 lg:px-7 lg:pb-10">
                                 <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">

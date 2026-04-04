@@ -82,15 +82,15 @@ export default function Welcome({ auth }) {
 
             <div className="min-h-screen overflow-hidden">
                 <div className="mx-auto max-w-[1360px] p-2.5 sm:p-4">
-                    <div className="overflow-hidden rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_22px_60px_rgba(17,24,39,0.08)] sm:rounded-[28px]">
+                    <div className="overflow-hidden rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_10px_28px_rgba(17,24,39,0.06)] sm:rounded-[28px] sm:shadow-[0_22px_60px_rgba(17,24,39,0.08)]">
                         <div className="bg-[rgb(var(--color-surface-pink))] px-4 py-2.5 text-center text-xs font-semibold text-[rgb(var(--color-text-strong))] sm:px-6 sm:py-3 sm:text-sm">
                             VoicePost AI for fast short-source-to-content workflows
                         </div>
 
                         <div className="relative">
-                            <div className="absolute left-[-8rem] top-28 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-pink))] opacity-70 blur-3xl" />
-                            <div className="absolute right-[-6rem] top-24 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl" />
-                            <div className="absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl" />
+                            <div className="absolute left-[-8rem] top-28 hidden h-72 w-72 rounded-full bg-[rgb(var(--color-surface-pink))] opacity-70 blur-3xl lg:block" />
+                            <div className="absolute right-[-6rem] top-24 hidden h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl lg:block" />
+                            <div className="absolute bottom-[-6rem] left-1/3 hidden h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl lg:block" />
 
                             <div className="relative px-3.5 pb-6 pt-4 sm:px-5 sm:pb-8 sm:pt-5 lg:px-7 lg:pb-10">
                                 <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
@@ -342,7 +342,25 @@ export default function Welcome({ auth }) {
                                     </div>
                                 </section>
 
-                                <section className="mx-auto max-w-6xl py-8">
+                                <section className="mx-auto max-w-6xl py-6 md:hidden">
+                                    <AppCard variant="compact" padding="lg" className="p-5">
+                                        <div className="app-badge-neutral">Mobile Overview</div>
+                                        <div className="mt-3 grid gap-3">
+                                            {[
+                                                ['Inputs', 'Short video, audio, or one text note'],
+                                                ['Outputs', 'Transcript, summary, LinkedIn, X, Instagram, newsletter'],
+                                                ['Workspace', 'Preview, transcript, generation, and Magic Chat in one place'],
+                                            ].map(([title, description]) => (
+                                                <div key={title} className="note-card">
+                                                    <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">{title}</div>
+                                                    <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </AppCard>
+                                </section>
+
+                                <section className="mx-auto hidden max-w-6xl py-8 md:block">
                                     <div className="grid gap-4 xl:grid-cols-[1.02fr_.98fr]">
                                         <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
                                             <div className="app-badge-neutral">What you get</div>
@@ -400,7 +418,7 @@ export default function Welcome({ auth }) {
                                     </div>
                                 </section>
 
-                                <section className="mx-auto max-w-6xl py-4">
+                                <section className="mx-auto hidden max-w-6xl py-4 md:block">
                                     <div className="grid gap-4 xl:grid-cols-[.94fr_1.06fr]">
                                         <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
                                             <div className="app-badge-neutral">Supported Inputs</div>
@@ -433,7 +451,7 @@ export default function Welcome({ auth }) {
                                     </div>
                                 </section>
 
-                                <section className="mx-auto max-w-6xl py-4">
+                                <section className="mx-auto hidden max-w-6xl py-4 md:block">
                                     <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
                                         <div className="section-header">
                                             <div className="section-header-copy">
