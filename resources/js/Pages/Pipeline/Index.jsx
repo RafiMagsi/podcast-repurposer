@@ -140,10 +140,10 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
                         <div className="app-badge-neutral">Active Pipeline</div>
-                        <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[34px]">
+                        <h1 className="app-page-title mt-3">
                             Monitor current processing runs.
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                        <p className="app-subheading mt-2 max-w-2xl">
                             This page shows every active recording moving through media prep, transcription, or content generation.
                         </p>
                     </div>

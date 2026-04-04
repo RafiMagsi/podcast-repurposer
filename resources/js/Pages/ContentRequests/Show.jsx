@@ -520,7 +520,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                     <div className="space-y-4 xl:space-y-5">
                         <ContentPreviewCard contentRequest={liveContentRequest} sourceLabel={sourceLabel} />
 
-                        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_280px] 2xl:gap-5">
+                        <div className="grid gap-4 2xl:grid-cols-2 2xl:gap-5">
                             <AppCard variant="compact" padding="md" className="sm:p-5">
                                 <div className="section-header-compact">
                                     <div className="section-header-copy">

@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import AppCard from '@/Components/ui/AppCard';
 import { Link } from '@inertiajs/react';
 
 export default function GuestLayout({ children }) {
@@ -7,7 +8,7 @@ export default function GuestLayout({ children }) {
             <div className="w-full max-w-6xl">
                 <div className="grid gap-6 lg:grid-cols-[1fr_.92fr] lg:items-center xl:gap-8">
                     <div className="hidden lg:block">
-                        <div className="app-panel overflow-hidden p-8 xl:p-9">
+                        <AppCard variant="panel" padding="none" className="overflow-hidden p-8 xl:p-9">
                             <div className="app-badge-neutral mb-4">VoicePost AI</div>
                             <h1 className="app-heading max-w-lg">
                                 Turn one short source into ready-to-post content.
@@ -17,25 +18,25 @@ export default function GuestLayout({ children }) {
                             </p>
 
                             <div className="mt-6 compact-grid-2">
-                                <div className="stat-card">
+                                <AppCard className="stat-card">
                                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                         Workflow
                                     </div>
                                     <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
                                         Source · Transcript · Content
                                     </div>
-                                </div>
-                                <div className="stat-card">
+                                </AppCard>
+                                <AppCard className="stat-card">
                                     <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                         Outputs
                                     </div>
                                     <div className="mt-2 text-lg font-semibold text-[rgb(var(--color-text-strong))]">
                                         Summary, LinkedIn, X, Instagram, Newsletter
                                     </div>
-                                </div>
+                                </AppCard>
                             </div>
 
-                            <div className="mt-6 rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                            <AppCard variant="muted" padding="md" className="mt-6">
                                 <div className="input-hero">Short video, audio, or text note...</div>
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     {['Summary', 'LinkedIn', 'X Post', 'Newsletter'].map((item, index) => (
@@ -47,8 +48,8 @@ export default function GuestLayout({ children }) {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        </div>
+                            </AppCard>
+                        </AppCard>
                     </div>
 
                     <div>

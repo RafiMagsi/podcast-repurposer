@@ -47,10 +47,10 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
                         <div className="app-badge-neutral">Admin</div>
-                        <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[34px]">
+                        <h1 className="app-page-title mt-3">
                             Monitor every content run.
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                        <p className="app-subheading mt-2 max-w-2xl">
                             Review users, source types, statuses, and timestamps across all runs from one admin surface.
                         </p>
                     </div>

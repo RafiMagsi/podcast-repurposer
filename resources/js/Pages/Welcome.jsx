@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import AppCard from '@/Components/ui/AppCard';
 
 const features = [
     {
@@ -35,11 +36,11 @@ function NavLink({ href, children, primary = false }) {
 
 function FeatureCard({ title, description }) {
     return (
-        <div className="app-card-compact p-5">
+        <AppCard variant="compact" padding="md" className="p-5">
             <div className="app-badge-neutral mb-3">Feature</div>
             <h3 className="text-lg font-semibold text-[rgb(var(--color-text-strong))]">{title}</h3>
             <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</p>
-        </div>
+        </AppCard>
     );
 }
 
@@ -132,7 +133,7 @@ export default function Welcome({ auth }) {
                                     </div>
 
                                     <div className="relative">
-                                        <div className="app-card-compact overflow-hidden rounded-[28px]">
+                                        <AppCard variant="compact" padding="none" className="overflow-hidden rounded-[28px]">
                                             <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--color-border))] bg-white px-4 py-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className="h-2.5 w-2.5 rounded-full bg-[#ff6f61]" />
@@ -215,7 +216,7 @@ export default function Welcome({ auth }) {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </AppCard>
                                     </div>
                                 </section>
 
@@ -229,7 +230,7 @@ export default function Welcome({ auth }) {
 
                                 <section className="mx-auto max-w-6xl py-10">
                                     <div className="grid gap-4 xl:grid-cols-[1.02fr_.98fr]">
-                                        <div className="app-card-compact p-6 sm:p-7">
+                                        <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
                                             <div className="app-badge-neutral">What you get</div>
                                             <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[rgb(var(--color-text-strong))] sm:text-3xl">
                                                 A compact product workspace, not a bloated content suite.
@@ -257,7 +258,7 @@ export default function Welcome({ auth }) {
                                                     </div>
                                                 ))}
                                             </div>
-                                        </div>
+                                        </AppCard>
 
                                         <div className="space-y-3">
                                             {[
@@ -265,7 +266,7 @@ export default function Welcome({ auth }) {
                                                 ['02', 'Generate the transcript', 'Use the transcript as the source of truth for the writing pass.'],
                                                 ['03', 'Review five outputs', 'Copy summary, LinkedIn, X, Instagram, and newsletter from one workspace.'],
                                             ].map(([step, title, description]) => (
-                                                <div key={step} className="app-card-compact p-5">
+                                                <AppCard key={step} variant="compact" padding="md" className="p-5">
                                                     <div className="flex items-start gap-4">
                                                         <div className="profile-icon profile-icon-blue text-sm font-semibold text-[rgb(var(--color-secondary-text))]">
                                                             {step}
@@ -279,7 +280,7 @@ export default function Welcome({ auth }) {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </AppCard>
                                             ))}
                                         </div>
                                     </div>

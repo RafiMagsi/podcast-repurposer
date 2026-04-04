@@ -139,7 +139,7 @@ Turn one short source into ready-to-post content.
 - Align generated content cards and preview panels.
 - Make compact UI/UX
 
-### Pass 4
+### Pass 4 - done
 - Align library, pipeline, admin, and auth pages.
 - Make similar UI/UX all over the pages
 - Refresh landing page.
