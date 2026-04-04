@@ -414,7 +414,7 @@ export default function CreateContent({
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Choose your source type
                         </div>
-                        <div className="mt-3 grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
                         {sourceOptions.map((option) => (
                             <button
                                 key={option.value}
@@ -468,7 +468,7 @@ export default function CreateContent({
                             </AppCard>
 
                             <AppCard variant="muted" padding="md">
-                                <div className="grid gap-4 lg:grid-cols-2">
+                                <div className="grid gap-4 xl:grid-cols-2">
                                     <div>
                                         <label className="label-theme">Recording title</label>
                                         <input
@@ -607,14 +607,14 @@ export default function CreateContent({
                                 </div>
                             ) : null}
 
-                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                                 <p className="max-w-2xl pr-0 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                     {isTextSource
                                         ? 'Text notes skip transcription and go straight into content generation.'
                                         : 'File uploads run through transcription first, then generate content outputs.'}
                                 </p>
 
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:self-start xl:self-center">
                                     {showCancelButton ? (
                                         <button type="button" onClick={() => window.history.back()} className="btn-outline">
                                             Cancel
@@ -637,7 +637,7 @@ export default function CreateContent({
                             </div>
                         </form>
 
-                        <div className="grid gap-4 md:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
+                        <div className="grid gap-4 lg:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
                             <AppCard variant="muted" padding="md">
                                 <div className="app-badge-neutral">New Source</div>
                                 <h3 className="mt-3 app-heading-md">
@@ -698,7 +698,7 @@ export default function CreateContent({
                                 </div>
                             </AppCard>
 
-                            <AppCard variant="muted" padding="md" className="md:col-span-2 2xl:col-span-1">
+                            <AppCard variant="muted" padding="md" className="lg:col-span-2 2xl:col-span-1">
                                 <div className="app-badge-neutral">After You Submit</div>
                                 <h3 className="mt-3 app-heading-md">
                                     You go straight to the recording workspace.
@@ -733,7 +733,7 @@ export default function CreateContent({
                                 </div>
                             </AppCard>
 
-                            <AppCard variant="muted" padding="md" className="md:col-span-2 2xl:col-span-1">
+                            <AppCard variant="muted" padding="md" className="lg:col-span-2 2xl:col-span-1">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     Limits
                                 </div>

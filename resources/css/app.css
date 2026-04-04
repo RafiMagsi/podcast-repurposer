@@ -599,12 +599,20 @@
     }
 
     .tab-item:hover {
+        background: rgb(255 255 255);
         color: rgb(var(--color-text));
     }
 
     .tab-item-active {
         background: rgb(var(--color-primary));
-        color: white;
+        color: rgb(var(--color-primary-text));
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.12);
+    }
+
+    .tab-item-active:hover {
+        background: rgb(var(--color-primary-hover));
+        color: rgb(var(--color-primary-text));
     }
 
     .tab-group-compact {
@@ -618,8 +626,20 @@
         color: rgb(var(--color-text-muted));
     }
 
+    .tab-item-compact:hover {
+        background: rgb(255 255 255);
+        color: rgb(var(--color-text));
+    }
+
     .tab-item-compact-active {
         background: rgb(var(--color-primary));
+        color: rgb(var(--color-primary-text));
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.12);
+    }
+
+    .tab-item-compact-active:hover {
+        background: rgb(var(--color-primary-hover));
         color: rgb(var(--color-primary-text));
     }
 
@@ -965,5 +985,165 @@
         content: '';
         @apply h-px flex-1;
         background: rgb(var(--color-border));
+    }
+
+    @media (max-width: 1279px) {
+        .workspace-shell {
+            @apply max-w-none;
+        }
+
+        .workspace-content {
+            @apply px-4 pb-5 pt-4;
+        }
+    }
+
+    @media (max-width: 1023px) {
+        .app-heading {
+            @apply text-[2rem];
+            line-height: 1.04;
+        }
+
+        .app-page-title {
+            @apply text-[1.7rem];
+            line-height: 1.06;
+        }
+
+        .app-subheading {
+            @apply text-sm leading-6;
+        }
+
+        .app-page,
+        .app-page-narrow {
+            @apply px-4;
+        }
+
+        .workspace-content {
+            @apply space-y-4 px-4 pb-5 pt-4;
+        }
+
+        .topbar {
+            @apply top-0;
+        }
+
+        .topbar-search-wrap {
+            @apply min-w-0 w-full max-w-none;
+        }
+
+        .sidebar-scroll-area {
+            @apply pb-4;
+        }
+
+        .auth-shell {
+            @apply items-start px-4 py-6;
+        }
+
+        .auth-card {
+            @apply rounded-[16px] p-5;
+        }
+
+        .note-row {
+            @apply items-start gap-3 px-3.5 py-3;
+        }
+
+        .plan-card,
+        .stat-card,
+        .output-section {
+            @apply p-4;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .app-shell {
+            overflow-x: hidden;
+        }
+
+        .app-page,
+        .app-page-narrow,
+        .workspace-content {
+            @apply px-3.5;
+        }
+
+        .workspace-content {
+            @apply pb-4 pt-3;
+        }
+
+        .section-header,
+        .section-header-compact {
+            @apply gap-2;
+        }
+
+        .app-heading {
+            @apply text-[1.8rem];
+        }
+
+        .app-page-title {
+            @apply text-[1.5rem];
+        }
+
+        .btn-primary,
+        .btn-primary-rect,
+        .btn-secondary,
+        .btn-outline,
+        .btn-danger {
+            @apply w-full px-3.5 text-sm;
+        }
+
+        .btn-copy,
+        .btn-compact,
+        .topbar-action,
+        .filter-pill,
+        .tab-item,
+        .tab-item-compact {
+            @apply justify-center;
+        }
+
+        .tab-group,
+        .tab-group-compact {
+            @apply flex w-full flex-wrap;
+        }
+
+        .tab-item {
+            @apply flex-1 justify-center px-3;
+        }
+
+        .sidebar {
+            @apply px-3.5 py-3.5;
+        }
+
+        .sidebar-link {
+            @apply px-2.5 py-2;
+        }
+
+        .topbar-search-wrap {
+            @apply px-3 py-2;
+        }
+
+        .topbar-action {
+            @apply min-h-[36px] px-3;
+        }
+
+        .nav-link {
+            @apply px-2.5 py-1.5 text-[13px];
+        }
+
+        .breadcrumb {
+            @apply text-[13px];
+        }
+
+        .auth-card {
+            @apply p-4;
+        }
+
+        .recording-visualizer {
+            @apply h-[72px] px-3.5 py-3;
+        }
+
+        .recording-visualizer-bar {
+            @apply w-[5px];
+        }
+
+        .upload-zone {
+            @apply px-4 py-8;
+        }
     }
 }

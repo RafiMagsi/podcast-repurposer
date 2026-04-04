@@ -76,9 +76,9 @@ export default function Welcome({ auth }) {
             <Head title="VoicePost AI" />
 
             <div className="min-h-screen overflow-hidden">
-                <div className="mx-auto max-w-[1360px] p-3 sm:p-4">
-                    <div className="overflow-hidden rounded-[28px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_22px_60px_rgba(17,24,39,0.08)]">
-                        <div className="bg-[rgb(var(--color-surface-pink))] px-6 py-3 text-center text-sm font-semibold text-[rgb(var(--color-text-strong))]">
+                <div className="mx-auto max-w-[1360px] p-2.5 sm:p-4">
+                    <div className="overflow-hidden rounded-[22px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_22px_60px_rgba(17,24,39,0.08)] sm:rounded-[28px]">
+                        <div className="bg-[rgb(var(--color-surface-pink))] px-4 py-2.5 text-center text-xs font-semibold text-[rgb(var(--color-text-strong))] sm:px-6 sm:py-3 sm:text-sm">
                             VoicePost AI for fast short-source-to-content workflows
                         </div>
 
@@ -87,8 +87,8 @@ export default function Welcome({ auth }) {
                             <div className="absolute right-[-6rem] top-24 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl" />
                             <div className="absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl" />
 
-                            <div className="relative px-5 pb-10 pt-5 lg:px-7">
-                                <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="relative px-3.5 pb-6 pt-4 sm:px-5 sm:pb-8 sm:pt-5 lg:px-7 lg:pb-10">
+                                <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                                     <Link href="/">
                                         <ApplicationLogo
                                             className="h-9 w-9 rounded-[18px]"
@@ -98,7 +98,7 @@ export default function Welcome({ auth }) {
                                         />
                                     </Link>
 
-                                    <nav className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                    <nav className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end sm:gap-3">
                                         <Link href="/product" className="nav-link">Product</Link>
                                         <Link href="/use-cases" className="nav-link">Use Cases</Link>
                                         <Link href="/pricing" className="nav-link">Pricing</Link>
@@ -117,17 +117,17 @@ export default function Welcome({ auth }) {
                                     </nav>
                                 </header>
 
-                                <section className="mx-auto grid max-w-6xl gap-5 py-8 xl:grid-cols-[.92fr_1.08fr] xl:items-start xl:gap-6 xl:py-10">
+                                <section className="mx-auto grid max-w-6xl gap-5 py-6 sm:py-8 xl:grid-cols-[.92fr_1.08fr] xl:items-start xl:gap-6 xl:py-10">
                                     <div className="text-center xl:text-left">
                                         <div className="app-badge mb-4">VoicePost AI</div>
-                                        <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-[0.98] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-5xl xl:mx-0 xl:text-6xl">
+                                        <h1 className="mx-auto max-w-4xl text-[2.15rem] font-extrabold leading-[1] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-5xl xl:mx-0 xl:text-6xl">
                                             Turn one short source into ready-to-post content.
                                         </h1>
-                                        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[rgb(var(--color-text-muted))] xl:mx-0">
+                                        <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))] sm:mt-4 sm:text-base sm:leading-7 xl:mx-0">
                                             Upload a short video, upload short audio, or paste one short text note. VoicePost AI turns it into a transcript plus five reusable content assets from one compact workspace.
                                         </p>
 
-                                        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 xl:justify-start">
+                                        <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 xl:justify-start">
                                             {auth?.user ? (
                                                 <NavLink href={route('dashboard')} primary>
                                                     Open workspace
@@ -196,7 +196,7 @@ export default function Welcome({ auth }) {
                                                                 Source preview
                                                             </div>
                                                             <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgb(var(--color-border))] bg-black">
-                                                                <div className="flex h-[230px] items-center justify-center">
+                                                                <div className="flex h-[190px] items-center justify-center sm:h-[230px]">
                                                                     <img
                                                                         src="/assets/welcome/workflow-diagram.svg"
                                                                         alt="VoicePost AI workspace preview"

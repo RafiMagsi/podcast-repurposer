@@ -567,7 +567,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         <ContentPreviewCard contentRequest={liveContentRequest} sourceLabel={sourceLabel} />
 
                         <AppCard variant="compact" padding="md" className="sm:p-5">
-                            <div className="tab-group">
+                            <div className="tab-group w-full">
                                 {[
                                     ['transcript', 'Transcript'],
                                     ['content', 'AI Content'],
@@ -601,7 +601,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                             </button>
                                         ) : null}
                                     </div>
-                                    <div className="max-h-[460px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))] sm:max-h-[520px]">
+                                    <div className="max-h-[340px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))] sm:max-h-[420px] lg:max-h-[520px]">
                                         {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
                                     </div>
                                 </AppCard>

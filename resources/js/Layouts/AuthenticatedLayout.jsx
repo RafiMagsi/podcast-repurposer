@@ -182,20 +182,22 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 <button
                                     type="button"
                                     onClick={() => setSidebarOpen((current) => !current)}
-                                    className="sidebar-mobile-toggle hidden max-lg:inline-flex"
+                                    className="sidebar-mobile-toggle lg:hidden"
                                     aria-label={sidebarOpen ? 'Close navigation' : 'Open navigation'}
                                 >
                                     {sidebarOpen ? '×' : '☰'}
                                 </button>
 
-                                <div className="breadcrumb">
+                                <div className="min-w-0">
+                                <div className="breadcrumb overflow-x-auto whitespace-nowrap">
                                     <span>{breadcrumb[0]}</span>
                                     <span className="breadcrumb-sep">/</span>
                                     <span className="breadcrumb-current">{breadcrumb[1]}</span>
                                 </div>
+                                </div>
                             </div>
 
-                            <div className="flex flex-col gap-3 lg:min-w-0 lg:flex-row lg:items-center lg:justify-end">
+                            <div className="flex flex-col gap-2.5 lg:min-w-0 lg:flex-row lg:items-center lg:justify-end">
                                 <div className="topbar-search-wrap">
                                     <span className="topbar-search-icon">⌕</span>
                                     <input
@@ -208,7 +210,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                     />
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2 max-sm:grid max-sm:grid-cols-2">
                                 <a href={route('dashboard')} className="topbar-action">
                                     Dashboard
                                 </a>

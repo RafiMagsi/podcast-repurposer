@@ -6,7 +6,7 @@ export default function GuestLayout({ children }) {
     return (
         <div className="auth-shell">
             <div className="w-full max-w-[1180px]">
-                <div className="grid gap-5 lg:grid-cols-[1fr_.88fr] lg:items-center xl:gap-6">
+                <div className="grid gap-4 lg:grid-cols-[1fr_.88fr] lg:items-center xl:gap-6">
                     <div className="hidden lg:block">
                         <AppCard variant="panel" padding="none" className="overflow-hidden p-7 xl:p-8">
                             <div className="app-badge-neutral mb-3">VoicePost AI</div>
@@ -56,7 +56,7 @@ export default function GuestLayout({ children }) {
                         <div className="mb-3 flex justify-center lg:justify-start">
                             <Link href="/">
                                 <ApplicationLogo
-                                    className="h-14 w-14 rounded-[20px]"
+                                    className="h-12 w-12 rounded-[18px] sm:h-14 sm:w-14 sm:rounded-[20px]"
                                     withText
                                     textClassName="text-lg font-semibold text-[rgb(var(--color-text-strong))]"
                                     subtitleClassName="text-[11px] uppercase tracking-[0.18em] text-[rgb(var(--color-text-muted))]"
