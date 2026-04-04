@@ -66,7 +66,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
 
     return (
         <div className="app-card-compact p-4 sm:p-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-3 sm:gap-3.5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                     <div className="app-badge-neutral">{sourceLabel(contentRequest.input_type)}</div>
                     <h2 className="mt-2.5 text-lg font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
@@ -78,7 +78,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                 </div>
 
                 {contentRequest.original_file_name || contentRequest.media_thumbnail_url ? (
-                    <div className="note-card-muted w-full text-sm lg:w-auto lg:max-w-[260px]">
+                    <div className="note-card-muted w-full text-sm sm:max-w-[320px] lg:w-auto lg:max-w-[260px]">
                         {contentRequest.original_file_name || 'Thumbnail available'}
                     </div>
                 ) : null}
@@ -99,7 +99,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Audio preview
                         </div>
-                        <div className="mt-3 flex min-h-[104px] items-center rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4">
+                        <div className="mt-3 flex min-h-[112px] items-center rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4 sm:min-h-[124px]">
                             <audio
                                 ref={mediaElementRef}
                                 controls
@@ -117,14 +117,14 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                             Video preview
                         </div>
                         <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgb(var(--color-border))] bg-black">
-                            <div className="relative flex min-h-[220px] items-center justify-center bg-black sm:min-h-[280px] lg:min-h-[360px]">
+                            <div className="relative flex h-[220px] items-center justify-center bg-black sm:h-[250px] lg:h-[300px] 2xl:h-[240px]">
                                 {mediaUrl ? (
                                     <video
                                         ref={mediaElementRef}
                                         controls
                                         preload="metadata"
                                         poster={thumbnailUrl || undefined}
-                                        className="max-h-full max-w-full object-contain"
+                                        className="h-full w-full object-contain"
                                         src={mediaUrl}
                                     >
                                         Your browser does not support video playback.
@@ -133,7 +133,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                                     <img
                                         src={thumbnailUrl}
                                         alt={`${contentRequest.title} thumbnail`}
-                                        className="max-h-full max-w-full object-contain"
+                                        className="h-full w-full object-contain"
                                     />
                                 ) : null}
                             </div>

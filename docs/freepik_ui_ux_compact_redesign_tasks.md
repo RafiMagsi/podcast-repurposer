@@ -95,7 +95,7 @@ Turn one short source into ready-to-post content.
 - Reduce visual weight of helper text.
 - Keep regeneration/loading/error states compact.
 
-### 13. Improve workspace responsiveness
+### 13. Improve workspace responsiveness - done
 - Tablet: preserve hierarchy without squeezing the main content area.
 - Mobile: stack details, preview, transcript, and outputs cleanly.
 - Prevent video/audio preview sections from becoming too tall. 

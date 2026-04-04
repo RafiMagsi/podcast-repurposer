@@ -409,8 +409,8 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                     </div>
                 )}
 
-                <div className="grid gap-4 2xl:grid-cols-[300px_minmax(0,1fr)] 2xl:gap-6">
-                    <div className="space-y-4">
+                <div className="grid gap-4 xl:gap-5 2xl:grid-cols-[300px_minmax(0,1fr)] 2xl:gap-6">
+                    <div className="space-y-4 xl:space-y-5">
                         <ContentPreviewCard contentRequest={liveContentRequest} onCopy={copyToClipboard} sourceLabel={sourceLabel} />
 
                         <div className="app-card-compact p-4">
@@ -518,8 +518,8 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         ) : null}
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+                    <div className="space-y-4 xl:space-y-5">
+                        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_280px] 2xl:gap-5">
                             <div className="app-card-compact p-4 sm:p-5">
                                 <div className="section-header-compact">
                                     <div className="section-header-copy">
@@ -534,7 +534,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                         </button>
                                     ) : null}
                                 </div>
-                                <div className="max-h-[560px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                <div className="max-h-[460px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))] sm:max-h-[520px]">
                                     {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
                                 </div>
                             </div>

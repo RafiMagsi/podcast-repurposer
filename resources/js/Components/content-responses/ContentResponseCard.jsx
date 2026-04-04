@@ -16,7 +16,7 @@ export default function ContentResponseCard({
 
     return (
         <div className={`rounded-[16px] border p-4 ${meta.sectionClass}`}>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-3 sm:gap-3.5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-3">
                         <div className={`flex h-9 w-9 items-center justify-center rounded-[12px] ${meta.iconWrapClass}`}>
@@ -34,7 +34,7 @@ export default function ContentResponseCard({
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.badgeClass}`}>
                         Asset
                     </span>
