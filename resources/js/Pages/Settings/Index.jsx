@@ -46,16 +46,16 @@ export default function SettingsIndex({ auth, settings, billing, canManageSystem
                 <div className="grid gap-8 xl:grid-cols-[1.05fr_.95fr] xl:items-center">
                     <div>
                         <div className="app-badge mb-4">
-                            {canManageSystemSettings ? 'Provider configuration' : 'Account billing'}
+                            {canManageSystemSettings ? 'Project configuration' : 'Account billing'}
                         </div>
                         <h1 className="app-heading">
                             {canManageSystemSettings
-                                ? 'Keep the engine room clean, readable, and dependable.'
+                                ? 'Manage the shared project settings used across every workspace.'
                                 : 'Review your billing activity and current run balance.'}
                         </h1>
                         <p className="app-subheading mt-5 max-w-2xl">
                             {canManageSystemSettings
-                                ? 'System-level provider, Stripe, and storage values are only available to admin accounts.'
+                                ? 'AI providers, storage, and Stripe are configured once at the project level by admins. All users use the same active project settings right now.'
                                 : 'System-level provider, Stripe, and storage settings are restricted to admin accounts.'}
                         </p>
                     </div>

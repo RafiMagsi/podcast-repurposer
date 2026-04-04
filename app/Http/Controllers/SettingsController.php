@@ -22,27 +22,27 @@ class SettingsController extends Controller
                 'claude_api_key' => $canManageSystemSettings ? '' : null,
                 'aws_access_key_id' => $canManageSystemSettings ? '' : null,
                 'aws_secret_access_key' => $canManageSystemSettings ? '' : null,
-                'aws_default_region' => $canManageSystemSettings ? $settings->get('aws_default_region', '') : null,
-                'aws_bucket' => $canManageSystemSettings ? $settings->get('aws_bucket', '') : null,
-                'aws_url' => $canManageSystemSettings ? $settings->get('aws_url', '') : null,
-                'aws_endpoint' => $canManageSystemSettings ? $settings->get('aws_endpoint', '') : null,
-                'aws_use_path_style_endpoint' => $canManageSystemSettings ? $settings->get('aws_use_path_style_endpoint', 'false') : null,
-                'bypass_openai_for_testing' => $canManageSystemSettings ? $settings->get('bypass_openai_for_testing', 'false') : null,
+                'aws_default_region' => $canManageSystemSettings ? $settings->getProject('aws_default_region', '') : null,
+                'aws_bucket' => $canManageSystemSettings ? $settings->getProject('aws_bucket', '') : null,
+                'aws_url' => $canManageSystemSettings ? $settings->getProject('aws_url', '') : null,
+                'aws_endpoint' => $canManageSystemSettings ? $settings->getProject('aws_endpoint', '') : null,
+                'aws_use_path_style_endpoint' => $canManageSystemSettings ? $settings->getProject('aws_use_path_style_endpoint', 'false') : null,
+                'bypass_openai_for_testing' => $canManageSystemSettings ? $settings->getProject('bypass_openai_for_testing', 'false') : null,
                 'stripe_secret_key' => $canManageSystemSettings ? '' : null,
                 'stripe_publishable_key' => $canManageSystemSettings ? '' : null,
                 'stripe_webhook_secret' => $canManageSystemSettings ? '' : null,
-                'stripe_package_name' => $canManageSystemSettings ? $settings->get('stripe_package_name', (string) config('services.stripe.package_name', 'VoicePost AI Starter Pack')) : null,
-                'stripe_package_runs' => $canManageSystemSettings ? $settings->get('stripe_package_runs', (string) config('services.stripe.package_runs', 100)) : null,
-                'stripe_package_price_usd' => $canManageSystemSettings ? $settings->get('stripe_package_price_usd', (string) config('services.stripe.package_price_usd', 10)) : null,
-                'stripe_package_price_cents' => $canManageSystemSettings ? $settings->get('stripe_package_price_cents', (string) config('services.stripe.package_price_cents', 1000)) : null,
-                'stripe_currency' => $canManageSystemSettings ? $settings->get('stripe_currency', (string) config('services.stripe.currency', 'usd')) : null,
-                'has_openai_api_key' => $canManageSystemSettings ? $settings->has('openai_api_key') : false,
-                'has_claude_api_key' => $canManageSystemSettings ? $settings->has('claude_api_key') : false,
-                'has_aws_access_key_id' => $canManageSystemSettings ? $settings->has('aws_access_key_id') : false,
-                'has_aws_secret_access_key' => $canManageSystemSettings ? $settings->has('aws_secret_access_key') : false,
-                'has_stripe_secret_key' => $canManageSystemSettings ? $settings->has('stripe_secret_key') : false,
-                'has_stripe_publishable_key' => $canManageSystemSettings ? $settings->has('stripe_publishable_key') : false,
-                'has_stripe_webhook_secret' => $canManageSystemSettings ? $settings->has('stripe_webhook_secret') : false,
+                'stripe_package_name' => $canManageSystemSettings ? $settings->getProject('stripe_package_name', (string) config('services.stripe.package_name', 'VoicePost AI Starter Pack')) : null,
+                'stripe_package_runs' => $canManageSystemSettings ? $settings->getProject('stripe_package_runs', (string) config('services.stripe.package_runs', 100)) : null,
+                'stripe_package_price_usd' => $canManageSystemSettings ? $settings->getProject('stripe_package_price_usd', (string) config('services.stripe.package_price_usd', 10)) : null,
+                'stripe_package_price_cents' => $canManageSystemSettings ? $settings->getProject('stripe_package_price_cents', (string) config('services.stripe.package_price_cents', 1000)) : null,
+                'stripe_currency' => $canManageSystemSettings ? $settings->getProject('stripe_currency', (string) config('services.stripe.currency', 'usd')) : null,
+                'has_openai_api_key' => $canManageSystemSettings ? $settings->hasProject('openai_api_key') : false,
+                'has_claude_api_key' => $canManageSystemSettings ? $settings->hasProject('claude_api_key') : false,
+                'has_aws_access_key_id' => $canManageSystemSettings ? $settings->hasProject('aws_access_key_id') : false,
+                'has_aws_secret_access_key' => $canManageSystemSettings ? $settings->hasProject('aws_secret_access_key') : false,
+                'has_stripe_secret_key' => $canManageSystemSettings ? $settings->hasProject('stripe_secret_key') : false,
+                'has_stripe_publishable_key' => $canManageSystemSettings ? $settings->hasProject('stripe_publishable_key') : false,
+                'has_stripe_webhook_secret' => $canManageSystemSettings ? $settings->hasProject('stripe_webhook_secret') : false,
             ],
             'billing' => [
                 'run_limit' => (int) ($user?->run_limit ?? 0),
@@ -108,13 +108,13 @@ class SettingsController extends Controller
         foreach ($validated as $key => $value) {
             if (in_array($key, $secretKeys, true)) {
                 if ($value !== null && trim($value) !== '') {
-                    $settings->set($key, $value, 'string', true);
+                    $settings->setProject($key, $value, 'string', true);
                 }
 
                 continue;
             }
 
-            $settings->set($key, $value, 'string', true);
+            $settings->setProject($key, $value, 'string', true);
         }
 
         return redirect()

@@ -34,6 +34,8 @@ it('does not expose saved secrets to the frontend settings payload', function ()
     $user = User::factory()->create(['is_admin' => true]);
 
     Setting::updateOrCreate(['key' => 'openai_api_key'], [
+        'scope_type' => 'project',
+        'scope_id' => 0,
         'key' => 'openai_api_key',
         'value' => Crypt::encryptString('super-secret-openai-key'),
         'type' => 'string',
@@ -90,6 +92,8 @@ it('keeps existing encrypted secrets when a blank settings save is submitted', f
     $user = User::factory()->create(['is_admin' => true]);
 
     Setting::updateOrCreate(['key' => 'openai_api_key'], [
+        'scope_type' => 'project',
+        'scope_id' => 0,
         'key' => 'openai_api_key',
         'value' => Crypt::encryptString('existing-openai-key'),
         'type' => 'string',
