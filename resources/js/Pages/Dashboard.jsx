@@ -42,13 +42,13 @@ export default function Dashboard({ auth, contentRequests = [] }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                    <div>
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                    <div className="max-w-3xl">
                         <div className="app-badge-neutral">VoicePost AI Studio</div>
-                        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
+                        <h1 className="mt-3 text-[34px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[40px]">
                             Turn one short source into ready-to-post content.
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                             Start with a 1-minute video, a 1-minute audio clip, or one short text idea. Submit the run here, then review the transcript and five outputs in the workspace.
                         </p>
                     </div>
@@ -73,41 +73,16 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                     </div>
                 )}
 
-                {usageLimits ? (
-                    <div className="app-card p-5">
-                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                            <div>
-                                <div className="app-badge-neutral">Usage</div>
-                                <div className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
-                                    {usageLimits.remaining} of {usageLimits.limit} runs remaining
-                                </div>
-                                <div className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                    ${usageLimits.plan_price_usd} plan. Each new content request counts as one run.
-                                </div>
-                            </div>
-
-                            <div className="min-w-[220px] flex-1 lg:max-w-[340px]">
-                                <div className="usage-bar-track">
-                                    <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
-                                </div>
-                                <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                    {usageLimits.used} used · {usageLimits.percent_used}% consumed
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : null}
-
-                <StatsCard
-                    contentRequests={contentRequests}
-                    completedCount={completedCount}
-                    processingCount={processingCount}
-                    failedCount={failedCount}
-                    usageLimits={usageLimits}
-                />
-
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,.9fr)]">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.48fr)_minmax(300px,.88fr)]">
                     <div className="space-y-6">
+                        <StatsCard
+                            contentRequests={contentRequests}
+                            completedCount={completedCount}
+                            processingCount={processingCount}
+                            failedCount={failedCount}
+                            usageLimits={usageLimits}
+                        />
+
                         <RecordingInfoCard />
 
                         <RecentRecordingsCard contentRequests={contentRequests} />
@@ -116,11 +91,38 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                     </div>
 
                     <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+                        {usageLimits ? (
+                            <div className="app-card-compact p-4">
+                                <div className="section-header-compact">
+                                    <div className="section-header-copy">
+                                        <div className="app-badge-neutral">Usage</div>
+                                        <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                                            {usageLimits.remaining} / {usageLimits.limit} left
+                                        </div>
+                                    </div>
+                                    <div className="pill-compact">
+                                        ${usageLimits.plan_price_usd} plan
+                                    </div>
+                                </div>
+
+                                <div className="usage-bar-track">
+                                    <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
+                                </div>
+                                <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    {usageLimits.used} used · {usageLimits.percent_used}% consumed
+                                </div>
+                            </div>
+                        ) : null}
+
                         <CurrentFocusCard activeContentRequest={activeContentRequest} />
 
-                        <div className="app-card p-6">
-                            <div className="app-badge-neutral">Best Practices</div>
-                            <div className="mt-4 space-y-4">
+                        <div className="app-card-compact p-4">
+                            <div className="section-header-compact">
+                                <div className="section-header-copy">
+                                    <div className="app-badge-neutral">Quick notes</div>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
                                 {[
                                     'Keep file-based inputs close to one main idea instead of mixing multiple topics.',
                                     'Lead with the strongest insight first so the transcript stays focused.',
@@ -128,7 +130,7 @@ export default function Dashboard({ auth, contentRequests = [] }) {
                                 ].map((item) => (
                                     <div
                                         key={item}
-                                        className="dashboard-note text-sm leading-6 text-[rgb(var(--color-text-muted))]"
+                                        className="note-card-muted"
                                     >
                                         {item}
                                     </div>

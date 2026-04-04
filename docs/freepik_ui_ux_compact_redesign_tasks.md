@@ -38,7 +38,7 @@ Turn one short source into ready-to-post content.
 
 ## Phase 2: Dashboard Redesign
 
-### 4. Turn dashboard into a workspace home
+### 4. Turn dashboard into a workspace home - done
 - Reduce hero height and remove oversized spacing.
 - Keep one top row for quick context and actions.
 - Show recent runs, current focus, and usage in a tighter layout.
