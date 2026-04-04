@@ -29,11 +29,12 @@ Turn one short source into ready-to-post content.
 - Standardize button heights and spacing.
 - Reduce shadow noise and border inconsistency.
 
-### 3. Create shared compact utility classes
+### 3. Create shared compact utility classes - done
 - Add note-card utility blocks for small informational panels.
 - Add compact stat-card spacing rules.
 - Add compact responsive grid helpers.
 - Add consistent section header spacing rules.
+- Reduce the boarder radius of all cards in the design
 
 ## Phase 2: Dashboard Redesign
 

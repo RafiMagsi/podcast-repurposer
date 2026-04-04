@@ -41,9 +41,10 @@
         --space-compact-3: 1rem;
         --space-compact-4: 1.25rem;
         --space-compact-5: 1.5rem;
-        --radius-compact-sm: 14px;
-        --radius-compact-md: 18px;
-        --radius-compact-lg: 22px;
+        --radius-compact-xs: 10px;
+        --radius-compact-sm: 12px;
+        --radius-compact-md: 16px;
+        --radius-compact-lg: 20px;
         --height-button: 40px;
         --height-button-sm: 34px;
         --height-pill: 30px;
@@ -124,33 +125,33 @@
     }
 
     .app-card {
-        @apply rounded-[24px] border bg-white;
+        @apply rounded-[20px] border bg-white;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-compact);
     }
 
     .app-card-soft {
-        @apply rounded-[20px] border;
+        @apply rounded-[16px] border;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
         box-shadow: var(--shadow-compact);
     }
 
     .app-card-compact {
-        @apply rounded-[18px] border bg-white;
+        @apply rounded-[14px] border bg-white;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-compact);
     }
 
     .app-card-muted {
-        @apply rounded-[18px] border;
+        @apply rounded-[14px] border;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
         box-shadow: none;
     }
 
     .app-panel {
-        @apply rounded-[30px] border bg-white;
+        @apply rounded-[24px] border bg-white;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 18px 42px rgba(17, 24, 39, 0.06);
     }
@@ -181,15 +182,55 @@
         color: rgb(var(--color-text-strong));
     }
 
+    .section-header {
+        @apply flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between;
+        margin-bottom: var(--space-compact-4);
+    }
+
+    .section-header-compact {
+        @apply flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between;
+        margin-bottom: var(--space-compact-3);
+    }
+
+    .section-header-copy {
+        @apply max-w-2xl;
+    }
+
     .app-muted {
         @apply text-sm leading-6;
         color: rgb(var(--color-text-muted));
     }
 
     .dashboard-note {
-        @apply rounded-[18px] border px-4 py-3;
+        @apply rounded-[14px] border px-4 py-3;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
+    }
+
+    .note-card {
+        @apply rounded-[14px] border px-4 py-3;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+        box-shadow: none;
+    }
+
+    .note-card-muted {
+        @apply rounded-[14px] border px-4 py-3 text-sm leading-6;
+        border-color: rgb(var(--color-border));
+        background: rgba(255, 255, 255, 0.78);
+        color: rgb(var(--color-text-muted));
+    }
+
+    .compact-grid-2 {
+        @apply grid gap-3 sm:grid-cols-2;
+    }
+
+    .compact-grid-3 {
+        @apply grid gap-3 md:grid-cols-3;
+    }
+
+    .compact-grid-4 {
+        @apply grid gap-3 md:grid-cols-2 xl:grid-cols-4;
     }
 
     .app-badge {
@@ -249,7 +290,7 @@
     }
 
     .btn-primary-rect {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[16px] px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[12px] px-4 py-2 text-sm font-semibold transition-all duration-150;
         background: rgb(var(--color-primary));
         color: rgb(var(--color-primary-text));
     }
@@ -281,7 +322,7 @@
     }
 
     .btn-outline {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[16px] border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[12px] border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }
@@ -303,14 +344,14 @@
     }
 
     .btn-danger {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[16px] border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[12px] border px-4 py-2 text-sm font-semibold transition-all duration-150;
         border-color: rgba(191, 61, 61, 0.18);
         background: rgb(var(--color-danger-bg));
         color: rgb(var(--color-danger-text));
     }
 
     .btn-compact {
-        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 rounded-[14px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface));
         color: rgb(var(--color-text-muted));
@@ -565,7 +606,7 @@
     }
 
     .profile-card {
-        @apply flex cursor-pointer items-center gap-3 rounded-[18px] border bg-white p-4 transition-all duration-150;
+        @apply flex cursor-pointer items-center gap-3 rounded-[14px] border bg-white p-4 transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
     }
@@ -583,11 +624,11 @@
     }
 
     .profile-icon {
-        @apply flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[14px] text-base;
+        @apply flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] text-base;
     }
 
     .icon-compact {
-        @apply flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[12px] text-sm;
+        @apply flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[10px] text-sm;
     }
 
     .profile-icon-purple { background: rgb(var(--color-surface-lavender)); }
@@ -598,7 +639,7 @@
     .profile-icon-orange { background: rgb(var(--color-surface-pink)); }
 
     .output-section {
-        @apply rounded-[18px] border bg-white transition-all duration-150;
+        @apply rounded-[14px] border bg-white transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
     }
@@ -615,15 +656,20 @@
     }
 
     .stat-card {
-        @apply rounded-[18px] border bg-white p-4;
+        @apply rounded-[14px] border bg-white p-4;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-compact);
     }
 
     .stat-card-compact {
-        @apply rounded-[16px] border bg-white p-3.5;
+        @apply rounded-[12px] border bg-white p-3.5;
         border-color: rgb(var(--color-border));
         box-shadow: none;
+    }
+
+    .stat-card-copy {
+        @apply mt-2 text-sm leading-6;
+        color: rgb(var(--color-text-muted));
     }
 
     .status-badge {
@@ -670,13 +716,13 @@
     }
 
     .auth-card {
-        @apply w-full max-w-md rounded-[28px] border bg-white p-8;
+        @apply w-full max-w-md rounded-[20px] border bg-white p-8;
         border-color: rgb(var(--color-border));
         box-shadow: 0 18px 42px rgba(17, 24, 39, 0.08);
     }
 
     .upload-zone {
-        @apply flex cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed px-8 py-12 text-center transition-all duration-150;
+        @apply flex cursor-pointer flex-col items-center justify-center rounded-[16px] border-2 border-dashed px-8 py-12 text-center transition-all duration-150;
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface-soft));
     }
@@ -730,7 +776,7 @@
     }
 
     .recording-status-panel {
-        @apply rounded-[20px] border px-4 py-4;
+        @apply rounded-[14px] border px-4 py-4;
         border-color: rgb(var(--color-border));
         background: rgba(255, 255, 255, 0.76);
     }
@@ -841,13 +887,13 @@
     }
 
     .plan-card {
-        @apply relative rounded-[24px] border bg-white p-6 transition-all duration-150;
+        @apply relative rounded-[16px] border bg-white p-6 transition-all duration-150;
         border-color: rgb(var(--color-border));
         box-shadow: var(--shadow-soft);
     }
 
     .note-row {
-        @apply flex items-center gap-4 rounded-[20px] border bg-white px-4 py-3.5 transition-all duration-150;
+        @apply flex items-center gap-4 rounded-[14px] border bg-white px-4 py-3.5 transition-all duration-150;
         border-color: rgb(var(--color-border));
     }
 
