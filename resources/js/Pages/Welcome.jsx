@@ -3,25 +3,23 @@ import { Head, Link } from '@inertiajs/react';
 const features = [
     {
         title: 'Start with one short source',
-        description: 'Use a 1-minute video, 1-minute audio clip, or one short text idea and let the workflow handle the rest.',
+        description: 'Start from short video, short audio, or one short text note.',
     },
     {
-        title: 'Review clearly',
-        description: 'Inspect transcript, summary, and generated assets inside a cleaner editorial layout.',
+        title: 'Review in one workspace',
+        description: 'Inspect transcript, summary, and content assets without jumping between tools.',
     },
     {
-        title: 'Reuse faster',
-        description: 'Turn one source into a summary, LinkedIn post, X post, Instagram caption, and newsletter draft.',
+        title: 'Publish faster',
+        description: 'Reuse one source across summary, LinkedIn, X, Instagram, and newsletter.',
     },
     {
         title: 'Stay in control',
-        description: 'Keep provider settings in your own workspace and rerun outputs when needed.',
+        description: 'Retry, regenerate, and manage outputs from the same run workspace.',
     },
 ];
 
 const outputs = ['Transcript', 'Summary', 'LinkedIn Post', 'X Post', 'Instagram Caption', 'Newsletter'];
-
-const tabs = ['Transcript', 'AI Content', 'Magic Chat'];
 
 function NavLink({ href, children, primary = false }) {
     return primary ? (
@@ -37,10 +35,10 @@ function NavLink({ href, children, primary = false }) {
 
 function FeatureCard({ title, description }) {
     return (
-        <div className="app-card p-6">
-            <div className="app-badge-neutral mb-4">Feature</div>
+        <div className="app-card-compact p-5">
+            <div className="app-badge-neutral mb-3">Feature</div>
             <h3 className="text-lg font-semibold text-[rgb(var(--color-text-strong))]">{title}</h3>
-            <p className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">{description}</p>
+            <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">{description}</p>
         </div>
     );
 }
@@ -62,8 +60,8 @@ export default function Welcome({ auth }) {
                             <div className="absolute right-[-6rem] top-24 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl" />
                             <div className="absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl" />
 
-                            <div className="relative px-6 pb-20 pt-6 lg:px-10">
-                                <header className="mx-auto flex max-w-6xl flex-col gap-4 rounded-[24px] border border-[rgb(var(--color-border))] bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="relative px-5 pb-14 pt-5 lg:px-8">
+                                <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[22px] border border-[rgb(var(--color-border))] bg-white px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                                     <Link href="/" className="flex items-center gap-3">
                                         <img src="/assets/welcome/brand-mark.svg" alt="VoicePost AI" className="h-9 w-9" />
                                         <span className="text-lg font-semibold text-[rgb(var(--color-text-strong))]">
@@ -90,17 +88,17 @@ export default function Welcome({ auth }) {
                                     </nav>
                                 </header>
 
-                                <section className="mx-auto grid max-w-6xl gap-12 py-14 lg:grid-cols-[1fr_.95fr] lg:items-center lg:py-20">
-                                    <div className="text-center lg:text-left">
-                                        <div className="app-badge mb-5">VoicePost AI</div>
-                                        <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[0.98] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-6xl lg:mx-0 lg:text-7xl">
+                                <section className="mx-auto grid max-w-6xl gap-6 py-10 xl:grid-cols-[.92fr_1.08fr] xl:items-start xl:gap-8 xl:py-12">
+                                    <div className="text-center xl:text-left">
+                                        <div className="app-badge mb-4">VoicePost AI</div>
+                                        <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-[0.98] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-5xl xl:mx-0 xl:text-6xl">
                                             Turn one short source into ready-to-post content.
                                         </h1>
-                                        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[rgb(var(--color-text-muted))] lg:mx-0">
-                                            Upload a 1-minute video, a 1-minute audio clip, or paste one short text idea. VoicePost AI turns it into a transcript and five reusable content assets from one clean workspace.
+                                        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[rgb(var(--color-text-muted))] xl:mx-0">
+                                            Upload a short video, upload short audio, or paste one short text note. VoicePost AI turns it into a transcript plus five reusable content assets from one compact workspace.
                                         </p>
 
-                                        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                                        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 xl:justify-start">
                                             {auth?.user ? (
                                                 <NavLink href={route('dashboard')} primary>
                                                     Open workspace
@@ -108,27 +106,51 @@ export default function Welcome({ auth }) {
                                             ) : (
                                                 <>
                                                     <NavLink href={route('register')} primary>
-                                                        Try a voice note free
+                                                        Start free
                                                     </NavLink>
                                                     <NavLink href={route('login')}>Sign in</NavLink>
                                                 </>
                                             )}
                                         </div>
+
+                                        <div className="mt-6 compact-grid-3 text-left">
+                                            {[
+                                                ['Inputs', 'Video · Audio · Text'],
+                                                ['Outputs', 'Summary · LinkedIn · X · Instagram · Newsletter'],
+                                                ['Workspace', 'Transcript, status, and reusable assets together'],
+                                            ].map(([label, value]) => (
+                                                <div key={label} className="app-card-muted px-4 py-3">
+                                                    <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
+                                                        {label}
+                                                    </div>
+                                                    <div className="mt-1.5 text-sm font-semibold leading-6 text-[rgb(var(--color-text-strong))]">
+                                                        {value}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     <div className="relative">
-                                        <div className="app-card overflow-hidden rounded-[32px]">
-                                            <div className="flex items-center gap-2 border-b border-[rgb(var(--color-border))] bg-black px-5 py-3">
-                                                <span className="h-3 w-3 rounded-full bg-[#ff6f61]" />
-                                                <span className="h-3 w-3 rounded-full bg-[#ffd166]" />
-                                                <span className="h-3 w-3 rounded-full bg-[#7bd389]" />
+                                        <div className="app-card-compact overflow-hidden rounded-[28px]">
+                                            <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--color-border))] bg-white px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="h-2.5 w-2.5 rounded-full bg-[#ff6f61]" />
+                                                    <span className="h-2.5 w-2.5 rounded-full bg-[#ffd166]" />
+                                                    <span className="h-2.5 w-2.5 rounded-full bg-[#7bd389]" />
+                                                </div>
+                                                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
+                                                    Workspace preview
+                                                </div>
                                             </div>
 
-                                            <div className="bg-white p-6">
-                                                <div className="input-hero">Start drafting with AI...</div>
+                                            <div className="bg-white p-4 sm:p-5">
+                                                <div className="rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3 text-sm text-[rgb(var(--color-text-muted))]">
+                                                    Search recordings, transcripts, or content assets
+                                                </div>
 
-                                                <div className="mt-5 flex flex-wrap gap-2">
-                                                    {tabs.map((tab, index) => (
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    {['Transcript', 'AI Content', 'Magic Chat'].map((tab, index) => (
                                                         <div
                                                             key={tab}
                                                             className={index === 0 ? 'filter-pill filter-pill-active' : 'filter-pill'}
@@ -138,36 +160,57 @@ export default function Welcome({ auth }) {
                                                     ))}
                                                 </div>
 
-                                                <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
-                                                    <div className="rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
-                                                        <div className="mb-3 flex items-center justify-between">
-                                                            <div>
-                                                                <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                                                                    Workflow
-                                                                </div>
-                                                                <div className="text-xs text-[rgb(var(--color-text-faint))]">
-                                                                    Upload / Transcript / Content
+                                                <div className="mt-4 grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+                                                    <div className="space-y-4">
+                                                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                            <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
+                                                                Source preview
+                                                            </div>
+                                                            <div className="mt-3 overflow-hidden rounded-[16px] border border-[rgb(var(--color-border))] bg-black">
+                                                                <div className="flex h-[230px] items-center justify-center">
+                                                                    <img
+                                                                        src="/assets/welcome/workflow-diagram.svg"
+                                                                        alt="VoicePost AI workspace preview"
+                                                                        className="h-full w-full object-cover opacity-85"
+                                                                    />
                                                                 </div>
                                                             </div>
-                                                            <span className="app-badge-neutral">Live</span>
                                                         </div>
-                                                        <img
-                                                            src="/assets/welcome/workflow-diagram.svg"
-                                                            alt="Workflow diagram"
-                                                            className="w-full"
-                                                        />
+
+                                                        <div className="note-card-muted">
+                                                            Transcript, summary, and outputs stay together in one compact run workspace.
+                                                        </div>
                                                     </div>
 
-                                                    <div className="rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
-                                                        <div className="text-sm font-semibold text-[rgb(var(--color-text-strong))]">
-                                                            Output stack
+                                                    <div className="space-y-4">
+                                                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                            <div className="section-header-compact">
+                                                                <div className="section-header-copy">
+                                                                    <h3 className="app-section-title">Transcript</h3>
+                                                                    <p className="app-muted mt-1 text-sm">Source text used for the writing pass.</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-3 rounded-[14px] border border-[rgb(var(--color-border))] bg-white p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
+                                                                No extra tools, just one short source turned into a transcript and ready-to-post content.
+                                                            </div>
                                                         </div>
-                                                        <div className="mt-3 flex flex-wrap gap-2">
-                                                            {outputs.map((item) => (
-                                                                <span key={item} className="filter-pill">
-                                                                    {item}
-                                                                </span>
-                                                            ))}
+
+                                                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                            <div className="section-header-compact">
+                                                                <div className="section-header-copy">
+                                                                    <h3 className="app-section-title">Output stack</h3>
+                                                                    <p className="app-muted mt-1 text-sm">Five reusable assets from one source.</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                                {outputs.map((item) => (
+                                                                    <div key={item} className="note-card">
+                                                                        <span className="text-sm font-medium text-[rgb(var(--color-text))]">
+                                                                            {item}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -184,22 +227,22 @@ export default function Welcome({ auth }) {
                                     </div>
                                 </section>
 
-                                <section className="mx-auto max-w-6xl py-16">
-                                    <div className="grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
-                                        <div className="app-card p-8">
+                                <section className="mx-auto max-w-6xl py-10">
+                                    <div className="grid gap-4 xl:grid-cols-[1.02fr_.98fr]">
+                                        <div className="app-card-compact p-6 sm:p-7">
                                             <div className="app-badge-neutral">What you get</div>
-                                            <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-[rgb(var(--color-text-strong))]">
-                                                A short-source workspace that feels focused, not bloated.
+                                            <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[rgb(var(--color-text-strong))] sm:text-3xl">
+                                                A compact product workspace, not a bloated content suite.
                                             </h2>
-                                            <p className="mt-4 max-w-2xl text-sm leading-7 text-[rgb(var(--color-text-muted))]">
-                                                VoicePost AI is built around one promise: turn one short source into ready-to-post content. The experience stays calm, structured, and easy to scan while keeping the real workflow visible.
+                                            <p className="mt-3 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                                VoicePost AI stays focused on one promise: one short source in, five reusable outputs out, all from one clean workspace.
                                             </p>
 
-                                            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                                            <div className="mt-6 grid gap-3 sm:grid-cols-2">
                                                 {outputs.map((item, index) => (
                                                     <div
                                                         key={item}
-                                                        className="flex items-center gap-3 rounded-[18px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3"
+                                                        className="flex items-center gap-3 rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] px-4 py-3"
                                                     >
                                                         <span
                                                             className={`profile-icon ${
@@ -216,13 +259,13 @@ export default function Welcome({ auth }) {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-3">
                                             {[
-                                                ['01', 'Add one short source', 'Upload a video, upload audio, or paste a short text idea.'],
+                                                ['01', 'Add one short source', 'Upload short video, upload short audio, or paste one short text note.'],
                                                 ['02', 'Generate the transcript', 'Use the transcript as the source of truth for the writing pass.'],
-                                                ['03', 'Review five outputs', 'Copy the summary, LinkedIn post, X post, Instagram caption, and newsletter from one workspace.'],
+                                                ['03', 'Review five outputs', 'Copy summary, LinkedIn, X, Instagram, and newsletter from one workspace.'],
                                             ].map(([step, title, description]) => (
-                                                <div key={step} className="app-card p-6">
+                                                <div key={step} className="app-card-compact p-5">
                                                     <div className="flex items-start gap-4">
                                                         <div className="profile-icon profile-icon-blue text-sm font-semibold text-[rgb(var(--color-secondary-text))]">
                                                             {step}
@@ -231,7 +274,7 @@ export default function Welcome({ auth }) {
                                                             <h3 className="text-xl font-semibold text-[rgb(var(--color-text-strong))]">
                                                                 {title}
                                                             </h3>
-                                                            <p className="mt-2 text-sm leading-7 text-[rgb(var(--color-text-muted))]">
+                                                            <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                                                 {description}
                                                             </p>
                                                         </div>

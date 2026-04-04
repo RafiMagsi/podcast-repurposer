@@ -114,7 +114,7 @@ Turn one short source into ready-to-post content.
 - Remove outdated output references.
 - Keep signup and login focused on the real current product.
 
-### 16. Update landing page to match the new product UI
+### 16. Update landing page to match the new product UI - done
 - Reduce oversized hero spacing.
 - Show a product-workspace feel instead of generic marketing layout.
 - Align copy with current supported inputs and outputs.
@@ -125,17 +125,23 @@ Turn one short source into ready-to-post content.
 ### Pass 1
 - Update shared CSS tokens and compact component classes.
 - Rebuild authenticated shell and header.
+- Make uniform Cards overall the project, make card component and reuse
+- Reduce border radius similar to FreePicks design
 
 ### Pass 2
 - Redesign dashboard.
 - Redesign create page and source entry panels.
+- Make whole project design compact
+- Match text sizes on different screens and keep consistent
 
 ### Pass 3
 - Redesign workspace show page.
 - Align generated content cards and preview panels.
+- Make compact UI/UX
 
 ### Pass 4
 - Align library, pipeline, admin, and auth pages.
+- Make similar UI/UX all over the pages
 - Refresh landing page.
 
 ## Files Most Likely To Change
