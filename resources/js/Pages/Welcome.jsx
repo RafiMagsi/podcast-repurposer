@@ -117,7 +117,7 @@ export default function Welcome({ auth }) {
                                     </nav>
                                 </header>
 
-                                <section className="mx-auto grid max-w-6xl gap-5 py-6 sm:py-8 xl:grid-cols-[.92fr_1.08fr] xl:items-start xl:gap-6 xl:py-10">
+                                <section className="mx-auto max-w-6xl py-6 sm:py-8 xl:py-10">
                                     <div className="text-center xl:text-left">
                                         <div className="app-badge mb-4">VoicePost AI</div>
                                         <h1 className="mx-auto max-w-4xl text-[2.15rem] font-extrabold leading-[1] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-5xl xl:mx-0 xl:text-6xl">
@@ -160,7 +160,7 @@ export default function Welcome({ auth }) {
                                         </div>
                                     </div>
 
-                                    <div className="relative">
+                                    <div className="relative mt-6 sm:mt-7">
                                         <AppCard variant="compact" padding="none" className="overflow-hidden rounded-[22px]">
                                             <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--color-border))] bg-white px-4 py-3">
                                                 <div className="flex items-center gap-2">
@@ -189,7 +189,7 @@ export default function Welcome({ auth }) {
                                                     ))}
                                                 </div>
 
-                                                <div className="mt-4 grid gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
+                                                <div className="mt-4 grid gap-3 xl:grid-cols-[480px_minmax(0,1fr)]">
                                                     <div className="space-y-4">
                                                         <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                                                             <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
