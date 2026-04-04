@@ -45,6 +45,7 @@
         --radius-compact-sm: 10px;
         --radius-compact-md: 12px;
         --radius-compact-lg: 16px;
+        --radius-button: 10px;
         --height-button: 40px;
         --height-button-sm: 34px;
         --height-pill: 30px;
@@ -286,7 +287,9 @@
     }
 
     .btn-primary {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        border-radius: var(--radius-button);
+        border-color: rgb(var(--color-primary));
         background: rgb(var(--color-primary));
         color: rgb(var(--color-primary-text));
         box-shadow: 0 1px 2px rgba(17, 24, 39, 0.08);
@@ -298,9 +301,12 @@
     }
 
     .btn-primary-rect {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[10px] px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        border-radius: var(--radius-button);
+        border-color: rgb(var(--color-primary));
         background: rgb(var(--color-primary));
         color: rgb(var(--color-primary-text));
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.08);
     }
 
     .btn-primary-rect:hover {
@@ -308,14 +314,17 @@
     }
 
     .btn-secondary {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-150;
-        background: rgb(var(--color-secondary-bg));
-        color: rgb(var(--color-secondary-text));
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        border-radius: var(--radius-button);
+        border-color: rgb(199 210 254);
+        background: rgb(238 242 255);
+        color: rgb(67 56 202);
     }
 
     .btn-secondary:hover {
-        filter: brightness(0.985);
-        box-shadow: 0 0 0 1px rgba(53, 64, 104, 0.08);
+        background: rgb(224 231 255);
+        border-color: rgb(165 180 252);
+        color: rgb(55 48 163);
     }
 
     .btn-primary:disabled,
@@ -330,7 +339,8 @@
     }
 
     .btn-outline {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[10px] border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 border bg-white px-4 py-2 text-sm font-medium transition-all duration-150;
+        border-radius: var(--radius-button);
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }
@@ -342,7 +352,8 @@
     }
 
     .btn-ghost {
-        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all duration-150;
+        border-radius: var(--radius-button);
         color: rgb(var(--color-text-muted));
     }
 
@@ -352,14 +363,22 @@
     }
 
     .btn-danger {
-        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 rounded-[10px] border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button)] items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-all duration-150;
+        border-radius: var(--radius-button);
         border-color: rgba(191, 61, 61, 0.18);
         background: rgb(var(--color-danger-bg));
         color: rgb(var(--color-danger-text));
     }
 
+    .btn-danger:hover {
+        border-color: rgba(191, 61, 61, 0.3);
+        background: rgb(254 226 226);
+        color: rgb(153 27 27);
+    }
+
     .btn-compact {
-        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center justify-center gap-1.5 border px-3 py-1.5 text-xs font-semibold transition-all duration-150;
+        border-radius: var(--radius-button);
         border-color: rgb(var(--color-border));
         background: rgb(var(--color-surface));
         color: rgb(var(--color-text-muted));
@@ -454,7 +473,8 @@
     }
 
     .topbar-action {
-        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 border px-3 py-1 text-xs font-medium transition-all duration-150;
+        border-radius: var(--radius-button);
         border-color: rgb(var(--color-border));
         background: white;
         color: rgb(var(--color-text-muted));
@@ -681,40 +701,47 @@
     }
 
     .status-badge {
-        @apply inline-flex min-h-[28px] items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold;
+        @apply inline-flex min-h-[28px] items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold;
     }
 
     .status-uploaded {
-        background: rgb(var(--color-surface-muted));
-        color: rgb(var(--color-text-muted));
+        border-color: rgb(203 213 225);
+        background: rgb(241 245 249);
+        color: rgb(71 85 105);
     }
 
     .status-transcribing {
-        background: rgb(236 244 255);
-        color: rgb(66 104 180);
+        border-color: rgb(191 219 254);
+        background: rgb(239 246 255);
+        color: rgb(29 78 216);
     }
 
     .status-generating {
-        background: rgb(var(--color-accent-bg));
-        color: rgb(var(--color-accent-text));
+        border-color: rgb(221 214 254);
+        background: rgb(245 243 255);
+        color: rgb(109 40 217);
     }
 
     .status-completed {
+        border-color: rgb(167 243 208);
         background: rgb(var(--color-success-bg));
         color: rgb(var(--color-success-text));
     }
 
     .status-cancelled {
+        border-color: rgb(253 186 116);
         background: rgb(255 247 237);
         color: rgb(180 83 9);
     }
 
     .status-partial {
-        background: rgb(255 249 230);
-        color: rgb(164 106 18);
+        border-color: rgb(253 224 71);
+        background: rgb(255 251 235);
+        color: rgb(161 98 7);
     }
 
     .status-failed {
+        border-color: rgb(252 165 165);
         background: rgb(var(--color-danger-bg));
         color: rgb(var(--color-danger-text));
     }
@@ -866,7 +893,8 @@
     }
 
     .filter-pill {
-        @apply inline-flex min-h-[var(--height-pill)] items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-pill)] items-center gap-1.5 border px-3 py-1 text-xs font-medium transition-all duration-150;
+        border-radius: var(--radius-button);
         border-color: rgb(var(--color-border));
         background: white;
         color: rgb(var(--color-text-muted));
@@ -884,7 +912,8 @@
     }
 
     .btn-copy {
-        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-semibold transition-all duration-150;
+        @apply inline-flex min-h-[var(--height-button-sm)] items-center gap-1.5 border bg-white px-3 py-1 text-xs font-semibold transition-all duration-150;
+        border-radius: var(--radius-button);
         border-color: rgb(var(--color-border));
         color: rgb(var(--color-text-muted));
     }

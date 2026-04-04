@@ -23,7 +23,7 @@ export default function Register() {
             <Head title="Register" />
 
             <div className="auth-card">
-                <div className="mb-7">
+                <div className="mb-6">
                     <div className="app-badge-neutral mb-3">Get started</div>
                     <h1 className="text-3xl font-semibold text-[rgb(var(--color-text-strong))]">Create your account</h1>
                     <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
@@ -31,7 +31,7 @@ export default function Register() {
                     </p>
                 </div>
 
-                <form onSubmit={submit} className="space-y-4.5">
+                <form onSubmit={submit} className="space-y-4">
                     <div>
                         <label className="label-theme">Name</label>
                         <input
@@ -80,18 +80,20 @@ export default function Register() {
                         <InputError message={errors.password_confirmation} className="form-error" />
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="btn-primary w-full disabled:opacity-60"
-                    >
-                        {processing ? 'Creating account...' : 'Create account'}
-                    </button>
+                    <div className="space-y-3 pt-1">
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="btn-primary w-full disabled:opacity-60"
+                        >
+                            {processing ? 'Creating Account...' : 'Create Account'}
+                        </button>
+                    </div>
 
-                    <div className="pt-1 text-center text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="border-t border-[rgb(var(--color-border))] pt-4 text-center text-sm text-[rgb(var(--color-text-muted))]">
                         Already have an account?{' '}
                         <Link href={route('login')} className="text-[rgb(var(--color-text-strong))] hover:underline">
-                            Sign in
+                            Sign In
                         </Link>
                     </div>
                 </form>

@@ -1,3 +1,5 @@
+import { formatStatusLabel } from '@/utils/contentRequestLabels';
+
 export default function RecentRecordingsCard({ contentRequests }) {
     function sourcePillClass(sourceType) {
         switch (sourceType) {
@@ -97,7 +99,7 @@ export default function RecentRecordingsCard({ contentRequests }) {
                                     <span className={sourcePillClass(contentRequest.source_type)}>
                                         {sourceLabel(contentRequest.source_type)}
                                     </span>
-                                    <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
+                                    <span className={statusClass(contentRequest.status)}>{formatStatusLabel(contentRequest.status)}</span>
                                 </div>
                                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs leading-5 text-[rgb(var(--color-text-muted))]">
                                     <span className="truncate">{contentRequest.original_file_name || 'Inline text note'}</span>

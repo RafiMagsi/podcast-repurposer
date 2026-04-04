@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { formatCompressionStatusLabel, formatStatusLabel } from '@/utils/contentRequestLabels';
 
 function statusClass(status) {
     switch (status) {
@@ -28,7 +29,7 @@ function buildStageMeta(contentRequest) {
         return {
             progressWidth: '14%',
             currentStep: 0,
-            stageLabel: 'Source queued',
+            stageLabel: 'Source Queued',
             aiLines: [
                 'Upload accepted',
                 'Preparing the pipeline order',
@@ -41,7 +42,7 @@ function buildStageMeta(contentRequest) {
         return {
             progressWidth: '38%',
             currentStep: 1,
-            stageLabel: 'Media prep active',
+            stageLabel: 'Media Prep Active',
             aiLines:
                 contentRequest.media_kind === 'audio'
                     ? [
@@ -61,7 +62,7 @@ function buildStageMeta(contentRequest) {
         return {
             progressWidth: '58%',
             currentStep: 2,
-            stageLabel: 'Transcription running',
+            stageLabel: 'Transcription Running',
             aiLines: [
                 'Listening to the source',
                 'Converting speech into transcript',
@@ -74,7 +75,7 @@ function buildStageMeta(contentRequest) {
         return {
             progressWidth: '76%',
             currentStep: 3,
-            stageLabel: 'Writing prep',
+            stageLabel: 'Writing Prep',
             aiLines: [
                 'Transcript is ready',
                 'Selecting the strongest angle',
@@ -87,7 +88,7 @@ function buildStageMeta(contentRequest) {
         return {
             progressWidth: '91%',
             currentStep: 3,
-            stageLabel: 'AI writing',
+            stageLabel: 'AI Writing',
             aiLines: [
                 'Drafting the summary',
                 'Writing the LinkedIn post',
@@ -215,10 +216,10 @@ export default function ProcessingStatusCard({ contentRequest, isProcessing, liv
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
+                    <span className={statusClass(contentRequest.status)}>{formatStatusLabel(contentRequest.status)}</span>
                     {contentRequest.compression_status ? (
                         <span className="rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700 backdrop-blur-sm">
-                            Media prep {contentRequest.compression_status}
+                            {formatCompressionStatusLabel(contentRequest.compression_status)}
                         </span>
                     ) : null}
                     {isProcessing ? (

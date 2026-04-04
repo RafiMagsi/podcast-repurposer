@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import AppCard from '@/Components/ui/AppCard';
 import { Head, Link } from '@inertiajs/react';
+import { formatStatusLabel, formatTitleLabel } from '@/utils/contentRequestLabels';
 
 function statusClass(status) {
     switch (status) {
@@ -100,7 +101,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                                 <div className="text-[rgb(var(--color-text-muted))]">No output activity yet.</div>
                             ) : outputUsage.slice(0, 5).map((item) => (
                                 <div key={item.content_type}>
-                                    {item.content_type.replace('_', ' ')}: {item.count}
+                                    {formatTitleLabel(item.content_type)}: {item.count}
                                 </div>
                             ))}
                         </div>
@@ -142,7 +143,7 @@ export default function AdminRunsIndex({ auth, runs, filters, analytics }) {
                                                 {run.title}
                                             </div>
                                             <span className="app-badge-neutral">{sourceLabel(run.source_type)}</span>
-                                            <span className={statusClass(run.status)}>{run.status}</span>
+                                            <span className={statusClass(run.status)}>{formatStatusLabel(run.status)}</span>
                                         </div>
                                         <div className="mt-1.5 text-xs text-[rgb(var(--color-text-muted))]">
                                             {run.public_id}

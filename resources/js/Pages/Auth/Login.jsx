@@ -20,7 +20,7 @@ export default function Login({ status, canResetPassword }) {
             <Head title="Login" />
 
             <div className="auth-card">
-                <div className="mb-7">
+                <div className="mb-6">
                     <div className="app-badge-neutral mb-3">Welcome back</div>
                     <h1 className="text-3xl font-semibold text-[rgb(var(--color-text-strong))]">Sign in</h1>
                     <p className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
@@ -34,7 +34,7 @@ export default function Login({ status, canResetPassword }) {
                     </div>
                 )}
 
-                <form onSubmit={submit} className="space-y-4.5">
+                <form onSubmit={submit} className="space-y-4">
                     <div>
                         <label className="label-theme">Email</label>
                         <input
@@ -67,15 +67,17 @@ export default function Login({ status, canResetPassword }) {
                         Remember me
                     </label>
 
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="btn-primary w-full disabled:opacity-60"
-                    >
-                        {processing ? 'Signing in...' : 'Sign in'}
-                    </button>
+                    <div className="space-y-3 pt-1">
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="btn-primary w-full disabled:opacity-60"
+                        >
+                            {processing ? 'Signing In...' : 'Sign In'}
+                        </button>
+                    </div>
 
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between border-t border-[rgb(var(--color-border))] pt-4 text-sm">
                         {canResetPassword ? (
                             <Link
                                 href={route('password.request')}
@@ -91,7 +93,7 @@ export default function Login({ status, canResetPassword }) {
                             href={route('register')}
                             className="text-[rgb(var(--color-text-muted))] hover:text-[rgb(var(--color-text-strong))]"
                         >
-                            Create account
+                            Create Account
                         </Link>
                     </div>
                 </form>

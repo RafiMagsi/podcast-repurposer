@@ -7,6 +7,7 @@ import ActionConfirmationModal from '@/Components/ActionConfirmationModal';
 import ProcessingStatusCard from '@/Components/ProcessingStatusCard';
 import ContentResponseCard from '@/Components/content-responses/ContentResponseCard';
 import ContentPreviewCard from '@/Components/content-responses/ContentPreviewCard';
+import { formatCompressionStatusLabel, formatStatusLabel } from '@/utils/contentRequestLabels';
 
 function formatContentType(value) {
     return value
@@ -157,7 +158,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
         ['Original file', liveContentRequest.original_file_name || 'Inline text note'],
         ['Original size', formatMb(liveContentRequest.file_size)],
         ['Compressed size', formatMb(liveContentRequest.compressed_file_size)],
-        ['Compression status', liveContentRequest.compression_status || 'Not started'],
+        ['Compression Status', liveContentRequest.compression_status ? formatCompressionStatusLabel(liveContentRequest.compression_status) : 'Not Started'],
         ['Tone', liveContentRequest.tone || 'N/A'],
         ['Created at', liveContentRequest.created_at || 'N/A'],
         ['Recording ID', liveContentRequest.public_id || liveContentRequest.id || 'N/A'],
@@ -221,18 +222,18 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         liveContentRequest.media_kind === 'video' &&
                         (!liveContentRequest.preview_path || !liveContentRequest.media_thumbnail_url)
                     ) {
-                        return 'Media prep is running: preparing the video preview, thumbnail, and transcription-ready source.';
+                        return 'Media Prep is running: preparing the video preview, thumbnail, and transcription-ready source.';
                     }
 
                     if (liveContentRequest.media_kind === 'audio') {
-                        return 'Media prep is running: preparing and compressing the audio for transcription.';
+                        return 'Media Prep is running: preparing and compressing the audio for transcription.';
                     }
 
-                    return 'Media prep is running: preparing the source for transcription.';
+                    return 'Media Prep is running: preparing the source for transcription.';
                 }
 
                 if (liveContentRequest.compression_status === 'completed') {
-                    return 'Media prep is complete. The source is now being transcribed into text.';
+                    return 'Media Prep is complete. The source is now being transcribed into text.';
                 }
 
                 return 'Transcription is in progress.';
@@ -340,7 +341,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                             Review the source, transcript, and final content from one compact workspace.
                         </p>
                         <div className="mt-4 flex flex-wrap items-center gap-2.5">
-                            <span className={statusClass(liveContentRequest.status)}>{liveContentRequest.status}</span>
+                            <span className={statusClass(liveContentRequest.status)}>{formatStatusLabel(liveContentRequest.status)}</span>
                             {isProcessing ? <span className="app-badge-neutral">Auto updating</span> : null}
                             <span className="app-badge-neutral">{sourceLabel(liveContentRequest.source_type)}</span>
                         </div>
@@ -381,7 +382,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                 <AppCard variant="compact" padding="md" className="sm:p-5">
                     <div className="compact-grid-2 xl:grid-cols-4">
                         {[
-                            ['Run state', formatContentType(liveContentRequest.status)],
+                            ['Run State', formatStatusLabel(liveContentRequest.status)],
                             ['Transcript', liveContentRequest.transcript ? 'Ready' : isProcessing ? 'In progress' : 'Pending'],
                             ['Outputs', `${orderedContentResponses.length}/${liveContentRequest.expected_output_count || expectedOutputTypes.length} ready`],
                             ['Source', sourceLabel(liveContentRequest.source_type)],

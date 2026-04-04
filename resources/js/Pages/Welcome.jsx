@@ -50,8 +50,8 @@ export default function Welcome({ auth }) {
             <Head title="VoicePost AI" />
 
             <div className="min-h-screen overflow-hidden">
-                <div className="mx-auto max-w-[1500px] p-3 sm:p-4">
-                    <div className="overflow-hidden rounded-[36px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_30px_80px_rgba(17,24,39,0.08)]">
+                <div className="mx-auto max-w-[1360px] p-3 sm:p-4">
+                    <div className="overflow-hidden rounded-[28px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-page-bg))] shadow-[0_22px_60px_rgba(17,24,39,0.08)]">
                         <div className="bg-[rgb(var(--color-surface-pink))] px-6 py-3 text-center text-sm font-semibold text-[rgb(var(--color-text-strong))]">
                             VoicePost AI for fast short-source-to-content workflows
                         </div>
@@ -61,8 +61,8 @@ export default function Welcome({ auth }) {
                             <div className="absolute right-[-6rem] top-24 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-blue))] opacity-80 blur-3xl" />
                             <div className="absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full bg-[rgb(var(--color-surface-lavender))] opacity-70 blur-3xl" />
 
-                            <div className="relative px-5 pb-14 pt-5 lg:px-8">
-                                <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[22px] border border-[rgb(var(--color-border))] bg-white px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="relative px-5 pb-10 pt-5 lg:px-7">
+                                <header className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[18px] border border-[rgb(var(--color-border))] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                                     <Link href="/" className="flex items-center gap-3">
                                         <img src="/assets/welcome/brand-mark.svg" alt="VoicePost AI" className="h-9 w-9" />
                                         <span className="text-lg font-semibold text-[rgb(var(--color-text-strong))]">
@@ -89,7 +89,7 @@ export default function Welcome({ auth }) {
                                     </nav>
                                 </header>
 
-                                <section className="mx-auto grid max-w-6xl gap-6 py-10 xl:grid-cols-[.92fr_1.08fr] xl:items-start xl:gap-8 xl:py-12">
+                                <section className="mx-auto grid max-w-6xl gap-5 py-8 xl:grid-cols-[.92fr_1.08fr] xl:items-start xl:gap-6 xl:py-10">
                                     <div className="text-center xl:text-left">
                                         <div className="app-badge mb-4">VoicePost AI</div>
                                         <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-[0.98] tracking-[-0.05em] text-[rgb(var(--color-text-strong))] sm:text-5xl xl:mx-0 xl:text-6xl">
@@ -114,7 +114,7 @@ export default function Welcome({ auth }) {
                                             )}
                                         </div>
 
-                                        <div className="mt-6 compact-grid-3 text-left">
+                                        <div className="mt-5 compact-grid-3 text-left">
                                             {[
                                                 ['Inputs', 'Video · Audio · Text'],
                                                 ['Outputs', 'Summary · LinkedIn · X · Instagram · Newsletter'],
@@ -133,7 +133,7 @@ export default function Welcome({ auth }) {
                                     </div>
 
                                     <div className="relative">
-                                        <AppCard variant="compact" padding="none" className="overflow-hidden rounded-[28px]">
+                                        <AppCard variant="compact" padding="none" className="overflow-hidden rounded-[22px]">
                                             <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--color-border))] bg-white px-4 py-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className="h-2.5 w-2.5 rounded-full bg-[#ff6f61]" />
@@ -161,13 +161,13 @@ export default function Welcome({ auth }) {
                                                     ))}
                                                 </div>
 
-                                                <div className="mt-4 grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+                                                <div className="mt-4 grid gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
                                                     <div className="space-y-4">
-                                                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                                                             <div className="text-xs uppercase tracking-[0.16em] text-[rgb(var(--color-text-faint))]">
                                                                 Source preview
                                                             </div>
-                                                            <div className="mt-3 overflow-hidden rounded-[16px] border border-[rgb(var(--color-border))] bg-black">
+                                                            <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgb(var(--color-border))] bg-black">
                                                                 <div className="flex h-[230px] items-center justify-center">
                                                                     <img
                                                                         src="/assets/welcome/workflow-diagram.svg"
@@ -184,7 +184,7 @@ export default function Welcome({ auth }) {
                                                     </div>
 
                                                     <div className="space-y-4">
-                                                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                                                             <div className="section-header-compact">
                                                                 <div className="section-header-copy">
                                                                     <h3 className="app-section-title">Transcript</h3>
@@ -196,7 +196,7 @@ export default function Welcome({ auth }) {
                                                             </div>
                                                         </div>
 
-                                                        <div className="rounded-[20px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                                                        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                                                             <div className="section-header-compact">
                                                                 <div className="section-header-copy">
                                                                     <h3 className="app-section-title">Output stack</h3>
@@ -220,7 +220,7 @@ export default function Welcome({ auth }) {
                                     </div>
                                 </section>
 
-                                <section className="mx-auto max-w-6xl py-2">
+                                <section className="mx-auto max-w-6xl py-1">
                                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                                         {features.map((feature) => (
                                             <FeatureCard key={feature.title} {...feature} />
@@ -228,7 +228,7 @@ export default function Welcome({ auth }) {
                                     </div>
                                 </section>
 
-                                <section className="mx-auto max-w-6xl py-10">
+                                <section className="mx-auto max-w-6xl py-8">
                                     <div className="grid gap-4 xl:grid-cols-[1.02fr_.98fr]">
                                         <AppCard variant="compact" padding="lg" className="p-6 sm:p-7">
                                             <div className="app-badge-neutral">What you get</div>
@@ -239,7 +239,7 @@ export default function Welcome({ auth }) {
                                                 VoicePost AI stays focused on one promise: one short source in, five reusable outputs out, all from one clean workspace.
                                             </p>
 
-                                            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
                                                 {outputs.map((item, index) => (
                                                     <div
                                                         key={item}

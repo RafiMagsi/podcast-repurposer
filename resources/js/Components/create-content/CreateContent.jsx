@@ -443,8 +443,8 @@ export default function CreateContent({
                         </div>
                     </AppCard>
 
-                    <form onSubmit={submit} className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_260px] 2xl:items-start">
-                        <div className="space-y-4">
+                    <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:items-start">
+                        <form onSubmit={submit} className="space-y-4">
                             <AppCard variant="muted" padding="md">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                                     {sourceTypeMeta.eyebrow}
@@ -503,41 +503,6 @@ export default function CreateContent({
                                     </div>
                                 </div>
                             </AppCard>
-
-                            {usageLimits ? (
-                                <div className={`rounded-[14px] border px-4 py-3 ${
-                                    usageLimitReached
-                                        ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
-                                        : 'border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))]'
-                                }`}>
-                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                                Usage remaining
-                                            </div>
-                                            <div className="mt-1.5 text-base font-semibold text-[rgb(var(--color-text-strong))]">
-                                                {usageLimits.remaining} of {usageLimits.limit} runs left
-                                            </div>
-                                            <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                                ${usageLimits.plan_price_usd} plan. Every new request uses one run.
-                                            </div>
-                                        </div>
-                                        <div className="min-w-[160px]">
-                                            <div className="usage-bar-track">
-                                                <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
-                                            </div>
-                                            <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
-                                                {usageLimits.used} used
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {usageLimitReached ? (
-                                        <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                            The current quota is exhausted. New processing is blocked until the limit is increased.
-                                        </div>
-                                    ) : null}
-                                </div>
-                            ) : null}
 
                             {data.source_type === 'text' ? (
                             <div className="space-y-3">
@@ -643,38 +608,78 @@ export default function CreateContent({
                             ) : null}
 
                             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <p className="max-w-2xl pr-0 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                {isTextSource
-                                    ? 'Text notes skip transcription and go straight into content generation.'
-                                    : 'File uploads run through transcription first, then generate content outputs.'}
-                            </p>
+                                <p className="max-w-2xl pr-0 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    {isTextSource
+                                        ? 'Text notes skip transcription and go straight into content generation.'
+                                        : 'File uploads run through transcription first, then generate content outputs.'}
+                                </p>
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                {showCancelButton ? (
-                                    <button type="button" onClick={() => window.history.back()} className="btn-outline">
-                                        Cancel
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                    {showCancelButton ? (
+                                        <button type="button" onClick={() => window.history.back()} className="btn-outline">
+                                            Cancel
+                                        </button>
+                                    ) : null}
+                                    <button
+                                        type="submit"
+                                        disabled={processing || usageLimitReached}
+                                        className="btn-primary min-w-[172px] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {usageLimitReached
+                                            ? 'Usage limit reached'
+                                            : processing
+                                            ? isRedirectingToWorkspace
+                                                ? 'Opening workspace...'
+                                                : 'Processing...'
+                                            : submitLabel}
                                     </button>
-                                ) : null}
-                                <button
-                                    type="submit"
-                                    disabled={processing || usageLimitReached}
-                                    className="btn-primary min-w-[172px] disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    {usageLimitReached
-                                        ? 'Usage limit reached'
-                                        : processing
-                                        ? isRedirectingToWorkspace
-                                            ? 'Opening workspace...'
-                                            : 'Processing...'
-                                        : submitLabel}
-                                </button>
+                                </div>
                             </div>
-                        </div>
-                        </div>
+                        </form>
+
                         <div className="grid gap-4 md:grid-cols-2 2xl:sticky 2xl:top-24 2xl:block">
                             <AppCard variant="muted" padding="md">
+                                <div className="app-badge-neutral">New Source</div>
+                                <h3 className="mt-3 app-heading-md">
+                                    Start one short run from this workspace.
+                                </h3>
+                                <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    Choose video, audio, or text, then move straight into the recording workspace while transcript and output generation run in the background.
+                                </p>
+
+                                {usageLimits ? (
+                                    <div className={`mt-4 rounded-[14px] border px-4 py-3 ${
+                                        usageLimitReached
+                                            ? 'border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.04)]'
+                                            : 'border-[rgb(var(--color-border))] bg-white'
+                                    }`}>
+                                        <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                            Usage Remaining
+                                        </div>
+                                        <div className="mt-1.5 text-base font-semibold text-[rgb(var(--color-text-strong))]">
+                                            {usageLimits.remaining} of {usageLimits.limit} runs left
+                                        </div>
+                                        <div className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                            ${usageLimits.plan_price_usd} plan. Every new request uses one run.
+                                        </div>
+                                        <div className="mt-3 usage-bar-track">
+                                            <div className="usage-bar-fill" style={{ width: `${usageLimits.percent_used}%` }} />
+                                        </div>
+                                        <div className="mt-2 text-sm text-[rgb(var(--color-text-muted))]">
+                                            {usageLimits.used} used
+                                        </div>
+                                        {usageLimitReached ? (
+                                            <div className="mt-3 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                                The current quota is exhausted. New processing is blocked until the limit is increased.
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                ) : null}
+                            </AppCard>
+
+                            <AppCard variant="muted" padding="md">
                                 <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                    Supported outputs
+                                    Included Outputs
                                 </div>
                                 <div className="mt-3 space-y-2.5">
                                     {outputPreviewCards.map(([title, description], index) => (
@@ -690,17 +695,6 @@ export default function CreateContent({
                                             </div>
                                         </div>
                                     ))}
-                                </div>
-                            </AppCard>
-
-                            <AppCard variant="muted" padding="md">
-                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
-                                    Limits
-                                </div>
-                                <div className="mt-3 space-y-2.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    <div className="note-card-muted">Video or audio: 1 minute</div>
-                                    <div className="note-card-muted">Text note: 200 characters</div>
-                                    <div className="note-card-muted">One run creates all five outputs in one workspace.</div>
                                 </div>
                             </AppCard>
 
@@ -738,8 +732,19 @@ export default function CreateContent({
                                     Source selection, limits, and expectation-setting happen here. The workspace handles the real review.
                                 </div>
                             </AppCard>
+
+                            <AppCard variant="muted" padding="md" className="md:col-span-2 2xl:col-span-1">
+                                <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
+                                    Limits
+                                </div>
+                                <div className="mt-3 space-y-2.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                                    <div className="note-card-muted">Video or audio: 1 minute</div>
+                                    <div className="note-card-muted">Text note: 200 characters</div>
+                                    <div className="note-card-muted">One run creates all five outputs in one workspace.</div>
+                                </div>
+                            </AppCard>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </AppCard>

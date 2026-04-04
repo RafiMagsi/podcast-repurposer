@@ -3,6 +3,7 @@ import AppCard from '@/Components/ui/AppCard';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
+import { formatStatusLabel } from '@/utils/contentRequestLabels';
 
 function statusClass(status) {
     switch (status) {
@@ -190,7 +191,7 @@ export default function ContentRequestsIndex({ auth, contentRequests }) {
                                             {contentRequest.title}
                                         </div>
                                         <span className="app-badge-neutral">{sourceLabel(contentRequest.source_type)}</span>
-                                        <span className={statusClass(contentRequest.status)}>{contentRequest.status}</span>
+                                                <span className={statusClass(contentRequest.status)}>{formatStatusLabel(contentRequest.status)}</span>
                                     </div>
                                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                                         <span>{contentRequest.original_file_name || 'Inline text note'}</span>

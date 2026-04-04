@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import AppCard from '@/Components/ui/AppCard';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import { formatCompressionStatusLabel, formatQueueStateLabel, formatStatusLabel } from '@/utils/contentRequestLabels';
 
 function statusClass(status) {
     switch (status) {
@@ -141,10 +142,10 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                     <div>
                         <div className="app-badge-neutral">Active Pipeline</div>
                         <h1 className="app-page-title mt-3">
-                            Monitor current processing runs.
+                            Monitor Current Processing Runs.
                         </h1>
                         <p className="app-subheading mt-2 max-w-2xl">
-                            This page shows every active recording moving through media prep, transcription, or content generation.
+                            This page shows every active recording moving through Media Prep, transcription, or Content Generation.
                         </p>
                     </div>
 
@@ -200,7 +201,7 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
             <AppCard variant="compact" padding="none" className="overflow-hidden">
                 <div className="flex flex-col gap-3 border-b border-[rgb(var(--color-border))] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
-                        <h2 className="app-section-title">Current processing</h2>
+                            <h2 className="app-section-title">Current Processing</h2>
                         <p className="app-muted">Only active items are shown here.</p>
                     </div>
                 </div>
@@ -223,15 +224,15 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                                         </div>
                                         {queueState(item) === 'current' ? (
                                             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                                                Current processing
+                                                {formatQueueStateLabel('current')}
                                             </span>
                                         ) : (
                                             <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
-                                                In queue
+                                                {formatQueueStateLabel('queue')}
                                             </span>
                                         )}
                                         <span className="app-badge-neutral">{sourceLabel(item.source_type)}</span>
-                                        <span className={statusClass(item.status)}>{item.status}</span>
+                                        <span className={statusClass(item.status)}>{formatStatusLabel(item.status)}</span>
                                     </div>
                                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-[rgb(var(--color-text-muted))]">
                                         <span>{pipelineLabel(item)}</span>
@@ -243,7 +244,7 @@ export default function PipelineIndex({ auth, contentRequests = [] }) {
                                 <div className="flex flex-wrap items-center gap-2.5">
                                     {item.compression_status ? (
                                         <span className="app-badge-neutral">
-                                            Media prep {item.compression_status}
+                                            {formatCompressionStatusLabel(item.compression_status)}
                                         </span>
                                     ) : null}
                                     <Link href={route('content-requests.show', item.public_id)} className="btn-secondary">
