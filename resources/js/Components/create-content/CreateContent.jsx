@@ -538,29 +538,32 @@ export default function CreateContent({
                             ) : null}
 
                             {data.source_type === 'text' ? (
-                            <div className="app-card-muted p-4">
-                                <label className="label-theme">Text Prompt</label>
-                                <div className="mb-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
-                                    Keep the note short and direct. One sentence works best.
+                            <div className="space-y-3">
+                                <div className="app-card-muted p-4">
+                                    <label className="label-theme">Text Prompt</label>
+                                    <textarea
+                                        value={data.source_text}
+                                        onChange={(e) => {
+                                            setData('source_text', e.target.value);
+                                            clearErrors('source_text');
+                                            resetSuggestionState();
+                                        }}
+                                        rows={5}
+                                        className="input-theme min-h-[140px]"
+                                        placeholder="Enter a short idea, note, or spoken-style prompt..."
+                                    />
+                                    <div className="mt-2 flex items-center justify-between gap-4 text-sm text-[rgb(var(--color-text-muted))]">
+                                        <span>Used directly for suggestions and outputs.</span>
+                                        <span>{textLength}/200</span>
+                                    </div>
                                 </div>
-                                <textarea
-                                    value={data.source_text}
-                                    onChange={(e) => {
-                                        setData('source_text', e.target.value);
-                                        clearErrors('source_text');
-                                        resetSuggestionState();
-                                    }}
-                                    rows={5}
-                                    className="input-theme min-h-[140px]"
-                                    placeholder="Enter a short idea, note, or spoken-style prompt..."
-                                />
-                                <div className="mt-2 flex items-center justify-between gap-4 text-sm text-[rgb(var(--color-text-muted))]">
-                                    <span>VoicePost AI uses this exact source to generate suggestions and outputs.</span>
-                                    <span>{textLength}/200</span>
+
+                                <div className="note-card-muted">
+                                    Keep it short and direct. One sentence with one clear angle works best.
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {data.source_mode === 'upload' ? (
                                     <UploadSourcePanel
                                         sourceType={data.source_type}
@@ -613,7 +616,7 @@ export default function CreateContent({
                                             {uploadProgress != null ? `${Math.round(uploadProgress)}%` : '...'}
                                         </div>
                                         {processing ? (
-                                            <button type="button" onClick={cancelUpload} className="btn-secondary">
+                                            <button type="button" onClick={cancelUpload} className="btn-compact">
                                                 Cancel
                                             </button>
                                         ) : null}
@@ -630,6 +633,12 @@ export default function CreateContent({
                                 </div>
                             </div>
                         ) : null}
+
+                            {(fileError || errors.source_text || errors.title) ? (
+                                <div className="rounded-[14px] border border-[rgba(191,61,61,0.18)] bg-[rgb(var(--color-danger-bg))] px-4 py-3 text-sm leading-6 text-[rgb(var(--color-text-strong))]">
+                                    {fileError || errors.source_text || errors.title}
+                                </div>
+                            ) : null}
 
                             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <p className="max-w-2xl pr-0 text-sm leading-6 text-[rgb(var(--color-text-muted))]">

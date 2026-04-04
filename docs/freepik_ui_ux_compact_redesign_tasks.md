@@ -64,7 +64,7 @@ Turn one short source into ready-to-post content.
 - Reduce vertical scroll before submit.
 - Make the source type selector denser and clearer.
 
-### 8. Refine source selection and input panels
+### 8. Refine source selection and input panels - done
 - Make source type cards smaller and more uniform.
 - Keep upload, record, and text entry sections visually consistent.
 - Reduce long helper paragraphs into smaller support blocks.

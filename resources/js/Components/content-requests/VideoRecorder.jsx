@@ -167,16 +167,16 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
     };
 
     return (
-        <div className="mt-5 rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
+        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
             <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                 Video recording
             </div>
 
-            <div className="mt-3 text-sm text-[rgb(var(--color-text-muted))]">
+            <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                 Record up to {maxSeconds} seconds. Camera and microphone access are required.
             </div>
 
-            <div className="recording-status-panel mt-4">
+            <div className="recording-status-panel mt-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <div className="recording-status-label">
@@ -198,8 +198,8 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 </div>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-[18px] border border-[rgb(var(--color-border))] bg-black">
-                <div className="flex h-[320px] items-center justify-center bg-black sm:h-[380px] lg:h-[420px]">
+            <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgb(var(--color-border))] bg-black">
+                <div className="flex h-[250px] items-center justify-center bg-black sm:h-[320px] lg:h-[380px]">
                     {previewUrl ? (
                         <video controls className="max-h-full max-w-full object-contain" src={previewUrl} />
                     ) : (
@@ -214,7 +214,7 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center gap-2.5">
                 {!isRecording ? (
                     <button type="button" onClick={startRecording} className="btn-primary">
                         {previewUrl ? 'Record again' : 'Start recording'}
@@ -235,7 +235,7 @@ export default function VideoRecorder({ onRecorded, onError, maxSeconds = 60 }) 
             </div>
 
             {permissionState === 'denied' ? (
-                <div className="mt-4 rounded-[18px] border border-[rgba(191,61,61,0.18)] bg-[rgb(var(--color-danger-bg))] px-4 py-4">
+                <div className="mt-3 rounded-[14px] border border-[rgba(191,61,61,0.18)] bg-[rgb(var(--color-danger-bg))] px-4 py-3.5">
                     <div className="text-sm font-semibold text-[rgb(var(--color-danger-text))]">
                         Camera or microphone access is blocked.
                     </div>

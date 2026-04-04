@@ -235,16 +235,16 @@ export default function AudioRecorder({ onRecorded, onError, maxSeconds = 60 }) 
     };
 
     return (
-        <div className="mt-5 rounded-[24px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-5">
+        <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
             <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                 Audio recording
             </div>
 
-            <div className="mt-3 text-sm text-[rgb(var(--color-text-muted))]">
+            <div className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                 Record up to {maxSeconds} seconds. Microphone access is required.
             </div>
 
-            <div className="recording-status-panel mt-4">
+            <div className="recording-status-panel mt-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <div className="recording-status-label">
@@ -266,7 +266,7 @@ export default function AudioRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center gap-2.5">
                 {!isRecording ? (
                     <button type="button" onClick={startRecording} className="btn-primary">
                         {previewUrl ? 'Record again' : 'Start recording'}
@@ -286,7 +286,7 @@ export default function AudioRecorder({ onRecorded, onError, maxSeconds = 60 }) 
                 </div>
             </div>
 
-            <div className={`recording-visualizer mt-4 ${isRecording ? 'recording-visualizer-live' : ''}`}>
+            <div className={`recording-visualizer mt-3 ${isRecording ? 'recording-visualizer-live' : ''}`}>
                 {levelBars.map((level, index) => (
                     <span
                         key={index}
@@ -300,7 +300,7 @@ export default function AudioRecorder({ onRecorded, onError, maxSeconds = 60 }) 
             </div>
 
             {permissionState === 'denied' ? (
-                <div className="mt-4 rounded-[18px] border border-[rgba(191,61,61,0.18)] bg-[rgb(var(--color-danger-bg))] px-4 py-4">
+                <div className="mt-3 rounded-[14px] border border-[rgba(191,61,61,0.18)] bg-[rgb(var(--color-danger-bg))] px-4 py-3.5">
                     <div className="text-sm font-semibold text-[rgb(var(--color-danger-text))]">
                         Microphone access is blocked.
                     </div>
@@ -311,7 +311,7 @@ export default function AudioRecorder({ onRecorded, onError, maxSeconds = 60 }) 
             ) : null}
 
             {previewUrl ? (
-                <div className="mt-4 flex h-[120px] items-center rounded-[16px] border border-[rgb(var(--color-border))] bg-white px-4">
+                <div className="mt-3 flex h-[110px] items-center rounded-[14px] border border-[rgb(var(--color-border))] bg-white px-4">
                     <audio controls className="w-full" src={previewUrl}>
                         Your browser does not support audio playback.
                     </audio>
