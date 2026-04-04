@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AppCard from '@/Components/ui/AppCard';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal';
@@ -331,11 +332,11 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
             header={
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
-                        <div className="app-badge mb-3">Recording workspace</div>
-                        <h1 className="text-[32px] font-semibold tracking-[-0.045em] text-[rgb(var(--color-text-strong))] sm:text-[38px]">
+                        <div className="app-badge-neutral mb-3">Recording workspace</div>
+                        <h1 className="app-page-title">
                             {liveContentRequest.title}
                         </h1>
-                        <p className="mt-3 max-w-2xl text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                        <p className="app-subheading mt-2 max-w-2xl">
                             Review the source, transcript, and final content from one compact workspace.
                         </p>
                         <div className="mt-4 flex flex-wrap items-center gap-2.5">
@@ -345,7 +346,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         </div>
                     </div>
 
-                    <div className="grid w-full gap-2 sm:grid-cols-2 xl:w-auto xl:min-w-[460px] xl:grid-cols-2">
+                    <div className="grid w-full gap-2 sm:grid-cols-2 xl:w-auto xl:min-w-[440px] xl:grid-cols-2">
                         {isProcessing ? (
                             <button type="button" onClick={() => setShowCancelModal(true)} className="btn-outline w-full">
                                 Cancel Processing
@@ -377,7 +378,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                     </div>
                 )}
 
-                <div className="app-card-compact p-4 sm:p-5">
+                <AppCard variant="compact" padding="md" className="sm:p-5">
                     <div className="compact-grid-2 xl:grid-cols-4">
                         {[
                             ['Run state', formatContentType(liveContentRequest.status)],
@@ -395,7 +396,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                             </div>
                         ))}
                     </div>
-                </div>
+                </AppCard>
 
                 <ProcessingStatusCard
                     contentRequest={liveContentRequest}
@@ -411,7 +412,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
 
                 <div className="grid gap-4 xl:gap-5 2xl:grid-cols-[300px_minmax(0,1fr)] 2xl:gap-6">
                     <div className="space-y-4 xl:space-y-5">
-                        <div className="app-card-compact p-4">
+                        <AppCard variant="compact" padding="md">
                             <div className="section-header-compact">
                                 <div className="section-header-copy">
                                     <h2 className="app-section-title">Recording details</h2>
@@ -429,9 +430,9 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </AppCard>
 
-                        <div className="app-card-compact p-4">
+                        <AppCard variant="compact" padding="md">
                             <div className="section-header-compact">
                                 <div className="section-header-copy">
                                     <h2 className="app-section-title">Quick actions</h2>
@@ -470,17 +471,17 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     </button>
                                 ) : null}
                             </div>
-                        </div>
+                        </AppCard>
 
                         {liveContentRequest.compression_error && (
-                            <div className="app-card bg-[rgb(var(--color-warning-bg))] p-4 text-[rgb(var(--color-warning-text))]">
+                            <AppCard className="bg-[rgb(var(--color-warning-bg))] p-4 text-[rgb(var(--color-warning-text))]">
                                 <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Compression issue</h2>
                                 <p className="mt-2 text-sm">{liveContentRequest.compression_error}</p>
-                            </div>
+                            </AppCard>
                         )}
 
                         {liveContentRequest.error_message && (
-                            <div className="app-card bg-[rgb(var(--color-danger-bg))] p-4 text-[rgb(var(--color-danger-text))]">
+                            <AppCard className="bg-[rgb(var(--color-danger-bg))] p-4 text-[rgb(var(--color-danger-text))]">
                                 <h2 className="app-section-title text-[rgb(var(--color-danger-text))]">
                                     {liveContentRequest.failure_stage === 'transcription'
                                         ? 'Transcription issue'
@@ -489,11 +490,11 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                         : 'Processing issue'}
                                 </h2>
                                 <p className="mt-2 text-sm">{liveContentRequest.error_message}</p>
-                            </div>
+                            </AppCard>
                         )}
 
                         {liveContentRequest.status === 'partial' ? (
-                            <div className="app-card bg-[rgb(var(--color-warning-bg))] p-4 text-[rgb(var(--color-warning-text))]">
+                            <AppCard className="bg-[rgb(var(--color-warning-bg))] p-4 text-[rgb(var(--color-warning-text))]">
                                 <h2 className="app-section-title text-[rgb(var(--color-warning-text))]">Partial completion</h2>
                                 <p className="mt-2 text-sm">
                                     The transcript is available, but this run did not finish every content output.
@@ -503,16 +504,16 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                         Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}.
                                     </p>
                                 ) : null}
-                            </div>
+                            </AppCard>
                         ) : null}
 
                         {isProcessing ? (
-                            <div className="app-card bg-[rgb(var(--color-surface-soft))] p-4">
+                            <AppCard className="bg-[rgb(var(--color-surface-soft))] p-4">
                                 <h2 className="app-section-title">Content actions locked</h2>
                                 <p className="mt-2 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                                     Retry transcription and regenerate content unlock after this run reaches a final state.
                                 </p>
-                            </div>
+                            </AppCard>
                         ) : null}
                     </div>
 
@@ -520,7 +521,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                         <ContentPreviewCard contentRequest={liveContentRequest} sourceLabel={sourceLabel} />
 
                         <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_280px] 2xl:gap-5">
-                            <div className="app-card-compact p-4 sm:p-5">
+                            <AppCard variant="compact" padding="md" className="sm:p-5">
                                 <div className="section-header-compact">
                                     <div className="section-header-copy">
                                         <h2 className="app-section-title">Transcript</h2>
@@ -537,9 +538,9 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                 <div className="max-h-[460px] overflow-y-auto rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))] sm:max-h-[520px]">
                                     {liveContentRequest.transcript || (isProcessing ? 'Waiting for transcript...' : 'Transcript not generated yet.')}
                                 </div>
-                            </div>
+                            </AppCard>
 
-                            <div className="app-card-compact p-4 sm:p-5">
+                            <AppCard variant="compact" padding="md" className="sm:p-5">
                                 <div className="section-header-compact">
                                     <div className="section-header-copy">
                                         <h2 className="app-section-title">Summary</h2>
@@ -556,10 +557,10 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                 <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm leading-7 text-[rgb(var(--color-text))]">
                                     {liveContentRequest.summary || (isProcessing ? 'Waiting for summary generation...' : 'Summary not generated yet.')}
                                 </div>
-                            </div>
+                            </AppCard>
                         </div>
 
-                        <div className="app-card-compact p-4 sm:p-5">
+                        <AppCard variant="compact" padding="md" className="sm:p-5">
                             <div className="section-header-compact">
                                 <div className="section-header-copy">
                                     <h2 className="app-section-title">Content responses</h2>
@@ -592,7 +593,7 @@ export default function ContentRequestsShow({ auth, contentRequest }) {
                                     Missing outputs: {missingOutputTypes.map(formatContentType).join(', ')}. Use the regenerate action to finish the set.
                                 </div>
                             ) : null}
-                        </div>
+                        </AppCard>
                     </div>
                 </div>
             </div>

@@ -134,7 +134,7 @@ Turn one short source into ready-to-post content.
 - Make whole project design compact
 - Match text sizes on different screens and keep consistent
 
-### Pass 3
+### Pass 3 - done
 - Redesign workspace show page.
 - Align generated content cards and preview panels.
 - Make compact UI/UX

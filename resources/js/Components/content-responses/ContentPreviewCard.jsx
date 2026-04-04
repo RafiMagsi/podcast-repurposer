@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import AppCard from '@/Components/ui/AppCard';
 
 function safeMediaUrl(url) {
     if (!url || typeof url !== 'string') {
@@ -65,14 +66,14 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
     }, []);
 
     return (
-        <div className="app-card-compact p-4 sm:p-5">
+        <AppCard variant="compact" padding="md" className="sm:p-5">
             <div className="flex flex-col gap-3 sm:gap-3.5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                     <div className="app-badge-neutral">{sourceLabel(contentRequest.input_type)}</div>
-                    <h2 className="mt-2.5 text-lg font-semibold tracking-[-0.03em] text-[rgb(var(--color-text-strong))]">
+                    <h2 className="mt-2 app-heading-md">
                         Source Preview
                     </h2>
-                    <p className="mt-1.5 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
+                    <p className="mt-1 text-sm leading-6 text-[rgb(var(--color-text-muted))]">
                         Media previews stream normally with browser buffering.
                     </p>
                 </div>
@@ -86,7 +87,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
 
             <div className="mt-4">
                 {contentRequest.input_type === 'text' ? (
-                    <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                    <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Text preview
                         </div>
@@ -95,7 +96,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         </div>
                     </div>
                 ) : isAudioSource && mediaUrl ? (
-                    <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                    <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Audio preview
                         </div>
@@ -112,7 +113,7 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         </div>
                     </div>
                 ) : isVideoSource && (mediaUrl || thumbnailUrl) ? (
-                    <div className="rounded-[16px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
+                    <div className="rounded-[14px] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-soft))] p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-text-faint))]">
                             Video preview
                         </div>
@@ -140,11 +141,11 @@ export default function ContentPreviewCard({ contentRequest, sourceLabel }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-[16px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm text-[rgb(var(--color-text-muted))]">
+                    <div className="rounded-[14px] border border-dashed border-[rgb(var(--color-border-strong))] bg-[rgb(var(--color-surface-soft))] p-4 text-sm text-[rgb(var(--color-text-muted))]">
                         Preview is not available for this source.
                     </div>
                 )}
             </div>
-        </div>
+        </AppCard>
     );
 }
