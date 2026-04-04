@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 function isActive(url, target) {
     return url === target || url.startsWith(`${target}/`);
@@ -32,22 +33,36 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
     const isAdmin = Boolean(authUser?.is_admin);
     const usageLimits = page.props?.usageLimits || null;
     const breadcrumb = buildBreadcrumb(url);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [url]);
 
     return (
         <div className="app-shell">
             <div className="workspace-shell">
-                <aside className="sidebar">
-                    <div className="flex items-center justify-between gap-3 pb-4 lg:block">
-                        <a href={route('dashboard')} className="flex items-center gap-3">
+                <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+                    <div className="flex items-center justify-between gap-3 pb-3 lg:block">
+                        <a href={route('dashboard')} className="flex min-w-0 items-center gap-3">
                             <ApplicationLogo
-                                className="h-10 w-10 rounded-2xl"
+                                className="h-9 w-9 rounded-[18px]"
                                 withText
-                                textClassName="text-base font-semibold text-[rgb(var(--color-text-strong))]"
-                                subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-[rgb(var(--color-text-muted))]"
+                                textClassName="text-[15px] font-semibold text-[rgb(var(--color-text-strong))]"
+                                subtitleClassName="text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--color-text-muted))]"
                             />
                         </a>
 
-                        <div className="hidden rounded-full bg-[rgb(var(--color-surface-blue))] px-3 py-1 mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgb(var(--color-secondary-text))] lg:inline-flex">
+                        <button
+                            type="button"
+                            onClick={() => setSidebarOpen((current) => !current)}
+                            className="sidebar-mobile-toggle lg:hidden"
+                            aria-label={sidebarOpen ? 'Close navigation' : 'Open navigation'}
+                        >
+                            {sidebarOpen ? '×' : '☰'}
+                        </button>
+
+                        <div className="mt-4 hidden rounded-full bg-[rgb(var(--color-surface-blue))] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[rgb(var(--color-secondary-text))] lg:inline-flex">
                             Studio
                         </div>
                     </div>
@@ -84,6 +99,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                         ) : null}
                     </div>
 
+                    <div className="sidebar-scroll-area">
                     <div className="sidebar-section-label">Workspace</div>
 
                     <nav className="grid gap-1">
@@ -155,25 +171,43 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                             </a>
                         </div>
                     </div>
+                    </div>
                 </aside>
 
                 <div className="workspace-main">
                     <div className="topbar">
-                        <div className="app-page flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-                            <div>
+                        <div className="app-page flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setSidebarOpen((current) => !current)}
+                                    className="sidebar-mobile-toggle hidden max-lg:inline-flex"
+                                    aria-label={sidebarOpen ? 'Close navigation' : 'Open navigation'}
+                                >
+                                    {sidebarOpen ? '×' : '☰'}
+                                </button>
+
                                 <div className="breadcrumb">
                                     <span>{breadcrumb[0]}</span>
                                     <span className="breadcrumb-sep">/</span>
                                     <span className="breadcrumb-current">{breadcrumb[1]}</span>
                                 </div>
-                                {authUser ? (
-                                    <div className="mt-1 text-sm text-[rgb(var(--color-text-muted))]">
-                                        {authUser.name} · {authUser.email}
-                                    </div>
-                                ) : null}
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-col gap-3 lg:min-w-0 lg:flex-row lg:items-center lg:justify-end">
+                                <div className="topbar-search-wrap">
+                                    <span className="topbar-search-icon">⌕</span>
+                                    <input
+                                        type="text"
+                                        className="topbar-search"
+                                        value=""
+                                        placeholder="Search runs, transcripts, or outputs"
+                                        readOnly
+                                        aria-label="Search runs, transcripts, or outputs"
+                                    />
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2">
                                 <a href={route('dashboard')} className="topbar-action">
                                     Dashboard
                                 </a>
@@ -197,6 +231,7 @@ export default function AuthenticatedLayout({ user: passedUser = null, header, c
                                 <Link href={route('logout')} method="post" as="button" className="btn-outline">
                                     Logout
                                 </Link>
+                                </div>
                             </div>
                         </div>
                     </div>

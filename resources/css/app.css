@@ -92,7 +92,7 @@
     }
 
     .app-page {
-        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+        @apply mx-auto w-full max-w-[1480px] px-4 sm:px-5 lg:px-6;
     }
 
     .app-page-narrow {
@@ -100,7 +100,7 @@
     }
 
     .workspace-shell {
-        @apply mx-auto flex min-h-screen w-full max-w-[1600px] flex-col lg:flex-row;
+        @apply mx-auto flex min-h-screen w-full max-w-[1560px] flex-col lg:flex-row;
     }
 
     .workspace-main {
@@ -108,7 +108,7 @@
     }
 
     .workspace-content {
-        @apply px-4 pb-8 pt-5 sm:px-6 lg:px-8;
+        @apply px-4 pb-6 pt-4 sm:px-5 lg:px-6;
     }
 
     .app-card {
@@ -325,8 +325,9 @@
     }
 
     .topbar {
-        @apply sticky top-0 z-30 border-b bg-white/90 backdrop-blur;
+        @apply sticky top-0 z-30 border-b bg-white backdrop-blur;
         border-color: rgb(var(--color-border));
+        background-color: rgba(255, 255, 255, 0.92);
     }
 
     .nav-link {
@@ -360,7 +361,7 @@
     }
 
     .topbar-action {
-        @apply inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-150;
+        @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-150;
         border-color: rgb(var(--color-border));
         background: white;
         color: rgb(var(--color-text-muted));
@@ -372,12 +373,28 @@
     }
 
     .sidebar {
-        @apply border-b bg-[rgba(255,255,255,0.84)] px-4 py-4 backdrop-blur lg:min-h-screen lg:w-[250px] lg:border-b-0 lg:border-r lg:px-5 lg:py-6;
+        @apply border-b bg-[rgba(255,255,255,0.88)] px-4 py-4 backdrop-blur lg:min-h-screen lg:w-[222px] lg:border-b-0 lg:border-r lg:px-4 lg:py-5;
         border-color: rgb(var(--color-border));
     }
 
+    .sidebar-scroll-area {
+        @apply mt-3;
+    }
+
+    .sidebar-mobile-toggle {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-full border text-base font-semibold transition-all duration-150;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-text-muted));
+    }
+
+    .sidebar-mobile-toggle:hover {
+        background: rgb(var(--color-surface-soft));
+        color: rgb(var(--color-text));
+    }
+
     .sidebar-link {
-        @apply flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-150;
+        @apply flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-all duration-150;
         color: rgb(var(--color-text-muted));
     }
 
@@ -393,7 +410,7 @@
     }
 
     .sidebar-icon {
-        @apply flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold;
+        @apply flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-semibold;
         border-color: rgb(var(--color-border));
         background: white;
         color: rgb(var(--color-text-muted));
@@ -406,8 +423,40 @@
     }
 
     .sidebar-section-label {
-        @apply px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.18em];
+        @apply px-3 pb-2 pt-4 text-[10px] font-semibold uppercase tracking-[0.18em];
         color: rgb(var(--color-text-faint));
+    }
+
+    .topbar-search-wrap {
+        @apply flex items-center gap-2 rounded-full border px-3 py-2 lg:min-w-[320px] lg:max-w-[420px] lg:flex-1;
+        border-color: rgb(var(--color-border));
+        background: rgb(var(--color-surface-soft));
+    }
+
+    .topbar-search-icon {
+        @apply text-sm;
+        color: rgb(var(--color-text-faint));
+    }
+
+    .topbar-search {
+        @apply min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-none;
+        color: rgb(var(--color-text));
+    }
+
+    .topbar-search::placeholder {
+        color: rgb(var(--color-text-faint));
+    }
+
+    @media (max-width: 1023px) {
+        .sidebar {
+            @apply fixed inset-x-0 top-0 z-40 max-h-screen overflow-y-auto border-b px-4 py-4 shadow-[0_20px_60px_rgba(17,24,39,0.12)];
+            transform: translateY(-104%);
+            transition: transform 180ms ease;
+        }
+
+        .sidebar.sidebar-open {
+            transform: translateY(0);
+        }
     }
 
     .sidebar-sublink {
